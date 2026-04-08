@@ -42,7 +42,7 @@ namespace our {
             EBO1.SetEBO(elements);
 
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_POSITION, 3, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, position));
-            VAO1.linkAtrribute(VBO1, ATTRIB_LOC_COLOR, 4, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, color));
+            VAO1.linkAtrribute(VBO1, ATTRIB_LOC_COLOR, 4, GL_UNSIGNED_BYTE, sizeof(our::Vertex), (void*)offsetof(our::Vertex, color), GL_TRUE);
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_TEXCOORD, 2, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, tex_coord));
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_NORMAL, 3, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, normal));
 
