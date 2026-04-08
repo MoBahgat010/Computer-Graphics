@@ -8,7 +8,13 @@
 our::Texture2D* our::texture_utils::empty(GLenum format, glm::ivec2 size){
     our::Texture2D* texture = new our::Texture2D();
     //TODO: (Req 11) Finish this function to create an empty texture with the given size and format
-
+    // Bind the texture so subsequent GL calls target it
+    texture->bind();
+    // glTexStorage2D allocates immutable GPU storage for 1 mip level with the given
+    // internal format and dimensions. Passing nullptr data is not needed here because
+    // glTexStorage2D only allocates — it does not require pixel data.
+    // This works for both colour formats (e.g. GL_RGBA8) and depth formats (e.g. GL_DEPTH_COMPONENT24).
+    glTexStorage2D(GL_TEXTURE_2D, 1, format, size.x, size.y);
     return texture;
 }
 
@@ -35,7 +41,7 @@ our::Texture2D* our::texture_utils::loadImage(const std::string& filename, bool 
     our::Texture2D* texture = new our::Texture2D();
     //Bind the texture such that we upload the image data to its storage
     //TODO: (Req 5) Finish this function to fill the texture with the data found in "pixels"
-    
+
     stbi_image_free(pixels); //Free image data after uploading to GPU
     return texture;
 }
