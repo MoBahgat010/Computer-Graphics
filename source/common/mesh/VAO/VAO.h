@@ -12,7 +12,7 @@ public:
 
     VAO();
 
-    void linkAtrribute(VBO& VBO1, GLuint location, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset);
+    void linkAtrribute(VBO& VBO1, GLuint location, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset, GLboolean normalized = GL_FALSE);
     void Bind();
     void UnBind();
     void Delete();
