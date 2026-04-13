@@ -1,0 +1,88 @@
+{
+  "start-scene": "play",
+  "window": {
+    "title": "Play - Procedural Floor Map 50x100",
+    "size": {
+      "width": 1280,
+      "height": 720
+    },
+    "fullscreen": false
+  },
+  "screenshots": {
+    "directory": "screenshots/play-test",
+    "requests": [{ "file": "map-50x100.png", "frame": 2 }]
+  },
+  "scene": {
+    "renderer": {},
+    "assets": {
+      "shaders": {
+        "textured": {
+          "vs": "assets/shaders/textured.vert",
+          "fs": "assets/shaders/textured.frag"
+        }
+      },
+      "textures": {
+        "floor_base": "Modular SciFi MegaKit[Standard]/Modular SciFi MegaKit[Standard]/Textures/T_Trim_01_BaseColor.png"
+      },
+      "meshes": {
+        "floor_tile": "assets/models/preview-quad.obj"
+      },
+      "samplers": {
+        "default": {
+          "MAG_FILTER": "GL_NEAREST",
+          "MIN_FILTER": "GL_NEAREST"
+        }
+      },
+      "materials": {
+        "floor_mat": {
+          "type": "textured",
+          "shader": "textured",
+          "pipelineState": {
+            "faceCulling": {
+              "enabled": false
+            },
+            "depthTesting": {
+              "enabled": true
+            }
+          },
+          "tint": [1, 1, 1, 1],
+          "texture": "floor_base",
+          "sampler": "default"
+        }
+      }
+    },
+    "world": [
+      {
+        "name": "player-camera",
+        "position": [0, 25, 120],
+        "rotation": [-25, 0, 0],
+        "components": [
+          {
+            "type": "Camera",
+            "fovY": 45,
+            "near": 0.1,
+            "far": 1000
+          },
+          {
+            "type": "Free Camera Controller",
+            "rotationSensitivity": 0.003,
+            "fovSensitivity": 0.2,
+            "positionSensitivity": [35, 20, 35],
+            "speedupFactor": 3.0
+          }
+        ]
+      }
+    ],
+    "map": {
+      "width": 50,
+      "length": 100,
+      "mesh": "floor_tile",
+      "material": "floor_mat",
+      "origin": [0, 0, 0],
+      "spacing": [2.0, 2.0],
+      "tileRotationDegrees": [-90, 0, 0],
+      "tileScale": [1.0, 1.0, 1.0],
+      "centered": true
+    }
+  }
+}

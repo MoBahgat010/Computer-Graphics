@@ -1,0 +1,75 @@
+{
+  "start-scene": "entity-test",
+  "window": {
+    "title": "Entity Test - Floor Texture Preview",
+    "size": {
+      "width": 1024,
+      "height": 1024,
+    },
+    "fullscreen": false,
+  },
+  "screenshots": {
+    "directory": "screenshots/entity-test",
+    "requests": [{ "file": "floor-texture-preview-0.png", "frame": 1 }],
+  },
+  "scene": {
+    "assets": {
+      "shaders": {
+        "textured": {
+          "vs": "assets/shaders/textured.vert",
+          "fs": "assets/shaders/textured.frag",
+        },
+      },
+      "textures": {
+        "floor_base": "Modular SciFi MegaKit[Standard]/Modular SciFi MegaKit[Standard]/Textures/T_Trim_02_BaseColor_Red.png",
+      },
+      "meshes": {
+        "quad": "assets/models/preview-quad.obj",
+      },
+      "samplers": {
+        "default": {},
+      },
+      "materials": {
+        "floor_mat": {
+          "type": "textured",
+          "shader": "textured",
+          "pipelineState": {
+            "faceCulling": {
+              "enabled": false,
+            },
+            "depthTesting": {
+              "enabled": true,
+            },
+          },
+          "tint": [1, 1, 1, 1],
+          "texture": "floor_base",
+          "sampler": "default",
+        },
+      },
+    },
+    "world": [
+      {
+        "position": [0, 0, 3],
+        "components": [
+          {
+            "type": "Camera",
+            "fovY": 45,
+            "near": 0.1,
+            "far": 20,
+          },
+        ],
+      },
+      {
+        "position": [0, 0, 0],
+        "scale": [1, 1, 1],
+        "components": [
+          {
+            "type": "Mesh Renderer",
+            "mesh": "quad",
+            "material": "floor_mat",
+          },
+        ],
+      },
+    ],
+  },
+}
