@@ -20,6 +20,20 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)           # Don't build Installation I
 set(GLFW_USE_HYBRID_HPG ON CACHE BOOL "" FORCE)     # Add variables to use High Performance Graphics Card if available
 add_subdirectory(vendor/glfw)                       # Build the GLFW project to use later as a library
 
+# ==============================================================================
+# JOLT PHYSICS INTEGRATION
+# ==============================================================================
+# Turn off Jolt's extra executables so we don't need Vulkan/DXC to compile it
+set(TARGET_UNIT_TESTS OFF CACHE BOOL "Don't build Jolt unit tests" FORCE)
+set(TARGET_HELLO_WORLD OFF CACHE BOOL "Don't build Jolt HelloWorld" FORCE)
+set(TARGET_PERFORMANCE_TEST OFF CACHE BOOL "Don't build Jolt performance tests" FORCE)
+
+# Enable Jolt's debug renderer (very useful for drawing collision shapes later)
+set(ENABLE_DEBUG_RENDERER ON CACHE BOOL "Enable Jolt Debug Renderer" FORCE)
+
+# Add the local directory directly
+add_subdirectory(vendor/JoltPhysics/Build)
+
 # A variable with all the source files of GLAD
 set(GLAD_SOURCE vendor/glad/src/gl.c)
 # A variables with all the source files of Dear ImGui
@@ -87,12 +101,23 @@ set(COMMON_SOURCES
         source/common/components/free-camera-controller.cpp
         source/common/components/movement.hpp
         source/common/components/movement.cpp
+        source/common/components/player.cpp
+        source/common/components/enemy-bot.cpp
+        source/common/components/weapon.cpp
         source/common/components/component-deserializer.hpp
+
+        source/common/components/collider.hpp
+        source/common/components/collider.cpp
 
         source/common/systems/forward-renderer.hpp
         source/common/systems/forward-renderer.cpp
         source/common/systems/free-camera-controller.hpp
         source/common/systems/movement.hpp
+
+        source/common/systems/collision.hpp
+
+        source/common/systems/jolt-physics-system.hpp
+        source/common/systems/jolt-physics-system.cpp
 )
 
 # Define the directories in which to search for the included headers
@@ -128,6 +153,9 @@ set(STATES_SOURCES
 # Then we link GLFW with each target
 add_executable(GAME_APPLICATION source/main.cpp ${STATES_SOURCES} ${COMMON_SOURCES} ${VENDOR_SOURCES})
 target_link_libraries(GAME_APPLICATION glfw)
+
+# Link the locally built Jolt library to your game
+target_link_libraries(GAME_APPLICATION Jolt)
 
 target_compile_definitions(GAME_APPLICATION PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD2)
 
