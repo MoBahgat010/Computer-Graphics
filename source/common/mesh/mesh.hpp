@@ -2,6 +2,7 @@
 
 #include <glad/gl.h>
 #include "vertex.hpp"
+#include <vector>
 
 #include "VAO/VAO.h"
 #include "VBO/VBO.h"
@@ -22,6 +23,8 @@ namespace our {
         EBO EBO1;
         // We need to remember the number of elements that will be draw by glDrawElements 
         GLsizei elementCount;
+        // Keep a CPU copy of vertices for gameplay/physics queries (e.g., convex hull generation).
+        std::vector<our::Vertex> cpuVertices;
     public:
 
         // The constructor takes two vectors:
@@ -47,6 +50,12 @@ namespace our {
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_NORMAL, 3, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, normal));
 
             elementCount = elements.size();
+            cpuVertices = vertices;
+        }
+
+        // Returns CPU-side vertex data (read-only).
+        const std::vector<our::Vertex>& getVertices() const {
+            return cpuVertices;
         }
 
         // this function should render the mesh
