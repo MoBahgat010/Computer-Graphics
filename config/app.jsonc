@@ -1,11 +1,11 @@
 {
-    "start-scene": "menu",
+    "start-scene": "start-screen",
     "window":
     {
         "title":"Mohamed Ahmed - 9230731",
         "size":{
-            "width":1280,
-            "height":720
+            "width":1920,
+            "height":1080
         },
         "fullscreen": false
     },
