@@ -36,7 +36,8 @@
                 "monkey": "assets/models/monkey.obj",
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
-                "city": "assets/city/Cyberpunk_City.fbx"
+                "city": "assets/models/city/Cyberpunk_City.fbx",
+                "male_character": "assets/models/male_character/male_character.fbx"
             },
             "samplers": {
                 "default": {},
@@ -169,6 +170,26 @@
                     ],
                     "texture": "moon",
                     "sampler": "default"
+                },
+                "male_character": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
                 }
             }
         },
@@ -190,7 +211,7 @@
                 ]
             },
             {
-                "name": "City Model Test",
+                "name": "City Model",
                 "position": [
                     0,
                     -1.2,
@@ -211,6 +232,31 @@
                         "type": "Mesh Renderer",
                         "mesh": "city",
                         "material": "city"
+                    }
+                ]
+            },
+            {
+                "name": "Male Character Model",
+                "position": [
+                    0,
+                    0,
+                    10
+                ],
+                "rotation": [
+                    0,
+                    45,
+                    0
+                ],
+                "scale": [
+                    0.01,
+                    0.01,
+                    0.01
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "male_character",
+                        "material": "male_character"
                     }
                 ]
             }

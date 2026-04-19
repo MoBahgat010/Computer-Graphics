@@ -1,6 +1,0 @@
-VENDOR          : NVIDIA Corporation
-RENDERER        : NVIDIA GeForce RTX 5060 Ti/PCIe/SSE2
-VERSION         : 3.3.0 NVIDIA 590.48.01
-GLSL VERSION    : 3.30 NVIDIA via Cg compiler
-OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
-OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 2 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
