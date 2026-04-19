@@ -1,0 +1,290 @@
+VENDOR          : NVIDIA Corporation
+RENDERER        : NVIDIA GeForce RTX 5060 Ti/PCIe/SSE2
+VERSION         : 3.3.0 NVIDIA 590.48.01
+GLSL VERSION    : 3.30 NVIDIA via Cg compiler
+
+--- Processing Mesh: Mesh.100 ---
+Material Name: Material_008.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.101 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.102 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.069 ---
+Material Name: Material_001.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.103 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.104 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.105 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.106 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.107 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.108 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.109 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.110 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.111 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.112 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.113 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.114 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.115 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.116 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.117 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.070 ---
+Material Name: chrom.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.118 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.119 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.120 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.121 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.122 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.123 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.124 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.125 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.126 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.127 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.071 ---
+Material Name: Material_006.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.128 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.129 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.130 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.072 ---
+Material Name: Material_006.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.131 ---
+Material Name: Material_005.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.132 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.133 ---
+Material Name: Material_002.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.134 ---
+Material Name: white_neon.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.135 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.073 ---
+Material Name: glass_01.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.074 ---
+Material Name: Material_001.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.075 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.076 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.077 ---
+Material Name: Material_003.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.078 ---
+Material Name: metal_black.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.079 ---
+Material Name: metal_gray.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.080 ---
+Material Name: Material_009.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.081 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.082 ---
+Material Name: Material_009.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.083 ---
+Material Name: Material_004.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.084 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.085 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.086 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.087 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.088 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.089 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.090 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.091 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.092 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.068 ---
+Material Name: Material_007.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.093 ---
+Material Name: material_0.001
+Mesh has NO textures assigned in material.
+
+--- Processing Mesh: Mesh.094 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.095 ---
+Material Name: Material_001.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.096 ---
+Material Name: Material_001.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.097 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.098 ---
+Material Name: advertising_screens_texture_01.001
+Mesh loaded with 1 textures.
+
+--- Processing Mesh: Mesh.099 ---
+Material Name: Material_001.001
+Mesh loaded with 1 textures.
+BBOX: -1.85721 -0.0417759 -1.20007 TO 2.50135 2.95822 1.09945
+Loaded model file "assets/city/Cyberpunk_City.fbx" with 1735298 vertices and 1257867 triangles.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 2 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 3 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 4 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 5 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 6 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 7 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 8 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 9 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 10 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 11 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+OpenGL Debug Message 131185 (type: OTHER) of NOTIFICATION raised from API: Buffer detailed info: Buffer object 12 (bound to GL_ELEMENT_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.

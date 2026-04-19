@@ -7,6 +7,9 @@ if(UNIX AND NOT APPLE)
         find_package(GLEW REQUIRED)
 endif()
 
+# Required for loading non-OBJ meshes (e.g., FBX)
+find_package(assimp REQUIRED)
+
 # Here we select C++17 with all the standards required and all compiler-specific extensions disabled
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -128,6 +131,13 @@ set(STATES_SOURCES
 # Then we link GLFW with each target
 add_executable(GAME_APPLICATION source/main.cpp ${STATES_SOURCES} ${COMMON_SOURCES} ${VENDOR_SOURCES})
 target_link_libraries(GAME_APPLICATION glfw)
+
+if(TARGET assimp::assimp)
+        target_link_libraries(GAME_APPLICATION assimp::assimp)
+else()
+        target_include_directories(GAME_APPLICATION PRIVATE ${ASSIMP_INCLUDE_DIRS})
+        target_link_libraries(GAME_APPLICATION ${ASSIMP_LIBRARIES})
+endif()
 
 target_compile_definitions(GAME_APPLICATION PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD2)
 
