@@ -17,6 +17,7 @@
 #include <cctype>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <vector>
 #include <unordered_map>
 
@@ -101,6 +102,25 @@ std::string resolveTexturePath(const aiString& texturePath, const std::string& d
     return "";
 }
 
+GLuint uploadRGBA8Texture(const unsigned char* pixels, int width, int height) {
+    if (!pixels || width <= 0 || height <= 0) {
+        return 0;
+    }
+
+    GLuint texture = 0;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    return texture;
+}
+
 GLuint loadTexture2D(const std::string& path, AssimpBuildContext& context) {
     auto cached = context.textureCache.find(path);
     if (cached != context.textureCache.end()) {
@@ -117,18 +137,15 @@ GLuint loadTexture2D(const std::string& path, AssimpBuildContext& context) {
         return context.whiteTexture;
     }
 
-    GLuint texture = 0;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLuint texture = uploadRGBA8Texture(pixels, width, height);
 
     stbi_image_free(pixels);
+
+    if (texture == 0) {
+        std::cerr << "FAILED: Texture upload failed for path: " << path << std::endl;
+        context.textureCache[path] = context.whiteTexture;
+        return context.whiteTexture;
+    }
 
     context.textureCache[path] = texture;
     context.ownedTextures.push_back(texture);
@@ -137,13 +154,83 @@ GLuint loadTexture2D(const std::string& path, AssimpBuildContext& context) {
     return texture;
 }
 
+GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, AssimpBuildContext& context) {
+    if (!scene) {
+        return 0;
+    }
+
+    std::string textureRef = texturePath.C_Str();
+    if (textureRef.empty()) {
+        return 0;
+    }
+
+    const aiTexture* embedded = scene->GetEmbeddedTexture(textureRef.c_str());
+    if (!embedded) {
+        return 0;
+    }
+
+    const std::string cacheKey = "embedded:" + textureRef;
+    auto cached = context.textureCache.find(cacheKey);
+    if (cached != context.textureCache.end()) {
+        return cached->second;
+    }
+
+    GLuint texture = 0;
+
+    if (embedded->mHeight == 0) {
+        stbi_set_flip_vertically_on_load(false);
+
+        int width = 0;
+        int height = 0;
+        int channels = 0;
+
+        const stbi_uc* data = reinterpret_cast<const stbi_uc*>(embedded->pcData);
+        const int dataSize = static_cast<int>(std::min<unsigned int>(embedded->mWidth, static_cast<unsigned int>(std::numeric_limits<int>::max())));
+        unsigned char* pixels = stbi_load_from_memory(data, dataSize, &width, &height, &channels, 4);
+
+        if (pixels) {
+            texture = uploadRGBA8Texture(pixels, width, height);
+            stbi_image_free(pixels);
+        }
+    } else {
+        if (embedded->mWidth > 0 && embedded->mHeight > 0) {
+            std::vector<unsigned char> rgba;
+            const size_t pixelCount = static_cast<size_t>(embedded->mWidth) * static_cast<size_t>(embedded->mHeight);
+            rgba.resize(pixelCount * 4);
+
+            for (size_t i = 0; i < pixelCount; ++i) {
+                const aiTexel& texel = embedded->pcData[i];
+                rgba[i * 4 + 0] = texel.r;
+                rgba[i * 4 + 1] = texel.g;
+                rgba[i * 4 + 2] = texel.b;
+                rgba[i * 4 + 3] = texel.a;
+            }
+
+            int width = static_cast<int>(std::min<unsigned int>(embedded->mWidth, static_cast<unsigned int>(std::numeric_limits<int>::max())));
+            int height = static_cast<int>(std::min<unsigned int>(embedded->mHeight, static_cast<unsigned int>(std::numeric_limits<int>::max())));
+            texture = uploadRGBA8Texture(rgba.data(), width, height);
+        }
+    }
+
+    if (texture != 0) {
+        context.textureCache[cacheKey] = texture;
+        context.ownedTextures.push_back(texture);
+        std::cout << "SUCCESS: Loaded embedded texture: " << textureRef << std::endl;
+        return texture;
+    }
+
+    std::cerr << "FAILED: Embedded texture failed to load: " << textureRef << std::endl;
+    context.textureCache[cacheKey] = context.whiteTexture;
+    return 0;
+}
+
 our::Color getMaterialColor(const aiMaterial* material) {
     aiColor4D diffuse(1.0f, 1.0f, 1.0f, 1.0f);
     aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuse);
     return colorFromAssimp(diffuse);
 }
 
-GLuint getMaterialTexture(const aiMaterial* material, const std::string& directory, AssimpBuildContext& context) {
+GLuint getMaterialTexture(const aiMaterial* material, const aiScene* scene, const std::string& directory, AssimpBuildContext& context) {
     aiString texturePath;
     bool hasTexture = false;
 
@@ -154,6 +241,11 @@ GLuint getMaterialTexture(const aiMaterial* material, const std::string& directo
     }
 
     if (hasTexture) {
+        const GLuint embeddedTexture = loadEmbeddedTexture(texturePath, scene, context);
+        if (embeddedTexture != 0) {
+            return embeddedTexture;
+        }
+
         const std::string fullPath = resolveTexturePath(texturePath, directory);
         if (!fullPath.empty()) {
             return loadTexture2D(fullPath, context);
@@ -207,7 +299,7 @@ void appendAssimpMesh(
 
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     const our::Color materialColor = getMaterialColor(material);
-    const GLuint texture = getMaterialTexture(material, context.directory, context);
+    const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());

@@ -37,7 +37,8 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/Textures/survival_character.fbx"
+                "male_character": "assets/models/Textures/survival_character.fbx",
+                "robot": "assets/models/robot/cyborg_soldier_scifi_character.glb"
             },
             "samplers": {
                 "default": {},
@@ -190,6 +191,26 @@
                     ],
                     "texture": "moon",
                     "sampler": "default"
+                },
+                "robot": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
                 }
             }
         },
@@ -257,6 +278,31 @@
                         "type": "Mesh Renderer",
                         "mesh": "male_character",
                         "material": "male_character"
+                    }
+                ]
+            },
+            {
+                "name": "Robot Model",
+                "position": [
+                    0,
+                    0,
+                    10
+                ],
+                "rotation": [
+                    0,
+                    45,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "robot",
+                        "material": "robot"
                     }
                 ]
             }
