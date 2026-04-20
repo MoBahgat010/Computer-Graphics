@@ -37,7 +37,7 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/male_character/male_character.fbx"
+                "male_character": "assets/models/Textures/survival_character.fbx"
             },
             "samplers": {
                 "default": {},
