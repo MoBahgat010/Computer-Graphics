@@ -42,6 +42,8 @@ set(VENDOR_SOURCES ${GLAD_SOURCE} ${IMGUI_SOURCES})
 set(COMMON_SOURCES
         source/common/application.hpp
         source/common/application.cpp
+        source/common/audio/audio-player.hpp
+        source/common/audio/audio-player.cpp
         source/common/input/keyboard.hpp
         source/common/input/mouse.hpp
 
@@ -105,6 +107,7 @@ include_directories(
         vendor/glad/include
         vendor/glm
         vendor/imgui
+        vendor/miniaudio
         vendor/utils
 )
 
@@ -132,6 +135,8 @@ set(STATES_SOURCES
 add_executable(GAME_APPLICATION source/main.cpp ${STATES_SOURCES} ${COMMON_SOURCES} ${VENDOR_SOURCES})
 target_link_libraries(GAME_APPLICATION glfw)
 
+if(WIN32)
+        target_link_libraries(GAME_APPLICATION winmm ole32 avrt uuid)
 if(TARGET assimp::assimp)
         target_link_libraries(GAME_APPLICATION assimp::assimp)
 else()
