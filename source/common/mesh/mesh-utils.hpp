@@ -4,6 +4,9 @@
 #include <string>
 
 namespace our::mesh_utils {
+    // Load a mesh based on file extension.
+    // .obj files use TinyOBJ loader, while other formats (e.g., .fbx) use Assimp.
+    Mesh* loadMesh(const std::string& filename);
     // Load an ".obj" file into the mesh
     Mesh* loadOBJ(const std::string& filename);
     // Create a sphere (the vertex order in the triangles are CCW from the outside)
