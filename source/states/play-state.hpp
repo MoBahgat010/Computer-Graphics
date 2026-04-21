@@ -8,6 +8,8 @@
 #include <systems/movement.hpp>
 #include <asset-loader.hpp>
 
+#include <iostream>
+
 // This state shows how to use the ECS framework and deserialization.
 class Playstate: public our::State {
 
@@ -15,6 +17,15 @@ class Playstate: public our::State {
     our::ForwardRenderer renderer;
     our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
+
+    our::Entity* getCameraEntity() {
+        for(auto entity : world.getEntities()) {
+            if(entity->getComponent<our::CameraComponent>()) {
+                return entity;
+            }
+        }
+        return nullptr;
+    }
 
     void onInitialize() override {
         // First of all, we get the scene configuration from the app config
@@ -48,6 +59,29 @@ class Playstate: public our::State {
             // If the escape  key is pressed in this frame, go to the play state
             getApp()->changeState("menu");
         }
+    }
+
+    void onImmediateGui() override {
+        ImGui::SetNextWindowPos(ImVec2(20.0f, 20.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(340.0f, 120.0f), ImGuiCond_FirstUseEver);
+
+        if(ImGui::Begin("Camera Debug")) {
+            if(auto* cameraEntity = getCameraEntity()) {
+                const glm::vec3 position = cameraEntity->localTransform.position;
+                ImGui::Text("Camera Position");
+                ImGui::Text("x: %.3f   y: %.3f   z: %.3f", position.x, position.y, position.z);
+
+                if(ImGui::Button("Print x,y,z")) {
+                    std::cout << "Camera Position (x,y,z): "
+                              << position.x << ", "
+                              << position.y << ", "
+                              << position.z << std::endl;
+                }
+            } else {
+                ImGui::TextUnformatted("No camera entity found.");
+            }
+        }
+        ImGui::End();
     }
 
     void onDestroy() override {
