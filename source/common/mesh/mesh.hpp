@@ -15,6 +15,8 @@ namespace our {
     #define ATTRIB_LOC_COLOR    1
     #define ATTRIB_LOC_TEXCOORD 2
     #define ATTRIB_LOC_NORMAL   3
+    #define ATTRIB_LOC_BONE_IDS     4
+    #define ATTRIB_LOC_BONE_WEIGHTS 5
 
     class Mesh {
     public:
@@ -52,9 +54,6 @@ namespace our {
             const std::vector<GLuint>& ownedTextures = {}
         ) : drawBatches(drawBatches), ownedTextures(ownedTextures)
         {
-            //TODO: (Req 2) Write this function
-            // remember to store the number of elements in "elementCount" since you will need it for drawing
-            // For the attribute locations, use the constants defined above: ATTRIB_LOC_POSITION, ATTRIB_LOC_COLOR, etc
             VAO1.Bind();
 
             VBO1.SetVBO(vertices);
@@ -64,6 +63,15 @@ namespace our {
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_COLOR, 4, GL_UNSIGNED_BYTE, sizeof(our::Vertex), (void*)offsetof(our::Vertex, color), GL_TRUE);
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_TEXCOORD, 2, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, tex_coord));
             VAO1.linkAtrribute(VBO1, ATTRIB_LOC_NORMAL, 3, GL_FLOAT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, normal));
+
+            // Bone IDs (integer attribute - must use glVertexAttribIPointer)
+            VBO1.Bind();
+            glVertexAttribIPointer(ATTRIB_LOC_BONE_IDS, MAX_BONE_INFLUENCE, GL_INT, sizeof(our::Vertex), (void*)offsetof(our::Vertex, boneIDs));
+            glEnableVertexAttribArray(ATTRIB_LOC_BONE_IDS);
+            // Bone Weights (float attribute)
+            glVertexAttribPointer(ATTRIB_LOC_BONE_WEIGHTS, MAX_BONE_INFLUENCE, GL_FLOAT, GL_FALSE, sizeof(our::Vertex), (void*)offsetof(our::Vertex, boneWeights));
+            glEnableVertexAttribArray(ATTRIB_LOC_BONE_WEIGHTS);
+            VBO1.UnBind();
 
             elementCount = static_cast<GLsizei>(elements.size());
 

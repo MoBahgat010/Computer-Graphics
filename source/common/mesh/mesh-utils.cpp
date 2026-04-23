@@ -15,6 +15,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <limits>
@@ -24,11 +26,11 @@
 namespace {
 
 glm::mat4 aiToGlm(const aiMatrix4x4& m) {
-    glm::mat4 result;
-    result[0][0] = m.a1; result[1][0] = m.a2; result[2][0] = m.a3; result[3][0] = m.a4;
-    result[0][1] = m.b1; result[1][1] = m.b2; result[2][1] = m.b3; result[3][1] = m.b4;
-    result[0][2] = m.c1; result[1][2] = m.c2; result[2][2] = m.c3; result[3][2] = m.c4;
-    result[0][3] = m.d1; result[1][3] = m.d2; result[2][3] = m.d3; result[3][3] = m.d4;
+    glm::mat4 result(1.0f);
+    result[0] = glm::vec4(m.a1, m.b1, m.c1, m.d1);
+    result[1] = glm::vec4(m.a2, m.b2, m.c2, m.d2);
+    result[2] = glm::vec4(m.a3, m.b3, m.c3, m.d3);
+    result[3] = glm::vec4(m.a4, m.b4, m.c4, m.d4);
     return result;
 }
 
@@ -155,16 +157,25 @@ GLuint loadTexture2D(const std::string& path, AssimpBuildContext& context) {
 }
 
 GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, AssimpBuildContext& context) {
-    if (!scene) {
-        return 0;
-    }
-
     std::string textureRef = texturePath.C_Str();
-    if (textureRef.empty()) {
+    if (!scene || textureRef.empty()) {
         return 0;
     }
 
     const aiTexture* embedded = scene->GetEmbeddedTexture(textureRef.c_str());
+    if (!embedded && textureRef.size() > 1 && textureRef[0] == '*') {
+        char* end = nullptr;
+        long index = std::strtol(textureRef.c_str() + 1, &end, 10);
+        if (
+            end != (textureRef.c_str() + 1) &&
+            *end == '\0' &&
+            index >= 0 &&
+            static_cast<unsigned long>(index) < static_cast<unsigned long>(scene->mNumTextures)
+        ) {
+            embedded = scene->mTextures[index];
+        }
+    }
+
     if (!embedded) {
         return 0;
     }
@@ -172,7 +183,7 @@ GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, As
     const std::string cacheKey = "embedded:" + textureRef;
     auto cached = context.textureCache.find(cacheKey);
     if (cached != context.textureCache.end()) {
-        return cached->second;
+        return cached->second == context.whiteTexture ? 0 : cached->second;
     }
 
     GLuint texture = 0;
@@ -220,9 +231,18 @@ GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, As
     }
 
     std::cerr << "FAILED: Embedded texture failed to load: " << textureRef << std::endl;
-    context.textureCache[cacheKey] = context.whiteTexture;
     return 0;
 }
+
+constexpr aiTextureType kPreferredTextureTypes[] = {
+    aiTextureType_BASE_COLOR,
+    aiTextureType_DIFFUSE,
+    aiTextureType_NORMALS,
+    aiTextureType_METALNESS,
+    aiTextureType_DIFFUSE_ROUGHNESS,
+    aiTextureType_EMISSIVE,
+    aiTextureType_UNKNOWN
+};
 
 our::Color getMaterialColor(const aiMaterial* material) {
     aiColor4D diffuse(1.0f, 1.0f, 1.0f, 1.0f);
@@ -232,23 +252,23 @@ our::Color getMaterialColor(const aiMaterial* material) {
 
 GLuint getMaterialTexture(const aiMaterial* material, const aiScene* scene, const std::string& directory, AssimpBuildContext& context) {
     aiString texturePath;
-    bool hasTexture = false;
 
-    if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
-        hasTexture = true;
-    } else if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &texturePath) == AI_SUCCESS) {
-        hasTexture = true;
-    }
+    for (aiTextureType textureType : kPreferredTextureTypes) {
+        const unsigned int textureCount = material->GetTextureCount(textureType);
+        for (unsigned int index = 0; index < textureCount; index++) {
+            if (material->GetTexture(textureType, index, &texturePath) != AI_SUCCESS) {
+                continue;
+            }
 
-    if (hasTexture) {
-        const GLuint embeddedTexture = loadEmbeddedTexture(texturePath, scene, context);
-        if (embeddedTexture != 0) {
-            return embeddedTexture;
-        }
+            const GLuint embeddedTexture = loadEmbeddedTexture(texturePath, scene, context);
+            if (embeddedTexture != 0) {
+                return embeddedTexture;
+            }
 
-        const std::string fullPath = resolveTexturePath(texturePath, directory);
-        if (!fullPath.empty()) {
-            return loadTexture2D(fullPath, context);
+            const std::string fullPath = resolveTexturePath(texturePath, directory);
+            if (!fullPath.empty()) {
+                return loadTexture2D(fullPath, context);
+            }
         }
     }
 
@@ -257,13 +277,19 @@ GLuint getMaterialTexture(const aiMaterial* material, const aiScene* scene, cons
 
 unsigned int countMaterialTextures(const aiMaterial* material) {
     unsigned int count = 0;
-    count += material->GetTextureCount(aiTextureType_DIFFUSE);
-    count += material->GetTextureCount(aiTextureType_BASE_COLOR);
-    count += material->GetTextureCount(aiTextureType_SPECULAR);
-    count += material->GetTextureCount(aiTextureType_NORMALS);
-    count += material->GetTextureCount(aiTextureType_HEIGHT);
-    count += material->GetTextureCount(aiTextureType_AMBIENT);
+    for (aiTextureType textureType : kPreferredTextureTypes) {
+        count += material->GetTextureCount(textureType);
+    }
     return count;
+}
+
+void logMaterialTextureTypes(const aiMaterial* material) {
+    for (int type = static_cast<int>(aiTextureType_NONE); type <= static_cast<int>(aiTextureType_UNKNOWN); type++) {
+        const unsigned int count = material->GetTextureCount(static_cast<aiTextureType>(type));
+        if (count > 0) {
+            std::cout << "Texture type " << type << " count: " << count << std::endl;
+        }
+    }
 }
 
 void logMeshInfo(const aiMesh* mesh, const aiScene* scene) {
@@ -273,12 +299,13 @@ void logMeshInfo(const aiMesh* mesh, const aiScene* scene) {
     aiString materialName;
     material->Get(AI_MATKEY_NAME, materialName);
     std::cout << "Material Name: " << materialName.C_Str() << std::endl;
+    logMaterialTextureTypes(material);
 
     unsigned int textureCount = countMaterialTextures(material);
     if (textureCount == 0) {
-        std::cout << "Mesh has NO textures assigned in material." << std::endl;
+        std::cout << "Mesh has NO textures assigned in preferred channels." << std::endl;
     } else {
-        std::cout << "Mesh loaded with " << textureCount << " textures." << std::endl;
+        std::cout << "Mesh loaded with " << textureCount << " textures in preferred channels." << std::endl;
     }
 
     if (mesh->HasBones()) {
@@ -554,4 +581,298 @@ our::Mesh* our::mesh_utils::sphere(const glm::ivec2& segments){
     }
 
     return new our::Mesh(vertices, elements);
+}
+
+// ============================================================================
+// Animated Mesh Loading (with bone extraction)
+// ============================================================================
+
+#include "../animation/animated-mesh.hpp"
+#include <map>
+
+namespace {
+
+void setVertexBoneData(our::Vertex& vertex, int boneID, float weight) {
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i) {
+        if (vertex.boneIDs[i] < 0) {
+            vertex.boneIDs[i] = boneID;
+            vertex.boneWeights[i] = weight;
+            return;
+        }
+    }
+    // All slots full, replace the smallest weight if this is bigger
+    int minIdx = 0;
+    for (int i = 1; i < MAX_BONE_INFLUENCE; ++i) {
+        if (vertex.boneWeights[i] < vertex.boneWeights[minIdx]) {
+            minIdx = i;
+        }
+    }
+    if (weight > vertex.boneWeights[minIdx]) {
+        vertex.boneIDs[minIdx] = boneID;
+        vertex.boneWeights[minIdx] = weight;
+    }
+}
+
+bool matricesNearlyEqual(const glm::mat4& a, const glm::mat4& b, float epsilon = 1e-4f) {
+    for (int column = 0; column < 4; ++column) {
+        for (int row = 0; row < 4; ++row) {
+            if (std::abs(a[column][row] - b[column][row]) > epsilon) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void normalizeVertexBoneWeights(
+    std::vector<our::Vertex>& vertices,
+    unsigned int vertexOffset,
+    unsigned int vertexCount
+) {
+    const unsigned int end = std::min(vertexOffset + vertexCount, static_cast<unsigned int>(vertices.size()));
+    for (unsigned int index = vertexOffset; index < end; ++index) {
+        our::Vertex& vertex = vertices[index];
+
+        float weightSum = 0.0f;
+        for (int i = 0; i < MAX_BONE_INFLUENCE; ++i) {
+            if (vertex.boneIDs[i] >= 0 && vertex.boneWeights[i] > 0.0f) {
+                weightSum += vertex.boneWeights[i];
+            }
+        }
+
+        if (weightSum > 0.0f) {
+            const float invWeightSum = 1.0f / weightSum;
+            for (int i = 0; i < MAX_BONE_INFLUENCE; ++i) {
+                if (vertex.boneIDs[i] >= 0 && vertex.boneWeights[i] > 0.0f) {
+                    vertex.boneWeights[i] *= invWeightSum;
+                }
+            }
+        }
+    }
+}
+
+void extractBoneWeightForVertices(
+    std::vector<our::Vertex>& vertices,
+    unsigned int vertexOffset,
+    const aiMesh* mesh,
+    std::map<std::string, our::BoneInfo>& boneInfoMap,
+    int& boneCounter
+) {
+    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
+        const aiBone* bone = mesh->mBones[boneIndex];
+        if (!bone) continue;
+
+        std::string boneName = bone->mName.C_Str();
+        int boneID = -1;
+        const glm::mat4 boneOffset = aiToGlm(bone->mOffsetMatrix);
+
+        auto it = boneInfoMap.find(boneName);
+        if (it == boneInfoMap.end()) {
+            our::BoneInfo newBoneInfo;
+            newBoneInfo.id = boneCounter;
+            newBoneInfo.offset = boneOffset;
+            boneInfoMap[boneName] = newBoneInfo;
+            boneID = boneCounter;
+            boneCounter++;
+        } else {
+            boneID = it->second.id;
+
+            if (!matricesNearlyEqual(it->second.offset, boneOffset)) {
+                std::cerr << "[ANIM] WARNING: Bone offset mismatch for bone \"" << boneName
+                          << "\" while processing mesh \"" << mesh->mName.C_Str()
+                          << "\". Keeping first discovered offset matrix." << std::endl;
+            }
+        }
+
+        for (unsigned int weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
+            unsigned int vertexId = bone->mWeights[weightIndex].mVertexId;
+            float weight = bone->mWeights[weightIndex].mWeight;
+            if (weight <= 0.0f) continue;
+            unsigned int globalVertexId = vertexOffset + vertexId;
+            if (globalVertexId < vertices.size()) {
+                setVertexBoneData(vertices[globalVertexId], boneID, weight);
+            }
+        }
+    }
+
+    std::cout << "[ANIM] Extracted bones from mesh \"" << mesh->mName.C_Str()
+              << "\": " << mesh->mNumBones << " bones, total bone count now: " << boneCounter << std::endl;
+}
+
+void appendAssimpMeshAnimated(
+    const aiMesh* mesh,
+    const aiScene* scene,
+    std::vector<our::Vertex>& vertices,
+    std::vector<GLuint>& elements,
+    std::vector<our::Mesh::DrawBatch>& drawBatches,
+    AssimpBuildContext& context,
+    std::map<std::string, our::BoneInfo>& boneInfoMap,
+    int& boneCounter,
+    const aiNode* node,
+    const glm::mat4& nodeTransform
+) {
+    logMeshInfo(mesh, scene);
+
+    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    const our::Color materialColor = getMaterialColor(material);
+    const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
+
+    const unsigned int vertexOffset = static_cast<unsigned int>(vertices.size());
+    const GLuint firstIndex = static_cast<GLuint>(elements.size());
+
+    // For skinned meshes: do NOT bake nodeTransform into vertex positions! The skeleton handles transforms.
+    // For unskinned meshes parented to nodes: bake nodeTransform and assign them to a pseudo-bone representing the node.
+    bool hasBones = mesh->HasBones();
+    int nodeBoneID = -1;
+
+    if (!hasBones && node != nullptr) {
+        std::string nodeName = node->mName.C_Str();
+        auto it = boneInfoMap.find(nodeName);
+        if (it == boneInfoMap.end()) {
+            boneInfoMap[nodeName] = {boneCounter, glm::inverse(nodeTransform)};
+            nodeBoneID = boneCounter++;
+        } else {
+            nodeBoneID = it->second.id;
+        }
+    }
+
+    const glm::mat3 normalTransform = glm::transpose(glm::inverse(glm::mat3(nodeTransform)));
+
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        our::Vertex vertex{};
+
+        glm::vec3 position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        vertex.position = hasBones ? position : glm::vec3(nodeTransform * glm::vec4(position, 1.0f));
+
+        vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        if (mesh->HasNormals()) {
+            glm::vec3 normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+            vertex.normal = hasBones ? normal : glm::normalize(normalTransform * normal);
+        }
+
+        vertex.tex_coord = glm::vec2(0.0f, 0.0f);
+        if (mesh->mTextureCoords[0]) {
+            vertex.tex_coord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+        }
+
+        vertex.color = materialColor;
+        if (mesh->HasVertexColors(0) && mesh->mColors[0]) {
+            vertex.color = multiplyColor(materialColor, colorFromAssimp(mesh->mColors[0][i]));
+        }
+
+        // Initialize bone data
+        for (int j = 0; j < MAX_BONE_INFLUENCE; j++) {
+            vertex.boneIDs[j] = -1;
+            vertex.boneWeights[j] = 0.0f;
+        }
+        
+        if (!hasBones && nodeBoneID != -1) {
+            vertex.boneIDs[0] = nodeBoneID;
+            vertex.boneWeights[0] = 1.0f;
+        }
+
+        vertices.push_back(vertex);
+    }
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        const aiFace& face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
+            elements.push_back(vertexOffset + face.mIndices[j]);
+        }
+    }
+
+    // Extract bone weights for the vertices we just added
+    if (mesh->HasBones()) {
+        extractBoneWeightForVertices(vertices, vertexOffset, mesh, boneInfoMap, boneCounter);
+        normalizeVertexBoneWeights(vertices, vertexOffset, mesh->mNumVertices);
+    }
+
+    const GLsizei indexCount = static_cast<GLsizei>(elements.size() - firstIndex);
+    if (indexCount > 0) {
+        drawBatches.push_back({static_cast<GLuint>(firstIndex), indexCount, texture, true});
+    }
+}
+
+void processAssimpNodeAnimated(
+    const aiNode* node,
+    const aiScene* scene,
+    const glm::mat4& parentTransform,
+    std::vector<our::Vertex>& vertices,
+    std::vector<GLuint>& elements,
+    std::vector<our::Mesh::DrawBatch>& drawBatches,
+    AssimpBuildContext& context,
+    std::map<std::string, our::BoneInfo>& boneInfoMap,
+    int& boneCounter
+) {
+    glm::mat4 nodeTransform = parentTransform * aiToGlm(node->mTransformation);
+
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        appendAssimpMeshAnimated(mesh, scene, vertices, elements, drawBatches, context, boneInfoMap, boneCounter, node, nodeTransform);
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        processAssimpNodeAnimated(node->mChildren[i], scene, nodeTransform, vertices, elements, drawBatches, context, boneInfoMap, boneCounter);
+    }
+}
+
+} // namespace
+
+our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename) {
+    auto animMesh = new our::AnimatedMesh();
+    animMesh->importer = std::make_unique<Assimp::Importer>();
+
+    const aiScene* scene = animMesh->importer->ReadFile(
+        filename,
+        aiProcess_Triangulate |
+        aiProcess_GenSmoothNormals |
+        aiProcess_FlipUVs |
+        aiProcess_LimitBoneWeights |
+        aiProcess_CalcTangentSpace
+    );
+
+    if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode) {
+        std::cerr << "[ANIM] ERROR::ASSIMP:: " << animMesh->importer->GetErrorString() << std::endl;
+        delete animMesh;
+        return nullptr;
+    }
+
+    animMesh->scene = scene;
+
+    // Compute global inverse transform
+    aiMatrix4x4 globalTransform = scene->mRootNode->mTransformation;
+    animMesh->globalInverseTransform = glm::inverse(aiToGlm(globalTransform));
+
+    std::cout << "[ANIM] Loading animated mesh from \"" << filename << "\"" << std::endl;
+    std::cout << "[ANIM] Scene has " << scene->mNumAnimations << " animation(s), "
+              << scene->mNumMeshes << " mesh(es)" << std::endl;
+
+    AssimpBuildContext context;
+    context.directory = std::filesystem::path(filename).parent_path().string();
+    if (context.directory.empty()) {
+        context.directory = ".";
+    }
+    context.whiteTexture = createSolidTexture(our::Color(255, 255, 255, 255));
+    context.ownedTextures.push_back(context.whiteTexture);
+
+    std::vector<our::Vertex> vertices;
+    std::vector<GLuint> elements;
+    std::vector<our::Mesh::DrawBatch> drawBatches;
+
+    processAssimpNodeAnimated(scene->mRootNode, scene, glm::mat4(1.0f), vertices, elements, drawBatches, context,
+                              animMesh->boneInfoMap, animMesh->boneCounter);
+
+    if (vertices.empty() || elements.empty()) {
+        glDeleteTextures(static_cast<GLsizei>(context.ownedTextures.size()), context.ownedTextures.data());
+        std::cerr << "[ANIM] Failed to build animated mesh buffers for: " << filename << std::endl;
+        delete animMesh;
+        return nullptr;
+    }
+
+    std::cout << "[ANIM] Animated mesh loaded: " << vertices.size() << " vertices, "
+              << (elements.size() / 3) << " triangles, "
+              << animMesh->boneCounter << " bones" << std::endl;
+
+    animMesh->mesh = new our::Mesh(vertices, elements, drawBatches, context.ownedTextures);
+    return animMesh;
 }

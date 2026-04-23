@@ -115,7 +115,17 @@ set(COMMON_SOURCES
         source/common/components/free-camera-controller.cpp
         source/common/components/movement.hpp
         source/common/components/movement.cpp
+        source/common/components/animation-component.hpp
+        source/common/components/animation-component.cpp
         source/common/components/component-deserializer.hpp
+
+        source/common/animation/animated-mesh.hpp
+        source/common/animation/animation.hpp
+        source/common/animation/animation.cpp
+        source/common/animation/animator.hpp
+        source/common/animation/animator.cpp
+        source/common/animation/bone.hpp
+        source/common/animation/bone.cpp
 
         source/common/systems/forward-renderer.hpp
         source/common/systems/forward-renderer.cpp

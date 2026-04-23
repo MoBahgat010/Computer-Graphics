@@ -13,18 +13,35 @@
         "renderer":{
             "postprocess": "assets/shaders/postprocess/vignette.frag"
         },
-        "assets":{
-            "shaders":{
-                "textured":{
-                    "vs":"assets/shaders/textured.vert",
-                    "fs":"assets/shaders/textured.frag"
+        "assets": {
+            "shaders": {
+                "tinted": {
+                    "vs": "assets/shaders/tinted.vert",
+                    "fs": "assets/shaders/tinted.frag"
+                },
+                "textured": {
+                    "vs": "assets/shaders/textured.vert",
+                    "fs": "assets/shaders/textured.frag"
+                },
+                "skinned": {
+                    "vs": "assets/shaders/skinned.vert",
+                    "fs": "assets/shaders/skinned.frag"
                 }
             },
             "textures":{
                 "fallback": "assets/textures/grass_ground_d.jpg"
             },
-            "meshes":{
-                "main-map": "assets/models/city/Cyberpunk_City.fbx"
+            "meshes": {
+                "cube": "assets/models/cube.obj",
+                "monkey": "assets/models/monkey.obj",
+                "plane": "assets/models/plane.obj",
+                "sphere": "assets/models/sphere.obj",
+                "city": "assets/models/city/Cyberpunk_City.fbx",
+                "male_character": "assets/models/male_character/survival_character.fbx",
+                "robot": "assets/models/robot/robot_gun.fbx"
+            },
+            "animatedMeshes": {
+                "robot_anim": "assets/models/robot/robot_gun.fbx"
             },
             "samplers":{
                 "default":{}
@@ -41,8 +58,113 @@
                             "enabled": true
                         }
                     },
-                    "tint": [1, 1, 1, 1],
-                    "texture": "fallback",
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "grass",
+                    "sampler": "default"
+                },
+                "monkey": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "monkey",
+                    "sampler": "default"
+                },
+                "moon": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "city": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "male_character": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "robot": {
+                    "type": "textured",
+                    "shader": "skinned",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
                     "sampler": "default"
                 }
             }
@@ -74,8 +196,63 @@
                 "components": [
                     {
                         "type": "Mesh Renderer",
-                        "mesh": "main-map",
-                        "material": "main-map"
+                        "mesh": "city",
+                        "material": "city"
+                    }
+                ]
+            },
+            {
+                "name": "Male Character Model",
+                "position": [
+                    0,
+                    0,
+                    10
+                ],
+                "rotation": [
+                    0,
+                    45,
+                    0
+                ],
+                "scale": [
+                    0.01,
+                    0.01,
+                    0.01
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "male_character",
+                        "material": "male_character"
+                    }
+                ]
+            },
+            {
+                "name": "Robot Model",
+                "position": [
+                    0,
+                    0,
+                    10
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    0.001,
+                    0.001,
+                    0.001
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "robot",
+                        "material": "robot"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "robot_anim",
+                        "animationIndex": 0
                     }
                 ]
             }
