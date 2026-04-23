@@ -135,7 +135,7 @@
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true
+                            "enabled": true 
                         }
                     },
                     "tint": [
@@ -186,6 +186,9 @@
                         "positionSensitivity": [8, 8, 8],
                         "fovSensitivity": 0.08,
                         "speedupFactor": 3.5
+                    },
+                    {
+                        "type": "Player"
                     }
                 ]
             },
@@ -204,9 +207,9 @@
             {
                 "name": "Male Character Model",
                 "position": [
-                    0,
-                    0,
-                    10
+                    4.28409,
+                    0.24859,
+                    -0.395433
                 ],
                 "rotation": [
                     0,
@@ -225,37 +228,37 @@
                         "material": "male_character"
                     }
                 ]
-            },
-            {
-                "name": "Robot Model",
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    0.001,
-                    0.001,
-                    0.001
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "robot",
-                        "material": "robot"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0
-                    }
-                ]
             }
+            // {
+            //     "name": "Robot Model",
+            //     "position": [
+            //         4.28409,
+            //         0.24859,
+            //         -0.5
+            //     ],
+            //     "rotation": [
+            //         0,
+            //         0,
+            //         0
+            //     ],
+            //     "scale": [
+            //         0.001,
+            //         0.001,
+            //         0.001
+            //     ],
+            //     "components": [
+            //         {
+            //             "type": "Mesh Renderer",
+            //             "mesh": "robot",
+            //             "material": "robot"
+            //         },
+            //         {
+            //             "type": "Animation",
+            //             "animatedMesh": "robot_anim",
+            //             "animationIndex": 0
+            //         }
+            //     ]
+            // }
         ]
     }
 }

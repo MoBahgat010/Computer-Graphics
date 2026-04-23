@@ -6,6 +6,7 @@
 #include "free-camera-controller.hpp"
 #include "movement.hpp"
 #include "animation-component.hpp"
+#include "PlayerComponents/player-component.hpp"
 
 namespace our {
 
@@ -24,6 +25,8 @@ namespace our {
             component = entity->addComponent<MeshRendererComponent>();
         } else if (type == AnimationComponent::getID()) {
             component = entity->addComponent<AnimationComponent>();
+        } else if (type == PlayerComponent::getID()) {
+            component = entity->addComponent<PlayerComponent>();
         }
         if(component) component->deserialize(data);
     }
