@@ -1,16 +1,16 @@
 {
-    "start-scene": "play",
-    "window": {
-        "title": "Mohamed Ahmed - 9230731",
-        "size": {
-            "width": 1280,
-            "height": 720
+    "start-scene": "start-screen",
+    "window":
+    {
+        "title":"Mohamed Ahmed - 9230731",
+        "size":{
+            "width":1920,
+            "height":1080
         },
         "fullscreen": false
     },
     "scene": {
-        "renderer": {
-            "sky": "assets/textures/sky.jpg",
+        "renderer":{
             "postprocess": "assets/shaders/postprocess/vignette.frag"
         },
         "assets": {
@@ -28,12 +28,8 @@
                     "fs": "assets/shaders/skinned.frag"
                 }
             },
-            "textures": {
-                "moon": "assets/textures/moon.jpg",
-                "grass": "assets/textures/grass_ground_d.jpg",
-                "wood": "assets/textures/wood.jpg",
-                "glass": "assets/textures/glass-panels.png",
-                "monkey": "assets/textures/monkey.png"
+            "textures":{
+                "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
                 "cube": "assets/models/cube.obj",
@@ -47,66 +43,18 @@
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx"
             },
-            "samplers": {
-                "default": {},
-                "pixelated": {
-                    "MAG_FILTER": "GL_NEAREST"
-                }
+            "samplers":{
+                "default":{}
             },
-            "materials": {
-                "metal": {
-                    "type": "tinted",
-                    "shader": "tinted",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        0.45,
-                        0.4,
-                        0.5,
-                        1
-                    ]
-                },
-                "glass": {
+            "materials":{
+                "main-map":{
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
-                        "faceCulling": {
+                        "faceCulling":{
                             "enabled": false
                         },
-                        "depthTesting": {
-                            "enabled": true
-                        },
-                        "blending": {
-                            "enabled": true,
-                            "sourceFactor": "GL_SRC_ALPHA",
-                            "destinationFactor": "GL_ONE_MINUS_SRC_ALPHA"
-                        },
-                        "depthMask": false
-                    },
-                    "transparent": true,
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "glass",
-                    "sampler": "pixelated"
-                },
-                "grass": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
+                        "depthTesting":{
                             "enabled": true
                         }
                     },
@@ -221,40 +169,30 @@
                 }
             }
         },
-        "world": [
+        "world":[
             {
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
+                "position": [4.28409, 0.24859, -0.395433],
+                "rotation": [0, 180, 0],
                 "components": [
                     {
                         "type": "Camera",
-                        "far": 100000
+                        "near": 0.05,
+                        "far": 3000,
+                        "fovY": 75
                     },
                     {
-                        "type": "Free Camera Controller"
+                        "type": "Free Camera Controller",
+                        "rotationSensitivity": 0.0035,
+                        "positionSensitivity": [8, 8, 8],
+                        "fovSensitivity": 0.08,
+                        "speedupFactor": 3.5
                     }
                 ]
             },
             {
-                "name": "City Model",
-                "position": [
-                    0,
-                    -1.2,
-                    0
-                ],
-                "rotation": [
-                    0,
-                    45,
-                    0
-                ],
-                "scale": [
-                    150,
-                    150,
-                    150
-                ],
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [15, 15, 15],
                 "components": [
                     {
                         "type": "Mesh Renderer",

@@ -8,7 +8,30 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # Required for loading non-OBJ meshes (e.g., FBX)
-find_package(assimp REQUIRED)
+find_package(assimp CONFIG QUIET)
+
+# MSYS2 packages may provide assimp headers/libs without assimpConfig.cmake.
+if(NOT TARGET assimp::assimp)
+        find_path(ASSIMP_INCLUDE_DIRS
+                NAMES assimp/Importer.hpp
+                PATHS
+                        C:/msys64/mingw64/include
+                        C:/msys64/ucrt64/include
+                        C:/msys64/clang64/include
+        )
+
+        find_library(ASSIMP_LIBRARIES
+                NAMES assimp
+                PATHS
+                        C:/msys64/mingw64/lib
+                        C:/msys64/ucrt64/lib
+                        C:/msys64/clang64/lib
+        )
+
+        if(NOT ASSIMP_INCLUDE_DIRS OR NOT ASSIMP_LIBRARIES)
+                message(FATAL_ERROR "Assimp was not found. Install it (e.g., MSYS2 package mingw-w64-x86_64-assimp) or set assimp_DIR/ASSIMP_INCLUDE_DIRS/ASSIMP_LIBRARIES.")
+        endif()
+endif()
 
 # Here we select C++17 with all the standards required and all compiler-specific extensions disabled
 set(CMAKE_CXX_STANDARD 17)
@@ -42,6 +65,8 @@ set(VENDOR_SOURCES ${GLAD_SOURCE} ${IMGUI_SOURCES})
 set(COMMON_SOURCES
         source/common/application.hpp
         source/common/application.cpp
+        source/common/audio/audio-player.hpp
+        source/common/audio/audio-player.cpp
         source/common/input/keyboard.hpp
         source/common/input/mouse.hpp
 
@@ -115,6 +140,7 @@ include_directories(
         vendor/glad/include
         vendor/glm
         vendor/imgui
+        vendor/miniaudio
         vendor/utils
 )
 
@@ -141,6 +167,10 @@ set(STATES_SOURCES
 # Then we link GLFW with each target
 add_executable(GAME_APPLICATION source/main.cpp ${STATES_SOURCES} ${COMMON_SOURCES} ${VENDOR_SOURCES})
 target_link_libraries(GAME_APPLICATION glfw)
+
+if(WIN32)
+        target_link_libraries(GAME_APPLICATION winmm ole32 avrt uuid)
+endif()
 
 if(TARGET assimp::assimp)
         target_link_libraries(GAME_APPLICATION assimp::assimp)
