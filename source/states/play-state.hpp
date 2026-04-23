@@ -6,6 +6,7 @@
 #include <systems/forward-renderer.hpp>
 #include <systems/free-camera-controller.hpp>
 #include <systems/movement.hpp>
+#include <systems/PlayerController/player-controller.hpp>
 #include <asset-loader.hpp>
 
 #include <iostream>
@@ -17,7 +18,7 @@ class Playstate: public our::State {
     our::ForwardRenderer renderer;
     our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
-
+    our::PlayerControllerSystem playerController;
     our::Entity* getCameraEntity() {
         for(auto entity : world.getEntities()) {
             if(entity->getComponent<our::CameraComponent>()) {
@@ -43,12 +44,17 @@ class Playstate: public our::State {
         // Then we initialize the renderer
         auto size = getApp()->getFrameBufferSize();
         renderer.initialize(size, config["renderer"]);
+
+        // Initialize the player controller system
+        playerController.enter(getApp());
+
     }
 
     void onDraw(double deltaTime) override {
         // Here, we just run a bunch of systems to control the world logic
         movementSystem.update(&world, (float)deltaTime);
         cameraController.update(&world, (float)deltaTime);
+        playerController.update(&world, (float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
 

@@ -54,9 +54,6 @@ namespace our {
       currentMagazineAmmo -= amount;
 
       currentMagazineAmmo = std::max(currentMagazineAmmo, 0);
-      if (currentMagazineAmmo == 0) {
-          reloadWeapon();
-      }
   }
 
   void PlayerComponent::increaseTotalAmmo(int amount) {
