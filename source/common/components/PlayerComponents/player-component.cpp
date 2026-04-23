@@ -7,10 +7,10 @@ namespace our {
   }
 
 
-  // getters for the player component
+  // getters and setters for the player component
 
 
-  // getterts 
+  // getters 
 
   int PlayerComponent::getHealth() const {
     return health;
@@ -30,6 +30,21 @@ namespace our {
 
   bool PlayerComponent::getIsDead() const {
     return isDead;
+  }
+  float PlayerComponent::getSpeed() const {
+    return speed;
+  }
+
+
+  // setters
+  void PlayerComponent::setIsCrouch(bool isCrouch){
+    this->isCrouch = isCrouch;
+  }
+  void PlayerComponent::setIsDead(bool isDead){
+    this->isDead = isDead;
+  }
+  void PlayerComponent::setSpeed(float speed){
+    this->speed = speed;
   }
 
 

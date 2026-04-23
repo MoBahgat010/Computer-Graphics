@@ -14,6 +14,7 @@ class PlayerComponent : public Component {
   int bulletDamage = 25; 
   bool isCrouch = false;
   bool isDead = false;
+  float speed = 5.0f;
   
   public:
     static std::string getID() { return "Player"; }
@@ -28,7 +29,14 @@ class PlayerComponent : public Component {
     int getBulletDamage() const;
     bool getIsCrouch()  const;
     bool getIsDead() const;
+    float getSpeed() const;
 
+
+    // setters 
+
+    void setIsCrouch(bool isCrouch);
+    void setIsDead(bool isDead);
+    void setSpeed(float speed);
 
    
  

@@ -21,5 +21,44 @@ namespace our {
         }
       }
       if(!player || !playerEntity) return;
+      handleMovement(player,playerEntity,deltaTime);
+      
   }
+
+  void PlayerControllerSystem::handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime){
+    auto& keyboard = app->getKeyboard();
+
+    // Build the matrix from the entity's current local transform
+    glm::mat4 matrix = playerEntity->localTransform.toMat4();
+
+    // Extract direction vectors (w=0 for vectors)
+    glm::vec3 front = glm::vec3(matrix * glm::vec4(0, 0, -1, 0));
+    front.y = 0;
+    front = glm::normalize(front);
+    glm::vec3 right = glm::vec3(matrix * glm::vec4(1, 0,  0, 0));
+    right.y = 0;
+    right = glm::normalize(right);
+
+    // Get a reference to the position
+    glm::vec3& position = playerEntity->localTransform.position;
+
+    //  move forward
+    if (keyboard.isPressed(GLFW_KEY_W) ){
+      position += front * player->getSpeed() * deltaTime;
+    }
+
+    // move backward
+    if (keyboard.isPressed(GLFW_KEY_S) ){
+      position -= front * player->getSpeed() * deltaTime;
+    }
+    //  move left
+    if (keyboard.isPressed(GLFW_KEY_A) ){
+      position -= right * player->getSpeed() * deltaTime;
+    }
+    //  move right
+    if (keyboard.isPressed(GLFW_KEY_D) ){
+      position += right * player->getSpeed() * deltaTime;
+    }
+  }
+
 }
