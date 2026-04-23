@@ -1,7 +1,11 @@
 #include "forward-renderer.hpp"
 #include "../mesh/mesh-utils.hpp"
 #include "../texture/texture-utils.hpp"
+#include "../animation/animated-mesh.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <GLFW/glfw3.h>
+#include <iostream>
+#include <unordered_set>
 
 namespace our {
 
@@ -128,6 +132,20 @@ namespace our {
     }
 
     void ForwardRenderer::render(World* world){
+        static std::unordered_set<const Entity*> loggedMissingMaterial;
+        static std::unordered_set<const Entity*> loggedMissingMesh;
+        static std::unordered_set<const AnimationComponent*> loggedMissingAnimatedMesh;
+        static std::unordered_set<const AnimationComponent*> loggedInactiveAnimation;
+        static std::unordered_set<const AnimationComponent*> loggedActiveAnimation;
+        static std::unordered_set<const AnimationComponent*> loggedBoneUpload;
+
+        // Compute delta time
+        static float lastFrameTime = 0.0f;
+        float currentFrameTime = static_cast<float>(glfwGetTime());
+        float deltaTime = currentFrameTime - lastFrameTime;
+        lastFrameTime = currentFrameTime;
+        if (deltaTime > 0.1f) deltaTime = 0.1f; // Clamp to avoid huge jumps
+
         // First of all, we search for a camera and for all the mesh renderers
         CameraComponent* camera = nullptr;
         opaqueCommands.clear();
@@ -137,12 +155,55 @@ namespace our {
             if(!camera) camera = entity->getComponent<CameraComponent>();
             // If this entity has a mesh renderer component
             if(auto meshRenderer = entity->getComponent<MeshRendererComponent>(); meshRenderer){
+                std::string entityName = entity->name.empty() ? "<unnamed>" : entity->name;
+                if(meshRenderer->material == nullptr){
+                    if(loggedMissingMaterial.insert(entity).second){
+                        std::cerr << "[ANIM] Skipping entity \"" << entityName
+                                  << "\": missing material on Mesh Renderer component." << std::endl;
+                    }
+                    continue;
+                }
+
                 // We construct a command from it
                 RenderCommand command;
                 command.localToWorld = meshRenderer->getOwner()->getLocalToWorldMatrix();
                 command.center = glm::vec3(command.localToWorld * glm::vec4(0, 0, 0, 1));
                 command.mesh = meshRenderer->mesh;
                 command.material = meshRenderer->material;
+
+                // Check if this entity also has an AnimationComponent
+                auto animComp = entity->getComponent<AnimationComponent>();
+                if (animComp) {
+                    command.animationComponent = animComp;
+                    // Use the AnimatedMesh's Mesh* for rendering
+                    if (animComp->animatedMesh && animComp->animatedMesh->mesh) {
+                        command.mesh = animComp->animatedMesh->mesh;
+                    } else if(loggedMissingAnimatedMesh.insert(animComp).second) {
+                        std::cerr << "[ANIM] Entity \"" << entityName
+                                  << "\" has Animation component but no animated mesh is bound." << std::endl;
+                    }
+
+                    if(animComp->hasActiveAnimation()){
+                        if(loggedActiveAnimation.insert(animComp).second){
+                            std::cout << "[ANIM] Entity \"" << entityName << "\" is using animation index "
+                                      << animComp->currentAnimationIndex << " with "
+                                      << animComp->animations.size() << " loaded animation(s)." << std::endl;
+                        }
+                    } else if(loggedInactiveAnimation.insert(animComp).second) {
+                        std::cerr << "[ANIM] Entity \"" << entityName
+                                  << "\" has Animation component but no active animation. Loaded animations: "
+                                  << animComp->animations.size() << std::endl;
+                    }
+                }
+
+                if(command.mesh == nullptr){
+                    if(loggedMissingMesh.insert(entity).second){
+                        std::cerr << "[ANIM] Skipping entity \"" << entityName
+                                  << "\": no mesh available for rendering." << std::endl;
+                    }
+                    continue;
+                }
+
                 // if it is transparent, we add it to the transparent commands list
                 if(command.material->transparent){
                     transparentCommands.push_back(command);
@@ -196,6 +257,27 @@ namespace our {
         for(const auto& command : opaqueCommands){
             command.material->setup();
             command.material->shader->set("transform", VP * command.localToWorld);
+
+            // Handle animation bone matrices
+            if (command.animationComponent && command.animationComponent->hasActiveAnimation()) {
+                command.animationComponent->update(deltaTime);
+                const auto& boneMatrices = command.animationComponent->getBoneMatrices();
+                if(loggedBoneUpload.insert(command.animationComponent).second){
+                    std::string entityName = command.animationComponent->getOwner() && !command.animationComponent->getOwner()->name.empty()
+                        ? command.animationComponent->getOwner()->name
+                        : "<unnamed>";
+                    std::cout << "[ANIM] Uploading "
+                              << std::min(static_cast<int>(boneMatrices.size()), MAX_BONES)
+                              << " bone matrices for entity \"" << entityName << "\"." << std::endl;
+                }
+                command.material->shader->set("useAnimation", (GLint)1);
+                for (int i = 0; i < static_cast<int>(boneMatrices.size()) && i < MAX_BONES; ++i) {
+                    command.material->shader->set("boneMatrices[" + std::to_string(i) + "]", boneMatrices[i]);
+                }
+            } else {
+                command.material->shader->set("useAnimation", (GLint)0);
+            }
+
             command.mesh->draw();
         }
 
@@ -238,6 +320,19 @@ namespace our {
         for(const auto& command : transparentCommands){
             command.material->setup();
             command.material->shader->set("transform", VP * command.localToWorld);
+
+            // Handle animation bone matrices for transparent objects too
+            if (command.animationComponent && command.animationComponent->hasActiveAnimation()) {
+                command.animationComponent->update(deltaTime);
+                const auto& boneMatrices = command.animationComponent->getBoneMatrices();
+                command.material->shader->set("useAnimation", (GLint)1);
+                for (int i = 0; i < static_cast<int>(boneMatrices.size()) && i < MAX_BONES; ++i) {
+                    command.material->shader->set("boneMatrices[" + std::to_string(i) + "]", boneMatrices[i]);
+                }
+            } else {
+                command.material->shader->set("useAnimation", (GLint)0);
+            }
+
             command.mesh->draw();
         }
 

@@ -22,6 +22,10 @@
                 "textured": {
                     "vs": "assets/shaders/textured.vert",
                     "fs": "assets/shaders/textured.frag"
+                },
+                "skinned": {
+                    "vs": "assets/shaders/skinned.vert",
+                    "fs": "assets/shaders/skinned.frag"
                 }
             },
             "textures": {
@@ -37,8 +41,11 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/Textures/survival_character.fbx",
-                "robot": "assets/models/robot/cyborg_soldier_scifi_character.glb"
+                "male_character": "assets/models/male_character/survival_character.fbx",
+                "robot": "assets/models/robot/robot_gun.fbx"
+            },
+            "animatedMeshes": {
+                "robot_anim": "assets/models/robot/robot_gun.fbx"
             },
             "samplers": {
                 "default": {},
@@ -194,7 +201,7 @@
                 },
                 "robot": {
                     "type": "textured",
-                    "shader": "textured",
+                    "shader": "skinned",
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -290,19 +297,24 @@
                 ],
                 "rotation": [
                     0,
-                    45,
+                    0,
                     0
                 ],
                 "scale": [
-                    1,
-                    1,
-                    1
+                    0.001,
+                    0.001,
+                    0.001
                 ],
                 "components": [
                     {
                         "type": "Mesh Renderer",
                         "mesh": "robot",
                         "material": "robot"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "robot_anim",
+                        "animationIndex": 0
                     }
                 ]
             }

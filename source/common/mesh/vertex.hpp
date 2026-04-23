@@ -3,17 +3,27 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
+#define MAX_BONE_INFLUENCE 4
+#define MAX_BONES 200
+
 namespace our {
 
     // Since we may want to store colors in bytes instead of floats for efficiency,
     // we are creating our own 32-bit R8G8B8A8 Color data type with the default GLM precision
     typedef glm::vec<4, glm::uint8, glm::defaultp> Color;
 
+    struct BoneInfo {
+        int id;
+        glm::mat4 offset;
+    };
+
     struct Vertex {
         glm::vec3 position;     // The vertex position in the local space
         Color color;            // The vertex color
         glm::vec2 tex_coord;    // The texture coordinates (the vertex position in the texture space)
         glm::vec3 normal;       // The surface normal at the vertex (This will be used for lighting in the final phase)
+        int boneIDs[MAX_BONE_INFLUENCE] = {-1, -1, -1, -1};
+        float boneWeights[MAX_BONE_INFLUENCE] = {0.0f, 0.0f, 0.0f, 0.0f};
 
         // We plan to use this as a key for a map so we need to define the equality operator
         bool operator==(const Vertex& other) const {
