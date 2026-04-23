@@ -35,7 +35,6 @@ class PlayerComponent : public Component {
     // setters 
 
     void setIsCrouch(bool isCrouch);
-    void setIsDead(bool isDead);
     void setSpeed(float speed);
 
    

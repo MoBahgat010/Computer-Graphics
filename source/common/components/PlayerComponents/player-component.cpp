@@ -40,9 +40,6 @@ namespace our {
   void PlayerComponent::setIsCrouch(bool isCrouch){
     this->isCrouch = isCrouch;
   }
-  void PlayerComponent::setIsDead(bool isDead){
-    this->isDead = isDead;
-  }
   void PlayerComponent::setSpeed(float speed){
     this->speed = speed;
   }

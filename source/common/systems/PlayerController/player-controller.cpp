@@ -22,6 +22,7 @@ namespace our {
       }
       if(!player || !playerEntity) return;
       handleMovement(player,playerEntity,deltaTime);
+      handleCrouch(player,playerEntity);
       
   }
 
@@ -58,6 +59,26 @@ namespace our {
     //  move right
     if (keyboard.isPressed(GLFW_KEY_D) ){
       position += right * player->getSpeed() * deltaTime;
+    }
+  }
+
+
+  void PlayerControllerSystem::handleCrouch(PlayerComponent* player, Entity* playerEntity){
+    auto& keyboard = app->getKeyboard();
+    
+    if (keyboard.justPressed(GLFW_KEY_C) ){
+      bool playerIsCrouch = player->getIsCrouch();
+      glm::vec3& position = playerEntity->localTransform.position;
+      if(playerIsCrouch){
+        // stand up
+        position.y += 0.5f;
+        player->setSpeed(5.0f);
+      } else {
+        // crouch 
+        position.y -= 0.5f;
+        player->setSpeed(2.5f);
+      }
+      player->setIsCrouch(!playerIsCrouch);
     }
   }
 
