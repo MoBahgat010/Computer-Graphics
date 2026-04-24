@@ -1,6 +1,7 @@
 #pragma once
 #include "../../ecs/world.hpp"
 #include "../../components/PlayerComponents/player-component.hpp"
+#include "../../components/EnemyComponents/enemy-soldier-component.hpp"
 #include "../../application.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
@@ -18,7 +19,7 @@ namespace our {
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
     void handleLook(PlayerComponent* player, Entity* playerEntity,Entity* cameraEntity);
     void handleCrouch(PlayerComponent* player,Entity* cameraEntity);
-    void handleFire(PlayerComponent* player);
+    void handleFire(PlayerComponent* player,Entity* cameraEntity);
     void handleReload(PlayerComponent* player);
     void handleDeath();
 

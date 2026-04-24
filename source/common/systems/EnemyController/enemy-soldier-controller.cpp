@@ -87,11 +87,11 @@ namespace our {
 
     enemy->setCurrentState(EnemyState::ATTACKING);
     
-    std::cout << "Enemy is attacking" << std::endl;   
+    // std::cout << "Enemy is attacking" << std::endl;   
     
     // handle cooldown
     if(enemy->getAttackTimer() <= enemy->getAttackCooldown()){
-      std::cout << "Enemy is on cooldown" << std::endl;   
+      // std::cout << "Enemy is on cooldown" << std::endl;   
       enemy->setAttackTimer(enemy->getAttackTimer() + deltaTime); 
       return;
     }
@@ -99,7 +99,7 @@ namespace our {
     player->decreaseHealth(enemy->getDamage());
     // reset timer
     enemy->setAttackTimer(0.0f);
-    std::cout << "Enemy attacked" << std::endl;   
+    // std::cout << "Enemy attacked" << std::endl;   
 
 
 
@@ -110,7 +110,7 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
-    std::cout << "Enemy is chasing" << std::endl;   
+    // std::cout << "Enemy is chasing" << std::endl;   
     enemy->setCurrentState(EnemyState::CHASING);
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
