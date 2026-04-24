@@ -1,10 +1,11 @@
 {
-    "start-scene": "play",
-    "window": {
-        "title": "Mohamed Ahmed - 9230731",
-        "size": {
-            "width": 1920,
-            "height": 1080
+    "start-scene": "start-screen",
+    "window":
+    {
+        "title":"Carrer Not Found 404",
+        "size":{
+            "width":1920,
+            "height":960
         },
         "fullscreen": false
     },
@@ -136,7 +137,7 @@
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true
+                            "enabled": true 
                         }
                     },
                     "tint": [
@@ -190,35 +191,62 @@
                 // }
             }
         },
-        "world": [
+        "enemySpawner": {
+            "enemiesPerPoint": 2,
+            "spawnOffset": 0.6,
+            "enemy": {
+                "mesh": "robot",
+                "material": "robot",
+                "scale": [0.00004, 0.00004, 0.00004],
+                "health": 100,
+                "damage": 3,
+                "speed": 1.5,
+                "attackRange": 1.5,
+                "detectionRange": 5.0,
+                "attackCooldown": 1.0
+            }
+        },
+        "world":[
             {
-                "position": [
-                    4.28409,
-                    0.24859,
-                    -0.395433
-                ],
-                "rotation": [
-                    0,
-                    180,
-                    0
-                ],
+                "name": "Player",
+                "position": [4.28409, 0.12, -0.395433],
+                "rotation": [0, 180, 0],
                 "components": [
                     {
-                        "type": "Camera",
-                        "near": 0.05,
-                        "far": 3000,
-                        "fovY": 75
+                        "type": "Player"
                     },
                     {
-                        "type": "Free Camera Controller",
-                        "rotationSensitivity": 0.0035,
-                        "positionSensitivity": [
-                            8,
-                            8,
-                            8
-                        ],
-                        "fovSensitivity": 0.08,
-                        "speedupFactor": 3.5
+                        "type": "Collider",
+                        "halfExtents": [0.11, 0.12, 0.11],
+                        "centerOffset": [0.0, 0.0, 0.0]
+                    }
+                ],
+                "children": [
+                    {
+                        "name": "Camera",
+                        "position": [0, 0.12, 0],
+                        "rotation": [0, 0, 0],
+                        "components": [
+                            {
+                                "type": "Camera",
+                                "near": 0.05,
+                                "far": 3000,
+                                "fovY": 75
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Male Character Model",
+                        "position": [0, 0, 1],
+                        "rotation": [0, 180, 0],
+                        "scale": [0.0015, 0.0015, 0.0015],
+                        "components": [
+                            {
+                                "type": "Mesh Renderer",
+                                "mesh": "male_character",
+                                "material": "male_character"
+                            }
+                        ]
                     }
                 ]
             },
@@ -243,6 +271,9 @@
                         "type": "Mesh Renderer",
                         "mesh": "city",
                         "material": "city"
+                    },
+                    {
+                        "type": "Collider"
                     }
                 ]
             },

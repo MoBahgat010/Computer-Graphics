@@ -5,7 +5,10 @@
 #include "mesh-renderer.hpp"
 #include "free-camera-controller.hpp"
 #include "movement.hpp"
+#include "collider.hpp"
 #include "animation-component.hpp"
+#include "PlayerComponents/player-component.hpp"
+#include "EnemyComponents/enemy-soldier-component.hpp"
 
 namespace our {
 
@@ -16,6 +19,10 @@ namespace our {
         Component* component = nullptr;
         if(type == CameraComponent::getID()){
             component = entity->addComponent<CameraComponent>();
+        } else if (type == PlayerComponent::getID()) {
+            component = entity->addComponent<PlayerComponent>();
+        } else if (type == ColliderComponent::getID()) {
+            component = entity->addComponent<ColliderComponent>();
         } else if (type == FreeCameraControllerComponent::getID()) {
             component = entity->addComponent<FreeCameraControllerComponent>();
         } else if (type == MovementComponent::getID()) {
@@ -24,6 +31,10 @@ namespace our {
             component = entity->addComponent<MeshRendererComponent>();
         } else if (type == AnimationComponent::getID()) {
             component = entity->addComponent<AnimationComponent>();
+        } else if (type == PlayerComponent::getID()) {
+            component = entity->addComponent<PlayerComponent>();
+        } else if (type == EnemySoldierComponent::getID()) {
+            component = entity->addComponent<EnemySoldierComponent>();
         }
         if(component) component->deserialize(data);
     }
