@@ -325,8 +325,10 @@ void appendAssimpMesh(
     logMeshInfo(mesh, scene);
 
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    const our::Color materialColor = getMaterialColor(material);
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
+    const our::Color materialColor = (texture != context.whiteTexture)
+        ? our::Color(255, 255, 255, 255)   // has texture: don't tint it
+        : getMaterialColor(material);       // no texture: use material color as fallback
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
@@ -714,8 +716,10 @@ void appendAssimpMeshAnimated(
     logMeshInfo(mesh, scene);
 
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    const our::Color materialColor = getMaterialColor(material);
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
+    const our::Color materialColor = (texture != context.whiteTexture)
+        ? our::Color(255, 255, 255, 255)   // has texture: don't tint it
+        : getMaterialColor(material);       // no texture: use material color as fallback
 
     const unsigned int vertexOffset = static_cast<unsigned int>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
