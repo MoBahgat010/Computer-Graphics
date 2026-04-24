@@ -8,6 +8,7 @@
 #include "collider.hpp"
 #include "animation-component.hpp"
 #include "PlayerComponents/player-component.hpp"
+#include "EnemyComponents/enemy-soldier-component.hpp"
 
 namespace our {
 
@@ -32,6 +33,8 @@ namespace our {
             component = entity->addComponent<AnimationComponent>();
         } else if (type == PlayerComponent::getID()) {
             component = entity->addComponent<PlayerComponent>();
+        } else if (type == EnemySoldierComponent::getID()) {
+            component = entity->addComponent<EnemySoldierComponent>();
         }
         if(component) component->deserialize(data);
     }
