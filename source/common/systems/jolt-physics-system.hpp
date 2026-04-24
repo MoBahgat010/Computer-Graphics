@@ -145,6 +145,8 @@ public:
 //   onDraw()       → joltPhysics.update(deltaTime)
 //   onDestroy()    → joltPhysics.shutdown()
 // ============================================================================
+struct MeshRendererComponent;
+
 class JoltPhysicsSystem {
 public:
     // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -177,8 +179,13 @@ public:
                               glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     JPH::BodyID addDynamicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
                                      glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
+    JPH::BodyID addKinematicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
+                                       glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
+    JPH::BodyID addKinematicCapsule(Entity* entity, float halfHeight, float radius,
+                                    glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     void        removeBody(Entity* entity);
 
+    JPH::BodyID createEnemySoldierBody(Entity* entity, MeshRendererComponent* meshRenderer);
     void createPlayerBody(glm::vec3 startPos,
                           float capsuleHalfHeight = 0.4f,
                           float capsuleRadius = 0.1f,

@@ -1,4 +1,5 @@
 #include "enemy-soldier-controller.hpp"
+#include "../jolt-physics-system.hpp"
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -7,8 +8,9 @@
 
 namespace our {
  
-  void EnemySoldierControllerSystem::enter(Application* app){
+  void EnemySoldierControllerSystem::enter(Application* app, JoltPhysicsSystem* physics){
     this->app = app;
+    this->physics = physics;
   }
 
   void EnemySoldierControllerSystem::update(World* world, float deltaTime){
@@ -87,11 +89,11 @@ namespace our {
 
     enemy->setCurrentState(EnemyState::ATTACKING);
     
-    std::cout << "Enemy is attacking" << std::endl;   
+    // std::cout << "Enemy is attacking" << std::endl;   
     
     // handle cooldown
     if(enemy->getAttackTimer() <= enemy->getAttackCooldown()){
-      std::cout << "Enemy is on cooldown" << std::endl;   
+      // std::cout << "Enemy is on cooldown" << std::endl;   
       enemy->setAttackTimer(enemy->getAttackTimer() + deltaTime); 
       return;
     }
@@ -99,7 +101,7 @@ namespace our {
     player->decreaseHealth(enemy->getDamage());
     // reset timer
     enemy->setAttackTimer(0.0f);
-    std::cout << "Enemy attacked" << std::endl;   
+    // std::cout << "Enemy attacked" << std::endl;   
 
 
 
@@ -110,7 +112,7 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
-    std::cout << "Enemy is chasing" << std::endl;   
+    // std::cout << "Enemy is chasing" << std::endl;   
     enemy->setCurrentState(EnemyState::CHASING);
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
@@ -144,10 +146,15 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
     std::cout << "Enemy is dead" << std::endl;   
-      //  remove from world
+      //  remove physics body first (before entity is deleted)
       Entity* enemyEntity = enemy->getOwner();
-      if(enemyEntity && enemyEntity->getWorld()) {
-          enemyEntity->getWorld()->markForRemoval(enemyEntity);
+      if(enemyEntity) {
+          if(physics) {
+              physics->removeBody(enemyEntity);
+          }
+          if(enemyEntity->getWorld()) {
+              enemyEntity->getWorld()->markForRemoval(enemyEntity);
+          }
       }
   }
 

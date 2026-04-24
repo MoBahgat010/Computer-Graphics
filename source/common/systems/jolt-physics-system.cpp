@@ -25,6 +25,7 @@
 #include "components/mesh-renderer.hpp"
 #include "components/movement.hpp"
 #include "components/PlayerComponents/player-component.hpp"
+#include "components/EnemyComponents/enemy-soldier-component.hpp"
 
 #include <iostream>
 #include <cstdarg>
@@ -138,12 +139,24 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
         if (!entity || isDescendantOfPlayer(entity)) continue;
 
         auto* collider = entity->getComponent<ColliderComponent>();
-        auto* movement = entity->getComponent<MovementComponent>();
-        const bool isMoving = movement &&
-            (glm::length(movement->linearVelocity) > 0.0f || glm::length(movement->angularVelocity) > 0.0f);
+        auto* enemySoldier = entity->getComponent<EnemySoldierComponent>();
+        auto* meshRenderer = entity->getComponent<MeshRendererComponent>();
+
+        // Enemy soldiers get a Kinematic Convex Hull (or Capsule) handled by a dedicated function.
+        if (enemySoldier) {
+            JPH::BodyID id = createEnemySoldierBody(entity, meshRenderer);
+            if (!id.IsInvalid()) {
+                ++dynamicBodies; // count as dynamic for logging
+            }
+            continue; // Skip the rest of the mesh/collider logic for enemies
+        }
+
         if (!collider) continue;
 
-        auto* meshRenderer = entity->getComponent<MeshRendererComponent>();
+        auto* movement = entity->getComponent<MovementComponent>();
+        const bool hasMovementVelocity = movement &&
+            (glm::length(movement->linearVelocity) > 0.0f || glm::length(movement->angularVelocity) > 0.0f);
+        const bool isMoving = hasMovementVelocity;
 
         glm::mat4 m = entity->getLocalToWorldMatrix();
         glm::vec3 skew;
@@ -192,6 +205,11 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
                 ++staticBodies;
                 continue;
             }
+        }
+
+        // If this entity was skipped for convex hull creation and has no collider, skip.
+        if (!collider) {
+            continue;
         }
 
         const glm::vec3 halfExtents = glm::max(glm::abs(collider->halfExtents * worldScale), glm::vec3(0.01f));
@@ -290,6 +308,12 @@ void JoltPhysicsSystem::update(float deltaTime) {
     for (auto& pair : mEntityToBody) {
         Entity* entity = pair.first;
         if (!entity || entity == mPlayerEntity) continue;
+
+        // Enemy soldiers are currently driven by gameplay logic (controller updates
+        // local transform directly). For dynamic convex hulls, Jolt body position is
+        // COM-based and writing it back can visually offset the mesh upward.
+        // Keep enemies ECS-driven for now and only mirror non-enemy dynamic bodies.
+        if (entity->getComponent<EnemySoldierComponent>()) continue;
 
         JPH::BodyID id(pair.second);
         if (!bodyInterface.IsAdded(id)) continue;
@@ -557,6 +581,52 @@ JPH::BodyID JoltPhysicsSystem::addDynamicConvexHull(Entity* entity, const std::v
     return id;
 }
 
+// Creates and registers a kinematic convex hull body and maps it to an ECS entity.
+JPH::BodyID JoltPhysicsSystem::addKinematicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
+                                                      glm::vec3 position, glm::vec3 eulerRotation) {
+    if (!mPhysicsSystem || localVertices.size() < 4) return JPH::BodyID();
+
+    JPH::Array<JPH::Vec3> points;
+    points.reserve(localVertices.size());
+    for (const auto& v : localVertices) {
+        points.push_back(toJPH(v));
+    }
+
+    JPH::ConvexHullShapeSettings shapeSettings(points);
+    shapeSettings.mMaxConvexRadius = 0.01f; // Prevent failure on small models
+    JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+    if (shapeResult.HasError()) {
+        std::cerr << "[JoltPhysicsSystem] Failed to create kinematic convex hull shape: "
+                  << shapeResult.GetError().c_str() << std::endl;
+        return JPH::BodyID();
+    }
+
+    JPH::BodyCreationSettings bodySettings(
+        shapeResult.Get(),
+        JPH::RVec3(toJPH(position)),
+        eulerToJPH(eulerRotation),
+        JPH::EMotionType::Kinematic,
+        Layers::ENEMY
+    );
+
+    // Lock rotation to keep upright (optional, but good for kinematic actors)
+    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
+                                JPH::EAllowedDOFs::TranslationY | 
+                                JPH::EAllowedDOFs::TranslationZ;
+    bodySettings.mAllowSleeping = false;
+
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+
+    if (!id.IsInvalid() && entity) {
+        uint32_t raw = id.GetIndexAndSequenceNumber();
+        mEntityToBody[entity] = raw;
+        mBodyToEntity[raw] = entity;
+    }
+
+    return id;
+}
+
 // Creates and registers a dynamic box body and maps it to an ECS entity.
 JPH::BodyID JoltPhysicsSystem::addDynamicBox(Entity* entity, glm::vec3 halfExtents,
                                              glm::vec3 position, glm::vec3 eulerRotation) {
@@ -592,6 +662,44 @@ JPH::BodyID JoltPhysicsSystem::addDynamicBox(Entity* entity, glm::vec3 halfExten
     return id;
 }
 
+// Creates and registers a kinematic capsule body and maps it to an ECS entity.
+JPH::BodyID JoltPhysicsSystem::addKinematicCapsule(Entity* entity, float halfHeight, float radius,
+                                                   glm::vec3 position, glm::vec3 eulerRotation) {
+    if (!mPhysicsSystem) return JPH::BodyID();
+
+    // Shift up so feet rest at entity origin (like player).
+    JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
+        JPH::Vec3(0.0f, halfHeight + radius, 0.0f),
+        JPH::Quat::sIdentity(),
+        new JPH::CapsuleShape(halfHeight, radius)
+    ).Create().Get();
+
+    JPH::BodyCreationSettings bodySettings(
+        capsuleShape,
+        JPH::RVec3(toJPH(position)),
+        eulerToJPH(eulerRotation),
+        JPH::EMotionType::Kinematic,
+        Layers::ENEMY
+    );
+
+    // Lock rotation to keep upright
+    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
+                                JPH::EAllowedDOFs::TranslationY | 
+                                JPH::EAllowedDOFs::TranslationZ;
+    bodySettings.mAllowSleeping = false;
+
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+
+    if (!id.IsInvalid() && entity) {
+        uint32_t raw = id.GetIndexAndSequenceNumber();
+        mEntityToBody[entity] = raw;
+        mBodyToEntity[raw] = entity;
+    }
+
+    return id;
+}
+
 // Removes and destroys the physics body associated with a given ECS entity.
 void JoltPhysicsSystem::removeBody(Entity* entity) {
     if (!mPhysicsSystem || !entity) return;
@@ -609,6 +717,40 @@ void JoltPhysicsSystem::removeBody(Entity* entity) {
 
     mBodyToEntity.erase(it->second);
     mEntityToBody.erase(it);
+}
+
+// Dedicated function to create the physics body for an EnemySoldier
+JPH::BodyID JoltPhysicsSystem::createEnemySoldierBody(Entity* entity, MeshRendererComponent* meshRenderer) {
+    glm::mat4 m = entity->getLocalToWorldMatrix();
+    
+    // Safe extraction without glm::decompose which can fail with tiny scales
+    glm::vec3 worldTranslation = glm::vec3(m[3]);
+    glm::vec3 worldScale(
+        glm::length(glm::vec3(m[0])),
+        glm::length(glm::vec3(m[1])),
+        glm::length(glm::vec3(m[2]))
+    );
+    
+    // For rotation, safely extract from matrix if scale is not zero
+    glm::mat3 rotMat(1.0f);
+    if (worldScale.x > 1e-6f) rotMat[0] = glm::vec3(m[0]) / worldScale.x;
+    if (worldScale.y > 1e-6f) rotMat[1] = glm::vec3(m[1]) / worldScale.y;
+    if (worldScale.z > 1e-6f) rotMat[2] = glm::vec3(m[2]) / worldScale.z;
+    glm::quat worldOrientation = glm::quat_cast(rotMat);
+    
+    const glm::vec3 eulerRotation = glm::eulerAngles(worldOrientation);
+    
+    std::vector<glm::vec3> localVertices;
+    
+    if (meshRenderer && meshRenderer->mesh) {
+        const auto& meshVertices = meshRenderer->mesh->getVertices();
+        localVertices.reserve(meshVertices.size());
+        for (const auto& v : meshVertices) {
+            localVertices.push_back(v.position * worldScale);
+        }
+    }
+
+    return addKinematicConvexHull(entity, localVertices, worldTranslation, eulerRotation);
 }
 
 // Creates and registers a dynamic player capsule body and maps it to an ECS entity.
@@ -685,16 +827,16 @@ JoltPhysicsSystem::RaycastResult JoltPhysicsSystem::raycast(glm::vec3 origin,
 
     JPH::RayCastResult hit;
     bool hasHit = false;
-
+    
     if (mPlayerEntity) {
-        auto playerIt = mEntityToBody.find(mPlayerEntity);
-        if (playerIt != mEntityToBody.end()) {
-            JPH::IgnoreSingleBodyFilter ignorePlayer(JPH::BodyID(playerIt->second));
-            hasHit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit, {}, {}, ignorePlayer);
+        auto it = mEntityToBody.find(mPlayerEntity);
+        if (it != mEntityToBody.end()) {
+            JPH::IgnoreSingleBodyFilter bodyFilter(JPH::BodyID(it->second));
+            hasHit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit, { }, { }, bodyFilter);
+        } else {
+            hasHit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit);
         }
-    }
-
-    if (!hasHit) {
+    } else {
         hasHit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit);
     }
 

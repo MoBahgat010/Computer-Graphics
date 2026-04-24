@@ -6,13 +6,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/fast_trigonometry.hpp>
-#include "../../components/camera.hpp"  
+#include "../../components/camera.hpp"
+
+namespace our { class JoltPhysicsSystem; }
 
 
 namespace our{
   class EnemySoldierControllerSystem{
     private:
     Application* app = nullptr;
+    JoltPhysicsSystem* physics = nullptr;
 
     void handleEnemySoldierBehavior(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
@@ -21,7 +24,7 @@ namespace our{
     void handleDead(EnemySoldierComponent* enemy);
     
     public:
-    void enter(Application* app);
+    void enter(Application* app, JoltPhysicsSystem* physics = nullptr);
     void update(World* world, float deltaTime);
   };
 }

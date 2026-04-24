@@ -1,6 +1,7 @@
 #include "player-controller.hpp"
 #include "../jolt-physics-system.hpp"
 #include <iostream>
+
 namespace our {
 
 
@@ -41,7 +42,7 @@ namespace our {
       handleMovement(player,playerEntity,deltaTime);
       handleLook(player,playerEntity, cameraEntity);
       handleCrouch(player, cameraEntity);
-      handleFire(player);
+      handleFire(player, cameraEntity);
       handleReload(player);
   }
 
@@ -135,10 +136,36 @@ namespace our {
     }
   }
 
-  void PlayerControllerSystem::handleFire(PlayerComponent* player){
+  void PlayerControllerSystem::handleFire(PlayerComponent* player,Entity* cameraEntity){
     auto& mouse=app->getMouse();
     if(mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT))  {
       std::cout << "fire" << std::endl;  
+      if (player->getMagazineAmmo()<=0) return;
+
+      glm::mat4 cameraToWorld = cameraEntity->getLocalToWorldMatrix();
+      
+      //  (camera position in world space)
+      glm::vec3 origin = glm::vec3(cameraToWorld * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+      
+      //  calc direction neg z by default 
+      glm::vec3 direction = glm::normalize(glm::vec3(cameraToWorld * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f)));
+
+      if (joltPhysics && joltPhysics->isInitialized()) {
+        JoltPhysicsSystem::RaycastResult result = joltPhysics->raycast(origin, direction, 50.0f);
+
+        std::cout << "raycast hit: " << result.hit << std::endl;
+        std::cout << "raycast hit entity: " << result.entity << std::endl;
+        
+        if (result.hit && result.entity) {
+          std::cout << "hit entity!" << std::endl;
+          auto* enemy = result.entity->getComponent<EnemySoldierComponent>();
+          std::cout << "enemy: " << enemy << std::endl;
+          if (enemy) {
+            enemy->decreaseHealth(player->getBulletDamage());
+            std::cout << "Dealt " << player->getBulletDamage() << " damage to enemy!" << std::endl;
+          }
+        }
+      }
       player->decreaseMagazineAmmo();
     }  
   }
