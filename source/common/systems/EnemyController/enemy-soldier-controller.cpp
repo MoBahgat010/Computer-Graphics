@@ -1,4 +1,5 @@
 #include "enemy-soldier-controller.hpp"
+#include "../jolt-physics-system.hpp"
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -7,8 +8,9 @@
 
 namespace our {
  
-  void EnemySoldierControllerSystem::enter(Application* app){
+  void EnemySoldierControllerSystem::enter(Application* app, JoltPhysicsSystem* physics){
     this->app = app;
+    this->physics = physics;
   }
 
   void EnemySoldierControllerSystem::update(World* world, float deltaTime){
@@ -144,10 +146,15 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
     std::cout << "Enemy is dead" << std::endl;   
-      //  remove from world
+      //  remove physics body first (before entity is deleted)
       Entity* enemyEntity = enemy->getOwner();
-      if(enemyEntity && enemyEntity->getWorld()) {
-          enemyEntity->getWorld()->markForRemoval(enemyEntity);
+      if(enemyEntity) {
+          if(physics) {
+              physics->removeBody(enemyEntity);
+          }
+          if(enemyEntity->getWorld()) {
+              enemyEntity->getWorld()->markForRemoval(enemyEntity);
+          }
       }
   }
 

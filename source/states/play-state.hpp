@@ -57,7 +57,7 @@ class Playstate: public our::State {
         playerController.enter(getApp(), &joltPhysics);
 
         // Initialize the enemy soldier controller system
-        enemySoldierController.enter(getApp());
+        enemySoldierController.enter(getApp(), &joltPhysics);
 
     }
 
@@ -69,6 +69,8 @@ class Playstate: public our::State {
         joltPhysics.update((float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
+        // Delete any entities that were marked for removal this frame (e.g. dead enemies)
+        world.deleteMarkedEntities();
 
         // Get a reference to the keyboard object
         auto& keyboard = getApp()->getKeyboard();
