@@ -9,6 +9,7 @@
 #include <systems/jolt-physics-system.hpp>
 #include <systems/PlayerController/player-controller.hpp>
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
+#include <systems/EnemySpawner/enemy-spawner-system.hpp>
 #include <asset-loader.hpp>
 
 #include <iostream>
@@ -23,6 +24,7 @@ class Playstate: public our::State {
     our::JoltPhysicsSystem joltPhysics;
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
+    our::EnemySpawnerSystem enemySpawner;
     our::Entity* getCameraEntity() {
         for(auto entity : world.getEntities()) {
             if(entity->getComponent<our::CameraComponent>()) {
@@ -47,6 +49,11 @@ class Playstate: public our::State {
         cameraController.enter(getApp(), &joltPhysics);
         // Initialize Jolt physics (Part 1 integration milestone)
         joltPhysics.init();
+
+        if(config.contains("enemySpawner")) {
+            enemySpawner.spawnEnemies(&world, config["enemySpawner"], &joltPhysics);
+        }
+
         // Build physics bodies/character from the current ECS world
         joltPhysics.buildFromWorld(&world);
         // Then we initialize the renderer
