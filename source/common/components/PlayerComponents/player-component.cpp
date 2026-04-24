@@ -35,6 +35,10 @@ namespace our {
     return speed;
   }
 
+  float PlayerComponent::getMouseSensitivity() const {
+    return mouseSensitivity;
+  }
+
 
   // setters
   void PlayerComponent::setIsCrouch(bool isCrouch){

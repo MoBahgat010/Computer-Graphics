@@ -5,6 +5,7 @@ namespace our {
 
   void PlayerControllerSystem::enter(Application* app){
       this->app = app;
+      app->getMouse().lockMouse(app->getWindow());
   }
 
 
@@ -22,6 +23,7 @@ namespace our {
       }
       if(!player || !playerEntity) return;
       handleMovement(player,playerEntity,deltaTime);
+      handleLook(player,playerEntity);
       handleCrouch(player,playerEntity);
       handleFire(player);
       handleReload(player);
@@ -63,6 +65,21 @@ namespace our {
     }
   }
 
+  void PlayerControllerSystem::handleLook(PlayerComponent* player, Entity* playerEntity){
+    auto& mouse=app->getMouse();
+
+    glm::vec2 delta = mouse.getMouseDelta();
+
+    glm::vec3& rotation = playerEntity->localTransform.rotation;
+    rotation.y -= delta.x * player->getMouseSensitivity();
+    rotation.x -= delta.y * player->getMouseSensitivity();
+    // Clamp pitch: don't go beyond straight up or down
+    if(rotation.x < -glm::half_pi<float>() * 0.99f) rotation.x = -glm::half_pi<float>() * 0.99f;
+    if(rotation.x >  glm::half_pi<float>() * 0.99f) rotation.x =  glm::half_pi<float>() * 0.99f;
+    rotation.y = glm::wrapAngle(rotation.y);
+
+  }
+
 
   void PlayerControllerSystem::handleCrouch(PlayerComponent* player, Entity* playerEntity){
     auto& keyboard = app->getKeyboard();
@@ -97,6 +114,10 @@ namespace our {
       std::cout << "reload" << std::endl;  
       player->reloadWeapon();
     }
+  }
+
+  void PlayerControllerSystem::exit(){
+      app->getMouse().unlockMouse(app->getWindow());
   }
 
 }

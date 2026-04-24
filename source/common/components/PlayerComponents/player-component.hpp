@@ -15,6 +15,8 @@ class PlayerComponent : public Component {
   bool isCrouch = false;
   bool isDead = false;
   float speed = 5.0f;
+  float mouseSensitivity = 0.003f;
+
   
   public:
     static std::string getID() { return "Player"; }
@@ -30,6 +32,7 @@ class PlayerComponent : public Component {
     bool getIsCrouch()  const;
     bool getIsDead() const;
     float getSpeed() const;
+    float getMouseSensitivity() const;
 
 
     // setters 
