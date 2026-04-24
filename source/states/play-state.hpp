@@ -79,6 +79,65 @@ class Playstate: public our::State {
         }
     }
 
+    void drawMinimap(our::Entity* playerEntity, ImVec2 ammoPos) {
+        if (!playerEntity) return;
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImVec2 minimapSize(180.0f, 180.0f);
+        ImVec2 minimapPos(io.DisplaySize.x - 200.0f, ammoPos.y - minimapSize.y - 30.0f);
+        
+        // Map Background
+        ImGui::GetBackgroundDrawList()->AddRectFilled(
+            minimapPos, 
+            ImVec2(minimapPos.x + minimapSize.x, minimapPos.y + minimapSize.y), 
+            IM_COL32(10, 15, 20, 220), 5.0f);
+
+        // Map Border
+        ImGui::GetBackgroundDrawList()->AddRect(
+            minimapPos, 
+            ImVec2(minimapPos.x + minimapSize.x, minimapPos.y + minimapSize.y), 
+            IM_COL32(0, 255, 200, 100), 5.0f, 0, 2.0f);
+
+        ImVec2 minimapCenter(minimapPos.x + minimapSize.x * 0.5f, minimapPos.y + minimapSize.y * 0.5f);
+        
+        // Player Dot (Blue)
+        ImGui::GetBackgroundDrawList()->AddCircleFilled(minimapCenter, 5.0f, IM_COL32(0, 150, 255, 255));
+        // Inner glow for player
+        ImGui::GetBackgroundDrawList()->AddCircleFilled(minimapCenter, 2.0f, IM_COL32(200, 255, 255, 255));
+
+        // View direction cone (FOV Arc)
+        float yaw = playerEntity->localTransform.rotation.y;
+        float screen_angle = -yaw - glm::half_pi<float>(); // Map 3D rotation to 2D screen angle
+        float fov = glm::radians(70.0f); // 70 degree view cone
+        float arcRadius = 35.0f; // Length of the view cone
+        
+        ImGui::GetBackgroundDrawList()->PathLineTo(minimapCenter);
+        ImGui::GetBackgroundDrawList()->PathArcTo(minimapCenter, arcRadius, screen_angle - fov*0.5f, screen_angle + fov*0.5f, 15);
+        ImGui::GetBackgroundDrawList()->PathFillConvex(IM_COL32(255, 255, 255, 50)); // Semi-transparent white cone
+
+        float mapScale = 3.0f; // 1 meter in 3D = 3 pixels on map
+        glm::vec3 pPos = playerEntity->localTransform.position;
+
+        // Enemy Dots (Red)
+        for (auto entity : world.getEntities()) {
+            if (entity->getComponent<our::EnemySoldierComponent>()) {
+                glm::vec3 ePos = entity->localTransform.position;
+                float dx = ePos.x - pPos.x;
+                float dz = ePos.z - pPos.z; // Z is forward/backward in the world
+
+                float mapDx = dx * mapScale;
+                float mapDz = dz * mapScale;
+
+                // Check if within minimap bounds to avoid drawing outside the box
+                if (mapDx > -minimapSize.x*0.45f && mapDx < minimapSize.x*0.45f &&
+                    mapDz > -minimapSize.y*0.45f && mapDz < minimapSize.y*0.45f) {
+                    ImVec2 enemyMapPos(minimapCenter.x + mapDx, minimapCenter.y + mapDz);
+                    ImGui::GetBackgroundDrawList()->AddCircleFilled(enemyMapPos, 4.0f, IM_COL32(255, 50, 50, 255));
+                }
+            }
+        }
+    }
+
     void onImmediateGui() override {
         ImGui::SetNextWindowPos(ImVec2(20.0f, 20.0f), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(340.0f, 120.0f), ImGuiCond_FirstUseEver);
@@ -103,9 +162,13 @@ class Playstate: public our::State {
 
         // ── Player HUD ───────────────────────────────────────────────────────
         our::PlayerComponent* player = nullptr;
+        our::Entity* playerEntity = nullptr;
         for(auto entity : world.getEntities()) {
             player = entity->getComponent<our::PlayerComponent>();
-            if(player) break;
+            if(player) {
+                playerEntity = entity;
+                break;
+            }
         }
 
         if(player && !player->getIsDead()) {
@@ -189,6 +252,9 @@ class Playstate: public our::State {
                 }
             }
             ImGui::End();
+
+            // ── MINIMAP (Above Ammo Counter) ─────────────────────────────────
+            drawMinimap(playerEntity, ammoPos);
         }
         
         // ── Crosshair Overlay ────────────────────────────────────────────────

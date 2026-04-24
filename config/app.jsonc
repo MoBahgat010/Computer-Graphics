@@ -251,11 +251,6 @@
                         "material": "robot"
                     },
                     {
-                        "type": "Collider",
-                        "halfExtents": [0.5, 1.0, 0.5],
-                        "centerOffset": [0.0, 0.5, 0.0]
-                    },
-                    {
                         "type": "EnemySoldier",
                         "health": 100,
                         "damage": 5,
