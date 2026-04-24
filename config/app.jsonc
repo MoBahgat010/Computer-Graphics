@@ -10,7 +10,7 @@
         "fullscreen": false
     },
     "scene": {
-        "renderer":{
+        "renderer": {
             "postprocess": "assets/shaders/postprocess/vignette.frag"
         },
         "assets": {
@@ -28,11 +28,8 @@
                     "fs": "assets/shaders/skinned.frag"
                 }
             },
-            "textures":{
-                "fallback": "assets/textures/grass_ground_d.jpg",
-                "grass": "assets/textures/grass_ground_d.jpg",
-                "monkey": "assets/textures/monkey.png",
-                "moon": "assets/textures/moon.jpg"
+            "textures": {
+                "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
                 "cube": "assets/models/cube.obj",
@@ -42,22 +39,23 @@
                 "city": "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/survival_character.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx"
+                // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx"
             },
-            "samplers":{
-                "default":{}
+            "samplers": {
+                "default": {}
             },
-            "materials":{
-                "main-map":{
+            "materials": {
+                "main-map": {
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
-                        "faceCulling":{
+                        "faceCulling": {
                             "enabled": false
                         },
-                        "depthTesting":{
+                        "depthTesting": {
                             "enabled": true
                         }
                     },
@@ -170,6 +168,26 @@
                     "texture": "moon",
                     "sampler": "default"
                 }
+                // "room": {
+                //     "type": "textured",
+                //     "shader": "textured",
+                //     "pipelineState": {
+                //         "faceCulling": {
+                //             "enabled": false
+                //         },
+                //         "depthTesting": {
+                //             "enabled": true
+                //         }
+                //     },
+                //     "tint": [
+                //         1,
+                //         1,
+                //         1,
+                //         1
+                //     ],
+                //     "texture": "moon",
+                //     "sampler": "default"
+                // }
             }
         },
         "enemySpawner": {
@@ -261,6 +279,31 @@
                 "position": [-16.1855, 0.119991, -0.577851],
                 "rotation": [0.0, 0.0, 0.0]
             }
+            // {
+            //     "name": "Room Model",
+            //     "position": [
+            //         0,
+            //         0,
+            //         0
+            //     ],
+            //     "rotation": [
+            //         0,
+            //         0,
+            //         0
+            //     ],
+            //     "scale": [
+            //         1,
+            //         1,
+            //         1
+            //     ],
+            //     "components": [
+            //         {
+            //             "type": "Mesh Renderer",
+            //             "mesh": "room",
+            //             "material": "room"
+            //         }
+            //     ]
+            // }
         ]
     }
 }
