@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <array>
 #include <random>
+#include <audio/audio-player.hpp>
 
 class GameOverState : public our::State {
     struct QuoteEntry {
@@ -24,11 +25,13 @@ class GameOverState : public our::State {
     }};
 
     int selectedQuote = 0;
+    our::AudioPlayer gameOverAudioPlayer;
 
     void onInitialize() override {
         static std::mt19937 rng(std::random_device{}());
         std::uniform_int_distribution<int> pick(0, (int)quotes.size() - 1);
         selectedQuote = pick(rng);
+        gameOverAudioPlayer.play("assets/audio/game/game_over_sound.mp3", 0.1f);
     }
 
     void onDraw(double deltaTime) override {
