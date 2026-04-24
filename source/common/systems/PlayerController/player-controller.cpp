@@ -72,11 +72,11 @@ namespace our {
       glm::vec3& position = playerEntity->localTransform.position;
       if(playerIsCrouch){
         // stand up
-        position.y += 0.5f;
+        position.y *= 2;
         player->setSpeed(5.0f);
       } else {
         // crouch 
-        position.y -= 0.5f;
+        position.y /= 2;
         player->setSpeed(2.5f);
       }
       player->setIsCrouch(!playerIsCrouch);
