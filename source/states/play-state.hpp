@@ -7,6 +7,7 @@
 #include <systems/free-camera-controller.hpp>
 #include <systems/movement.hpp>
 #include <systems/PlayerController/player-controller.hpp>
+#include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <asset-loader.hpp>
 
 #include <iostream>
@@ -19,6 +20,7 @@ class Playstate: public our::State {
     our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
     our::PlayerControllerSystem playerController;
+    our::EnemySoldierControllerSystem enemySoldierController;
     our::Entity* getCameraEntity() {
         for(auto entity : world.getEntities()) {
             if(entity->getComponent<our::CameraComponent>()) {
@@ -48,12 +50,16 @@ class Playstate: public our::State {
         // Initialize the player controller system
         playerController.enter(getApp());
 
+        // Initialize the enemy soldier controller system
+        enemySoldierController.enter(getApp());
+
     }
 
     void onDraw(double deltaTime) override {
         // Here, we just run a bunch of systems to control the world logic
         movementSystem.update(&world, (float)deltaTime);
         playerController.update(&world, (float)deltaTime);
+        enemySoldierController.update(&world, (float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
 
