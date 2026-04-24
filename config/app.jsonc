@@ -181,13 +181,6 @@
                         "fovY": 75
                     },
                     {
-                        "type": "Free Camera Controller",
-                        "rotationSensitivity": 0.0035,
-                        "positionSensitivity": [8, 8, 8],
-                        "fovSensitivity": 0.08,
-                        "speedupFactor": 3.5
-                    },
-                    {
                         "type": "Player"
                     }
                 ]
