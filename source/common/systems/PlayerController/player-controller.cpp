@@ -22,9 +22,19 @@ namespace our {
         }
       }
       if(!player || !playerEntity) return;
+      Entity* cameraEntity = nullptr;
+      for(auto entity : world->getEntities()) {
+        if(entity->parent == playerEntity && entity->getComponent<CameraComponent>()) {
+            cameraEntity = entity;
+            break;
+        }
+      }
+
+      if(!cameraEntity) return;
+
       handleMovement(player,playerEntity,deltaTime);
-      handleLook(player,playerEntity);
-      handleCrouch(player,playerEntity);
+      handleLook(player,playerEntity, cameraEntity);
+      handleCrouch(player, cameraEntity);
       handleFire(player);
       handleReload(player);
   }
@@ -65,35 +75,36 @@ namespace our {
     }
   }
 
-  void PlayerControllerSystem::handleLook(PlayerComponent* player, Entity* playerEntity){
+  void PlayerControllerSystem::handleLook(PlayerComponent* player, Entity* playerEntity, Entity* cameraEntity){
     auto& mouse=app->getMouse();
 
     glm::vec2 delta = mouse.getMouseDelta();
 
     glm::vec3& rotation = playerEntity->localTransform.rotation;
+    glm::vec3& cameraRotation = cameraEntity->localTransform.rotation;
     rotation.y -= delta.x * player->getMouseSensitivity();
-    rotation.x -= delta.y * player->getMouseSensitivity();
+    cameraRotation.x -= delta.y * player->getMouseSensitivity();
     // Clamp pitch: don't go beyond straight up or down
-    if(rotation.x < -glm::half_pi<float>() * 0.99f) rotation.x = -glm::half_pi<float>() * 0.99f;
-    if(rotation.x >  glm::half_pi<float>() * 0.99f) rotation.x =  glm::half_pi<float>() * 0.99f;
+    if(cameraRotation.x < -glm::half_pi<float>() * 0.99f) cameraRotation.x = -glm::half_pi<float>() * 0.99f;
+    if(cameraRotation.x >  glm::half_pi<float>() * 0.99f) cameraRotation.x =  glm::half_pi<float>() * 0.99f;
     rotation.y = glm::wrapAngle(rotation.y);
 
   }
 
 
-  void PlayerControllerSystem::handleCrouch(PlayerComponent* player, Entity* playerEntity){
+  void PlayerControllerSystem::handleCrouch(PlayerComponent* player,Entity* cameraEntity){
     auto& keyboard = app->getKeyboard();
     
     if (keyboard.justPressed(GLFW_KEY_C) ){
       bool playerIsCrouch = player->getIsCrouch();
-      glm::vec3& position = playerEntity->localTransform.position;
+      glm::vec3& cameraPosition = cameraEntity->localTransform.position;
       if(playerIsCrouch){
-        // stand up
-        position.y *= 2;
+        // stand up → restore head height
+        cameraPosition.y *=2;
         player->setSpeed(5.0f);
       } else {
-        // crouch 
-        position.y /= 2;
+        // crouch → lower head height
+        cameraPosition.y /=2;
         player->setSpeed(2.5f);
       }
       player->setIsCrouch(!playerIsCrouch);

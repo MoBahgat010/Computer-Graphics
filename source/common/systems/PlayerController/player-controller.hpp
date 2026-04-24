@@ -5,13 +5,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/fast_trigonometry.hpp>
+#include "../../components/camera.hpp"  
+
+
 namespace our {
   class PlayerControllerSystem {
     private:
     Application* app = nullptr;
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
-    void handleLook(PlayerComponent* player, Entity* playerEntity);
-    void handleCrouch(PlayerComponent* player, Entity* playerEntity);
+    void handleLook(PlayerComponent* player, Entity* playerEntity,Entity* cameraEntity);
+    void handleCrouch(PlayerComponent* player,Entity* cameraEntity);
     void handleFire(PlayerComponent* player);
     void handleReload(PlayerComponent* player);
 

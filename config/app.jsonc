@@ -2,7 +2,7 @@
     "start-scene": "start-screen",
     "window":
     {
-        "title":"Mohamed Ahmed - 9230731",
+        "title":"Carrer Not Found 404",
         "size":{
             "width":1920,
             "height":1080
@@ -171,17 +171,41 @@
         },
         "world":[
             {
+                "name": "Player",
                 "position": [4.28409, 0.24859, -0.395433],
                 "rotation": [0, 180, 0],
                 "components": [
                     {
-                        "type": "Camera",
-                        "near": 0.05,
-                        "far": 3000,
-                        "fovY": 75
+                        "type": "Player"
+                        
+                    }
+                ],
+                "children": [
+                    {
+                        "name": "Camera",
+                        "position": [0, 0.249, 0],
+                        "rotation": [0, 0, 0],
+                        "components": [
+                            {
+                                "type": "Camera",
+                                "near": 0.05,
+                                "far": 3000,
+                                "fovY": 75
+                            }
+                        ]
                     },
                     {
-                        "type": "Player"
+                        "name": "Male Character Model",
+                        "position": [0, 0, 1],
+                        "rotation": [0, 180, 0],
+                        "scale": [0.005, 0.005, 0.005],
+                        "components": [
+                            {
+                                "type": "Mesh Renderer",
+                                "mesh": "male_character",
+                                "material": "male_character"
+                            }
+                        ]
                     }
                 ]
             },
@@ -194,31 +218,6 @@
                         "type": "Mesh Renderer",
                         "mesh": "city",
                         "material": "city"
-                    }
-                ]
-            },
-            {
-                "name": "Male Character Model",
-                "position": [
-                    4.28409,
-                    0.24859,
-                    -0.395433
-                ],
-                "rotation": [
-                    0,
-                    45,
-                    0
-                ],
-                "scale": [
-                    0.01,
-                    0.01,
-                    0.01
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "male_character",
-                        "material": "male_character"
                     }
                 ]
             }
