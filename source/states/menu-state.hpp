@@ -56,7 +56,7 @@ class Menustate: public our::State {
         menuMaterial->shader->attach("assets/shaders/textured.frag", GL_FRAGMENT_SHADER);
         menuMaterial->shader->link();
         // Then we load the menu texture
-        menuMaterial->texture = our::texture_utils::loadImage("assets/textures/menu.png");
+        menuMaterial->texture = our::texture_utils::loadImage("assets/images/startScreen/GameStartMenu.png");
         // Initially, the menu material will be black, then it will fade in
         menuMaterial->tint = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -99,13 +99,15 @@ class Menustate: public our::State {
         // - The argument list () which is the arguments that the lambda should receive when it is called.
         //      We leave it empty since button actions receive no input.
         // - The body {} which contains the code to be executed. 
-        buttons[0].position = {830.0f, 607.0f};
-        buttons[0].size = {400.0f, 33.0f};
-        buttons[0].action = [this](){this->getApp()->changeState("play");};
+        // "Continue" button — resumes the game
+        buttons[0].position = {760.0f, 750.0f};
+        buttons[0].size     = {400.0f, 55.0f};
+        buttons[0].action   = [this](){ this->getApp()->changeState("play"); };
 
-        buttons[1].position = {830.0f, 644.0f};
-        buttons[1].size = {400.0f, 33.0f};
-        buttons[1].action = [this](){this->getApp()->close();};
+        // "Exit" button — closes the application
+        buttons[1].position = {760.0f, 825.0f};
+        buttons[1].size     = {400.0f, 55.0f};
+        buttons[1].action   = [this](){ this->getApp()->close(); };
     }
 
     void onDraw(double deltaTime) override {
@@ -162,15 +164,48 @@ class Menustate: public our::State {
         menuMaterial->shader->set("transform", VP*M);
         rectangle->draw();
 
-        // For every button, check if the mouse is inside it. If the mouse is inside, we draw the highlight rectangle over it.
-        for(auto& button: buttons){
-            if(button.isInside(mousePosition)){
-                highlightMaterial->setup();
-                highlightMaterial->shader->set("transform", VP*button.getLocalToWorld());
-                rectangle->draw();
+
+        
+    }
+
+    void onImmediateGui() override {
+        // Style the buttons to match the dark cyberpunk theme
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(40.0f, 14.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.12f, 0.05f, 0.05f, 0.85f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,  ImVec4(0.60f, 0.10f, 0.10f, 0.95f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,   ImVec4(0.80f, 0.15f, 0.15f, 1.00f));
+        ImGui::PushStyleColor(ImGuiCol_Text,           ImVec4(0.95f, 0.90f, 0.85f, 1.00f));
+
+        // Center the buttons on screen
+        float btnWidth  = 280.0f;
+        float btnHeight = 48.0f;
+        float centerX   = (1920.0f - btnWidth) * 0.5f;
+
+        // "Continue" button
+        ImGui::SetNextWindowBgAlpha(0.0f);
+        ImGui::SetCursorPos(ImVec2(centerX, 750.0f));
+        ImGui::SetNextWindowPos(ImVec2(centerX, 750.0f));
+        ImGui::SetNextWindowSize(ImVec2(btnWidth + 20.0f, 130.0f));
+        if(ImGui::Begin("##MenuButtons", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoBackground)) {
+
+            if(ImGui::Button("CONTINUE", ImVec2(btnWidth, btnHeight))) {
+                getApp()->changeState("play");
+            }
+
+            ImGui::Spacing();
+
+            if(ImGui::Button("EXIT", ImVec2(btnWidth, btnHeight))) {
+                getApp()->close();
             }
         }
-        
+        ImGui::End();
+
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar(2);
     }
 
     void onDestroy() override {
