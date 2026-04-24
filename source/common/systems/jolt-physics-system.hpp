@@ -179,7 +179,10 @@ public:
                                      glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     void        removeBody(Entity* entity);
 
-    void createPlayerBody(glm::vec3 startPos);
+    void createPlayerBody(glm::vec3 startPos,
+                          float capsuleHalfHeight = 0.4f,
+                          float capsuleRadius = 0.1f,
+                          float capsuleCenterY = 0.5f);
     void setPlayerEntity(Entity* entity) { mPlayerEntity = entity; }
     void setPlayerVelocity(const glm::vec3& velocity) { mPendingPlayerVelocity = velocity; }
 

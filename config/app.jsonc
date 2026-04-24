@@ -180,7 +180,11 @@
                 "components": [
                     {
                         "type": "Player"
-                        
+                    },
+                    {
+                        "type": "Collider",
+                        "halfExtents": [0.11, 0.12, 0.11],
+                        "centerOffset": [0.0, 0.0, 0.0]
                     }
                 ],
                 "children": [
@@ -253,7 +257,7 @@
                     {
                         "type": "EnemySoldier",
                         "health": 100,
-                        "damage": 5,
+                        "damage": 0.5,
                         "speed": 1.5,
                         "attackRange": 1.5,
                         "detectionRange": 5.0,
