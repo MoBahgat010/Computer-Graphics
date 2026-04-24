@@ -3,6 +3,7 @@
 #include "../ecs/world.hpp"
 #include "../components/camera.hpp"
 #include "../components/free-camera-controller.hpp"
+#include "../components/PlayerComponents/player-component.hpp"
 #include "jolt-physics-system.hpp"
 
 #include "../application.hpp"
@@ -96,7 +97,7 @@ namespace our
             // If the LEFT SHIFT key is pressed, we multiply the position sensitivity by the speed up factor
             if(app->getKeyboard().isPressed(GLFW_KEY_LEFT_SHIFT)) current_sensitivity *= controller->speedupFactor;
 
-            // Build keyboard movement vector from WASD/QE
+            // Build keyboard movement vector from arrows
             glm::vec3 desiredVelocity(0.0f);
 
             // Ground-locked horizontal movement for FPS controls.
@@ -105,14 +106,10 @@ namespace our
             glm::vec3 flatRight = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
             if(glm::length(flatRight) < 1e-6f) flatRight = glm::vec3(1.0f, 0.0f, 0.0f);
 
-            if(app->getKeyboard().isPressed(GLFW_KEY_W)) desiredVelocity += flatFront * current_sensitivity.z;
-            if(app->getKeyboard().isPressed(GLFW_KEY_S)) desiredVelocity -= flatFront * current_sensitivity.z;
-            if(app->getKeyboard().isPressed(GLFW_KEY_D)) desiredVelocity += flatRight * current_sensitivity.x;
-            if(app->getKeyboard().isPressed(GLFW_KEY_A)) desiredVelocity -= flatRight * current_sensitivity.x;
-
-            // Optional vertical fly controls (kept for free-cam fallback).
-            if(app->getKeyboard().isPressed(GLFW_KEY_Q)) desiredVelocity += up * current_sensitivity.y;
-            if(app->getKeyboard().isPressed(GLFW_KEY_E)) desiredVelocity -= up * current_sensitivity.y;
+            if(app->getKeyboard().isPressed(GLFW_KEY_UP)) desiredVelocity += flatFront * current_sensitivity.z;
+            if(app->getKeyboard().isPressed(GLFW_KEY_DOWN)) desiredVelocity -= flatFront * current_sensitivity.z;
+            if(app->getKeyboard().isPressed(GLFW_KEY_RIGHT)) desiredVelocity += flatRight * current_sensitivity.x;
+            if(app->getKeyboard().isPressed(GLFW_KEY_LEFT)) desiredVelocity -= flatRight * current_sensitivity.x;
 
             // Normalize diagonal movement so speed is consistent.
             float len = glm::length(desiredVelocity);
@@ -121,7 +118,8 @@ namespace our
                 desiredVelocity = (desiredVelocity / len) * maxSpeed;
             }
 
-            if(joltPhysics && joltPhysics->isInitialized()) {
+            bool canDriveWithPhysics = joltPhysics && joltPhysics->isInitialized() && (entity->getComponent<PlayerComponent>() != nullptr);
+            if(canDriveWithPhysics) {
                 // Drive the player using Jolt character velocity.
                 joltPhysics->setPlayerEntity(entity);
                 joltPhysics->setPlayerVelocity(desiredVelocity);

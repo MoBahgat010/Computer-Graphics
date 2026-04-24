@@ -137,6 +137,7 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
     // - On hull build failure, fallback to box shapes from ColliderComponent.
     for (Entity* entity : world->getEntities()) {
         if (!entity || isDescendantOfPlayer(entity)) continue;
+        if (mEntityToBody.find(entity) != mEntityToBody.end()) continue;
 
         auto* collider = entity->getComponent<ColliderComponent>();
         auto* enemySoldier = entity->getComponent<EnemySoldierComponent>();

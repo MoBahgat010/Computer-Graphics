@@ -3,6 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <array>
+#include <random>
 
 
 
@@ -146,6 +148,15 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
     std::cout << "Enemy is dead" << std::endl;   
+      static const std::array<const char*, 3> deathVoicelines = {
+          "assets/audio/game/Got'em tango down..mp3",
+          "assets/audio/game/He's down, Goodnight.mp3",
+          "assets/audio/game/Target eliminated..mp3"
+      };
+      static std::mt19937 rng(std::random_device{}());
+      std::uniform_int_distribution<int> pick(0, (int)deathVoicelines.size() - 1);
+      enemyDeathAudioPlayer.play(deathVoicelines[pick(rng)], 0.7f);
+
       //  remove physics body first (before entity is deleted)
       Entity* enemyEntity = enemy->getOwner();
       if(enemyEntity) {
