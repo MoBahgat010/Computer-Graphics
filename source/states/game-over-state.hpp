@@ -34,6 +34,10 @@ class GameOverState : public our::State {
         gameOverAudioPlayer.play("assets/audio/game/game_over_sound.mp3", 0.1f);
     }
 
+    void onDestroy() override {
+        gameOverAudioPlayer.stop();
+    }
+
     void onDraw(double deltaTime) override {
         // Cinematic pitch-black background.
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
