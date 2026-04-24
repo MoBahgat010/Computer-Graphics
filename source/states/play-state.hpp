@@ -52,7 +52,7 @@ class Playstate: public our::State {
         renderer.initialize(size, config["renderer"]);
 
         // Initialize the player controller system
-        playerController.enter(getApp());
+        playerController.enter(getApp(), &joltPhysics);
 
     }
 

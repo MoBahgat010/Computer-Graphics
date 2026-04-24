@@ -9,10 +9,11 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
-#include <Jolt/Physics/Character/CharacterVirtual.h>
+#include <Jolt/Physics/Body/AllowedDOFs.h>
 #include <Jolt/Physics/EActivation.h>
 
 #include "systems/jolt-physics-system.hpp"
@@ -22,7 +23,7 @@
 #include "components/free-camera-controller.hpp"
 #include "components/mesh-renderer.hpp"
 #include "components/movement.hpp"
-#include "components/player.hpp"
+#include "components/PlayerComponents/player-component.hpp"
 
 #include <iostream>
 #include <cstdarg>
@@ -64,8 +65,6 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
     for (const auto& pair : mEntityToBody) existing.push_back(pair.first);
     for (Entity* entity : existing) removeBody(entity);
 
-    delete mPlayerCharacter;
-    mPlayerCharacter = nullptr;
     mPlayerEntity = nullptr;
     mPendingPlayerVelocity = glm::vec3(0.0f);
 
@@ -97,7 +96,7 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
         glm::quat worldOrientation;
         glm::vec3 worldTranslation;
         glm::decompose(m, worldScale, worldOrientation, worldTranslation, skew, perspective);
-        createPlayerCharacter(worldTranslation);
+        createPlayerBody(worldTranslation);
     }
 
     auto isDescendantOfPlayer = [&](Entity* entity) {
@@ -136,8 +135,10 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
         const glm::vec3 eulerRotation = glm::eulerAngles(worldOrientation);
 
-        // Try convex hull for any mesh-backed collider entity.
-        if (meshRenderer && meshRenderer->mesh) {
+        // Try convex hull only for moving mesh-backed entities.
+        // For large static concave levels (city/map), a convex hull is usually wrong
+        // and can enclose empty space, causing bad spawn/collision behavior.
+        if (isMoving && meshRenderer && meshRenderer->mesh) {
             const auto& meshVertices = meshRenderer->mesh->getVertices();
             std::vector<glm::vec3> hullVertices;
             hullVertices.reserve(meshVertices.size());
@@ -151,6 +152,24 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
             if (!id.IsInvalid()) {
                 if (isMoving) ++dynamicBodies;
                 else ++staticBodies;
+                continue;
+            }
+        }
+
+        // For static mesh-backed colliders, use a triangle mesh shape for accurate map collision.
+        if (!isMoving && meshRenderer && meshRenderer->mesh) {
+            const auto& meshVertices = meshRenderer->mesh->getVertices();
+            const auto& meshIndices = meshRenderer->mesh->getIndices();
+
+            std::vector<glm::vec3> triangleVertices;
+            triangleVertices.reserve(meshVertices.size());
+            for (const auto& v : meshVertices) {
+                triangleVertices.push_back(v.position * worldScale);
+            }
+
+            JPH::BodyID id = addStaticTriangleMesh(entity, triangleVertices, meshIndices, worldTranslation, eulerRotation);
+            if (!id.IsInvalid()) {
+                ++staticBodies;
                 continue;
             }
         }
@@ -231,26 +250,21 @@ void JoltPhysicsSystem::update(float deltaTime) {
         }
     }
 
-    if (mPlayerCharacter) {
-        mPlayerCharacter->SetLinearVelocity(toJPH(mPendingPlayerVelocity));
+    if (mPlayerEntity) {
+        auto it = mEntityToBody.find(mPlayerEntity);
+        if (it != mEntityToBody.end()) {
+            JPH::BodyID id(it->second);
+            JPH::Vec3 currentVel = bodyInterface.GetLinearVelocity(id);
+            bodyInterface.SetLinearVelocity(id, JPH::Vec3(
+                mPendingPlayerVelocity.x,
+                currentVel.GetY(),
+                mPendingPlayerVelocity.z
+            ));
+        }
     }
 
     // Step 2: Physics step
     mPhysicsSystem->Update(dt, 1, mTempAllocator, mJobSystem);
-
-    if (mPlayerCharacter) {
-        JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
-        mPlayerCharacter->ExtendedUpdate(
-            dt,
-            mPhysicsSystem->GetGravity(),
-            updateSettings,
-            mPhysicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::PLAYER),
-            mPhysicsSystem->GetDefaultLayerFilter(Layers::PLAYER),
-            {},
-            {},
-            *mTempAllocator
-        );
-    }
 
     // Step 3: Sync Jolt -> ECS (non-static rigid bodies + player character)
     for (auto& pair : mEntityToBody) {
@@ -265,8 +279,14 @@ void JoltPhysicsSystem::update(float deltaTime) {
         }
     }
 
-    if (mPlayerCharacter && mPlayerEntity) {
-        mPlayerEntity->localTransform.position = toGLM(mPlayerCharacter->GetPosition());
+    // Sync player entity position specifically
+    if (mPlayerEntity) {
+        auto it = mEntityToBody.find(mPlayerEntity);
+        if (it != mEntityToBody.end()) {
+            JPH::BodyID id(it->second);
+            JPH::RVec3 pos = bodyInterface.GetPosition(id);
+            mPlayerEntity->localTransform.position = toGLM(pos);
+        }
     }
 }
 
@@ -284,8 +304,6 @@ void JoltPhysicsSystem::shutdown() {
     mEntityToBody.clear();
     mBodyToEntity.clear();
 
-    delete mPlayerCharacter;
-    mPlayerCharacter = nullptr;
     mPlayerEntity = nullptr;
     mPendingPlayerVelocity = glm::vec3(0.0f);
 
@@ -298,6 +316,112 @@ void JoltPhysicsSystem::shutdown() {
     JPH::Factory::sInstance = nullptr;
 
     std::cout << "[JoltPhysicsSystem] Shutdown complete." << std::endl;
+}
+
+// Creates and registers a static triangle-mesh body and maps it to an ECS entity.
+JPH::BodyID JoltPhysicsSystem::addStaticTriangleMesh(Entity* entity,
+                                                     const std::vector<glm::vec3>& localVertices,
+                                                     const std::vector<unsigned int>& indices,
+                                                     glm::vec3 position,
+                                                     glm::vec3 eulerRotation) {
+    if (!mPhysicsSystem || localVertices.size() < 3 || indices.size() < 3) return JPH::BodyID();
+
+    JPH::MeshShapeSettings shapeSettings;
+    shapeSettings.mTriangleVertices.reserve(localVertices.size());
+    for (const auto& v : localVertices) {
+        shapeSettings.mTriangleVertices.push_back(JPH::Float3(v.x, v.y, v.z));
+    }
+
+    shapeSettings.mIndexedTriangles.reserve(indices.size() / 3);
+    size_t preFilterSkipped = 0;
+
+    for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+        const JPH::uint32 i0 = static_cast<JPH::uint32>(indices[i]);
+        const JPH::uint32 i1 = static_cast<JPH::uint32>(indices[i + 1]);
+        const JPH::uint32 i2 = static_cast<JPH::uint32>(indices[i + 2]);
+        
+        if (i0 >= localVertices.size() || i1 >= localVertices.size() || i2 >= localVertices.size() ||
+            i0 == i1 || i0 == i2 || i1 == i2) {
+            ++preFilterSkipped;
+            continue;
+        }
+
+        const glm::vec3& v0 = localVertices[i0];
+        const glm::vec3& v1 = localVertices[i1];
+        const glm::vec3& v2 = localVertices[i2];
+        if (!std::isfinite(v0.x) || !std::isfinite(v1.x) || !std::isfinite(v2.x)) {
+            ++preFilterSkipped;
+            continue;
+        }
+
+        // Restoring the sliver-triangle filter we agreed upon (threshold 1e-8f) to fix the chairs
+        const glm::vec3 edge1 = v1 - v0;
+        const glm::vec3 edge2 = v2 - v0;
+        const glm::vec3 cross = glm::cross(edge1, edge2);
+        const float crossLenSq = glm::dot(cross, cross);
+        if (crossLenSq < 1e-8f) {
+            ++preFilterSkipped;
+            continue;
+        }
+
+        shapeSettings.mIndexedTriangles.push_back(JPH::IndexedTriangle(i0, i1, i2));
+    }
+
+    if (preFilterSkipped > 0) {
+        std::cout << "[JoltPhysicsSystem] Static mesh collider: pre-filter skipped "
+                  << preFilterSkipped << " invalid triangles." << std::endl;
+    }
+
+    if (shapeSettings.mIndexedTriangles.empty()) {
+        std::cerr << "[JoltPhysicsSystem] Failed to create static mesh shape: no valid triangles after pre-filter." << std::endl;
+        return JPH::BodyID();
+    }
+
+    const size_t triCountBefore = shapeSettings.mIndexedTriangles.size();
+
+    // Let Jolt remove duplicate and degenerate triangles in one efficient pass.
+    shapeSettings.Sanitize();
+
+    const size_t triCountAfter = shapeSettings.mIndexedTriangles.size();
+    if (triCountAfter < triCountBefore) {
+        std::cout << "[JoltPhysicsSystem] Static mesh collider: Jolt Sanitize() removed "
+                  << (triCountBefore - triCountAfter) << " degenerate/duplicate triangles ("
+                  << triCountAfter << " remaining)." << std::endl;
+    }
+
+    if (shapeSettings.mIndexedTriangles.empty()) {
+        std::cerr << "[JoltPhysicsSystem] Failed to create static mesh shape: no triangles survived sanitization." << std::endl;
+        return JPH::BodyID();
+    }
+
+    std::cout << "[JoltPhysicsSystem] Building static mesh shape with "
+              << triCountAfter << " triangles..." << std::endl;
+
+    JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+    if (shapeResult.HasError()) {
+        std::cerr << "[JoltPhysicsSystem] Failed to create static mesh shape: "
+                  << shapeResult.GetError().c_str() << std::endl;
+        return JPH::BodyID();
+    }
+
+    JPH::BodyCreationSettings bodySettings(
+        shapeResult.Get(),
+        JPH::RVec3(toJPH(position)),
+        eulerToJPH(eulerRotation),
+        JPH::EMotionType::Static,
+        Layers::STATIC
+    );
+
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::DontActivate);
+
+    if (!id.IsInvalid() && entity) {
+        uint32_t raw = id.GetIndexAndSequenceNumber();
+        mEntityToBody[entity] = raw;
+        mBodyToEntity[raw] = entity;
+    }
+
+    return id;
 }
 
 // Creates and registers a static box body and maps it to an ECS entity.
@@ -467,36 +591,48 @@ void JoltPhysicsSystem::removeBody(Entity* entity) {
     mEntityToBody.erase(it);
 }
 
-// Creates a kinematic CharacterVirtual capsule used to represent the player.
-void JoltPhysicsSystem::createPlayerCharacter(glm::vec3 startPos) {
+// Creates and registers a dynamic player capsule body and maps it to an ECS entity.
+void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos) {
     if (!mPhysicsSystem) return;
 
-    delete mPlayerCharacter;
-    mPlayerCharacter = nullptr;
-
-    // Capsule: halfHeight=0.7, radius=0.3, shifted up so feet rest at entity origin.
-    JPH::RefConst<JPH::Shape> characterShape = JPH::RotatedTranslatedShapeSettings(
-        JPH::Vec3(0.0f, 1.0f, 0.0f),
+    // Capsule: halfHeight=0.4, radius=0.1, shifted up so feet rest at entity origin.
+    JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
+        JPH::Vec3(0.0f, 0.5f, 0.0f),
         JPH::Quat::sIdentity(),
-        new JPH::CapsuleShape(0.7f, 0.3f)
+        new JPH::CapsuleShape(0.4f, 0.1f)
     ).Create().Get();
 
-    JPH::Ref<JPH::CharacterVirtualSettings> settings = new JPH::CharacterVirtualSettings();
-    settings->mShape = characterShape;
-    settings->mMaxSlopeAngle = JPH::DegreesToRadians(45.0f);
-    settings->mMaxStrength = 100.0f;
-    settings->mCharacterPadding = 0.02f;
-    settings->mPenetrationRecoverySpeed = 1.0f;
-    settings->mPredictiveContactDistance = 0.1f;
-    settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -0.3f);
-
-    mPlayerCharacter = new JPH::CharacterVirtual(
-        settings,
+    JPH::BodyCreationSettings bodySettings(
+        capsuleShape,
         JPH::RVec3(toJPH(startPos)),
         JPH::Quat::sIdentity(),
-        0,
-        mPhysicsSystem
+        JPH::EMotionType::Dynamic,
+        Layers::PLAYER
     );
+
+    // Lock rotation so the player stays upright
+    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
+                                JPH::EAllowedDOFs::TranslationY | 
+                                JPH::EAllowedDOFs::TranslationZ;
+
+    // Prevent going to sleep
+    bodySettings.mAllowSleeping = false;
+    
+    // Continuous collision detection to prevent tunnelling through thin walls.
+    bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
+    
+    // Set mass
+    bodySettings.mMassPropertiesOverride.mMass = 70.0f;
+    bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+
+    if (!id.IsInvalid() && mPlayerEntity) {
+        uint32_t raw = id.GetIndexAndSequenceNumber();
+        mEntityToBody[mPlayerEntity] = raw;
+        mBodyToEntity[raw] = mPlayerEntity;
+    }
 }
 
 // Casts a ray in the physics world and returns closest hit info (if any).

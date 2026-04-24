@@ -38,6 +38,8 @@ namespace our {
         GLsizei elementCount;
         // Keep a CPU copy of vertices for gameplay/physics queries (e.g., convex hull generation).
         std::vector<our::Vertex> cpuVertices;
+        // Keep a CPU copy of indices for gameplay/physics queries (e.g., triangle mesh collision).
+        std::vector<unsigned int> cpuIndices;
         std::vector<DrawBatch> drawBatches;
         std::vector<GLuint> ownedTextures;
 
@@ -82,11 +84,17 @@ namespace our {
                 this->drawBatches.push_back({0, elementCount, 0, false});
             }
             cpuVertices = vertices;
+            cpuIndices = elements;
         }
 
         // Returns CPU-side vertex data (read-only).
         const std::vector<our::Vertex>& getVertices() const {
             return cpuVertices;
+        }
+
+        // Returns CPU-side index data (read-only).
+        const std::vector<unsigned int>& getIndices() const {
+            return cpuIndices;
         }
 
         // this function should render the mesh

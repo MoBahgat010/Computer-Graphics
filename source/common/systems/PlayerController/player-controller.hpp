@@ -9,9 +9,12 @@
 
 
 namespace our {
+  class JoltPhysicsSystem;
+
   class PlayerControllerSystem {
     private:
     Application* app = nullptr;
+    JoltPhysicsSystem* joltPhysics = nullptr;
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
     void handleLook(PlayerComponent* player, Entity* playerEntity,Entity* cameraEntity);
     void handleCrouch(PlayerComponent* player,Entity* cameraEntity);
@@ -19,7 +22,7 @@ namespace our {
     void handleReload(PlayerComponent* player);
 
     public:
-    void enter(Application* app);
+    void enter(Application* app, JoltPhysicsSystem* physics = nullptr);
     void update(World* world, float deltaTime);
     void exit();
     

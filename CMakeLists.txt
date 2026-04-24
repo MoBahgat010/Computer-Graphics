@@ -130,8 +130,6 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/components/mesh-renderer.cpp
         source/common/components/free-camera-controller.hpp
         source/common/components/free-camera-controller.cpp
-        source/common/components/player.hpp
-        source/common/components/player.cpp
         source/common/components/collider.hpp
         source/common/components/collider.cpp
         source/common/components/movement.hpp

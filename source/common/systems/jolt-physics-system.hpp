@@ -9,7 +9,7 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
-#include <Jolt/Physics/Character/CharacterVirtual.h>
+#include <Jolt/Physics/Body/AllowedDOFs.h>
 
 // ── Engine headers ──────────────────────────────────────────────────────────
 #include "ecs/entity.hpp"
@@ -166,6 +166,11 @@ public:
     // ── Body management ────────────────────────────────────────────────────
     JPH::BodyID addStaticBox(Entity* entity, glm::vec3 halfExtents,
                              glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
+    JPH::BodyID addStaticTriangleMesh(Entity* entity,
+                                      const std::vector<glm::vec3>& localVertices,
+                                      const std::vector<unsigned int>& indices,
+                                      glm::vec3 position,
+                                      glm::vec3 eulerRotation = glm::vec3(0.0f));
     JPH::BodyID addStaticConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
                                     glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     JPH::BodyID addDynamicBox(Entity* entity, glm::vec3 halfExtents,
@@ -174,8 +179,7 @@ public:
                                      glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     void        removeBody(Entity* entity);
 
-    // ── Player character (CharacterVirtual) ───────────────────────────────
-    void createPlayerCharacter(glm::vec3 startPos);
+    void createPlayerBody(glm::vec3 startPos);
     void setPlayerEntity(Entity* entity) { mPlayerEntity = entity; }
     void setPlayerVelocity(const glm::vec3& velocity) { mPendingPlayerVelocity = velocity; }
 
@@ -205,9 +209,7 @@ private:
     std::unordered_map<Entity*, uint32_t> mEntityToBody; ///< ECS Entity → Jolt BodyID
     std::unordered_map<uint32_t, Entity*> mBodyToEntity; ///< Jolt BodyID → ECS Entity
 
-    // ── Player state ───────────────────────────────────────────────────────
-    JPH::CharacterVirtual* mPlayerCharacter = nullptr; ///< Kinematic character controller for the player
-    Entity*                mPlayerEntity    = nullptr; ///< ECS entity represented by mPlayerCharacter
+    Entity*                mPlayerEntity    = nullptr; ///< ECS entity represented by mPlayerBody
     glm::vec3              mPendingPlayerVelocity = glm::vec3(0.0f); ///< Velocity to apply each update
 };
 
