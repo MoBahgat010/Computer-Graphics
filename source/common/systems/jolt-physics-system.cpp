@@ -14,6 +14,7 @@
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Body/AllowedDOFs.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
 #include <Jolt/Physics/EActivation.h>
 
 #include "systems/jolt-physics-system.hpp"
@@ -97,7 +98,26 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
         glm::quat worldOrientation;
         glm::vec3 worldTranslation;
         glm::decompose(m, worldScale, worldOrientation, worldTranslation, skew, perspective);
-        createPlayerBody(worldTranslation);
+
+        // Default capsule matches previous behavior.
+        float capsuleHalfHeight = 0.4f;
+        float capsuleRadius = 0.1f;
+        float capsuleCenterY = 0.5f;
+
+        // If the player has an explicit ColliderComponent, use it to size the capsule.
+        // This makes the gameplay collider match the visual/player scale in the scene.
+        if (auto* playerCollider = mPlayerEntity->getComponent<ColliderComponent>()) {
+            const glm::vec3 scaledHalfExtents = glm::max(
+                glm::abs(playerCollider->halfExtents * worldScale),
+                glm::vec3(0.01f)
+            );
+
+            capsuleRadius = glm::max(0.01f, glm::min(scaledHalfExtents.x, scaledHalfExtents.z));
+            capsuleHalfHeight = glm::max(0.0f, scaledHalfExtents.y - capsuleRadius);
+            capsuleCenterY = playerCollider->centerOffset.y + scaledHalfExtents.y;
+        }
+
+        createPlayerBody(worldTranslation, capsuleHalfHeight, capsuleRadius, capsuleCenterY);
     }
 
     auto isDescendantOfPlayer = [&](Entity* entity) {
@@ -734,14 +754,22 @@ JPH::BodyID JoltPhysicsSystem::createEnemySoldierBody(Entity* entity, MeshRender
 }
 
 // Creates and registers a dynamic player capsule body and maps it to an ECS entity.
-void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos) {
+void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
+                                         float capsuleHalfHeight,
+                                         float capsuleRadius,
+                                         float capsuleCenterY) {
     if (!mPhysicsSystem) return;
 
-    // Capsule: halfHeight=0.4, radius=0.1, shifted up so feet rest at entity origin.
+    // Capsule dimensions can be overridden from Player's ColliderComponent.
+    capsuleRadius = glm::max(0.01f, capsuleRadius);
+    capsuleHalfHeight = glm::max(0.0f, capsuleHalfHeight);
+
+    // Keep the feet at (approximately) entity origin by default via centerY,
+    // while allowing custom center offsets through config.
     JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
-        JPH::Vec3(0.0f, 0.5f, 0.0f),
+        JPH::Vec3(0.0f, capsuleCenterY, 0.0f),
         JPH::Quat::sIdentity(),
-        new JPH::CapsuleShape(0.4f, 0.1f)
+        new JPH::CapsuleShape(capsuleHalfHeight, capsuleRadius)
     ).Create().Get();
 
     JPH::BodyCreationSettings bodySettings(
@@ -774,6 +802,13 @@ void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos) {
         uint32_t raw = id.GetIndexAndSequenceNumber();
         mEntityToBody[mPlayerEntity] = raw;
         mBodyToEntity[raw] = mPlayerEntity;
+
+        const float totalHeight = (2.0f * capsuleHalfHeight) + (2.0f * capsuleRadius);
+        std::cout << "[JoltPhysicsSystem] Player capsule: radius=" << capsuleRadius
+                  << ", halfHeight=" << capsuleHalfHeight
+                  << ", totalHeight=" << totalHeight
+                  << ", centerY=" << capsuleCenterY
+                  << std::endl;
     }
 }
 

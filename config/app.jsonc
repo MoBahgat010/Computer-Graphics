@@ -180,7 +180,11 @@
                 "components": [
                     {
                         "type": "Player"
-                        
+                    },
+                    {
+                        "type": "Collider",
+                        "halfExtents": [0.11, 0.12, 0.11],
+                        "centerOffset": [0.0, 0.0, 0.0]
                     }
                 ],
                 "children": [
