@@ -11,6 +11,7 @@
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <systems/EnemySpawner/enemy-spawner-system.hpp>
 #include <asset-loader.hpp>
+#include <audio/audio-player.hpp>
 
 #include <iostream>
 
@@ -25,6 +26,7 @@ class Playstate: public our::State {
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
     our::EnemySpawnerSystem enemySpawner;
+    our::AudioPlayer startGameAudioPlayer;
     bool freeCameraDebugMode = false;
     bool hasSavedFreeCameraTransform = false;
     our::Transform savedFreeCameraTransform;
@@ -93,6 +95,9 @@ class Playstate: public our::State {
 
         // Initialize the enemy soldier controller system
         enemySoldierController.enter(getApp(), &joltPhysics);
+
+        // Play start game sound
+        startGameAudioPlayer.play("assets/audio/game/ak47_start_game.wav", 1.0f);
 
     }
 
