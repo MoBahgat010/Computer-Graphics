@@ -3,6 +3,7 @@
 #include "../../components/EnemyComponents/enemy-soldier-component.hpp"
 #include "../../components/PlayerComponents/player-component.hpp"
 #include "../../application.hpp"
+#include "../../audio/audio-player.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/fast_trigonometry.hpp>
@@ -16,6 +17,7 @@ namespace our{
     private:
     Application* app = nullptr;
     JoltPhysicsSystem* physics = nullptr;
+    AudioPlayer enemyDeathAudioPlayer;
 
     void handleEnemySoldierBehavior(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
