@@ -194,6 +194,13 @@
             "enemiesPerPoint": 2,
             "spawnOffset": 0.6,
             "enemy": {
+                "components": [
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "robot_anim",
+                        "animationIndex": 0
+                    }
+                ],
                 "mesh": "robot",
                 "material": "robot",
                 "scale": [0.00004, 0.00004, 0.00004],

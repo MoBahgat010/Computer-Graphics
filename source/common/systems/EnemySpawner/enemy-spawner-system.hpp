@@ -5,6 +5,7 @@
 #include <components/mesh-renderer.hpp>
 #include <ecs/world.hpp>
 #include <systems/jolt-physics-system.hpp>
+#include <components/component-deserializer.hpp>
 
 #include <glm/glm.hpp>
 
@@ -69,6 +70,13 @@ public:
 
                 auto* enemySoldier = enemy->addComponent<EnemySoldierComponent>();
                 enemySoldier->deserialize(enemyConfig);
+
+                // Deserialize any additional components specified in the config
+                if (enemyConfig.contains("components") && enemyConfig["components"].is_array()) {
+                    for (const auto& compConfig : enemyConfig["components"]) {
+                        deserializeComponent(compConfig, enemy);
+                    }
+                }
 
                 if (physics && physics->isInitialized()) {
                     physics->createEnemySoldierBody(enemy, meshRenderer);
