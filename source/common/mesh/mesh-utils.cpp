@@ -328,7 +328,7 @@ void appendAssimpMesh(
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
     const our::Color materialColor = (texture != context.whiteTexture)
         ? our::Color(255, 255, 255, 255)   // has texture: don't tint it
-        : getMaterialColor(material);       // no texture: use material color as fallback
+        : getMaterialColor(material);       // no texture: use material color as fallbackw
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
