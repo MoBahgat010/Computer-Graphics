@@ -7,6 +7,7 @@
 #include "mesh/mesh.hpp"
 #include "mesh/mesh-utils.hpp"
 #include "material/material.hpp"
+#include "animation/animated-mesh.hpp"
 #include "deserialize-utils.hpp"
 
 namespace our {
@@ -68,7 +69,20 @@ namespace our {
         if(data.is_object()){
             for(auto& [name, desc] : data.items()){
                 std::string path = desc.get<std::string>();
-                assets[name] = mesh_utils::loadOBJ(path);
+                assets[name] = mesh_utils::loadMesh(path);
+            }
+        }
+    };
+
+    // This will load all animated meshes defined in "data"
+    // data must be in the form:
+    //    { mesh_name : "path/to/animated-model-file", ... }
+    template<>
+    void AssetLoader<AnimatedMesh>::deserialize(const nlohmann::json& data) {
+        if(data.is_object()){
+            for(auto& [name, desc] : data.items()){
+                std::string path = desc.get<std::string>();
+                assets[name] = mesh_utils::loadAnimatedMesh(path);
             }
         }
     };
@@ -107,6 +121,8 @@ namespace our {
             AssetLoader<Sampler>::deserialize(assetData["samplers"]);
         if(assetData.contains("meshes"))
             AssetLoader<Mesh>::deserialize(assetData["meshes"]);
+        if(assetData.contains("animatedMeshes"))
+            AssetLoader<AnimatedMesh>::deserialize(assetData["animatedMeshes"]);
         if(assetData.contains("materials"))
             AssetLoader<Material>::deserialize(assetData["materials"]);
     }
@@ -116,6 +132,7 @@ namespace our {
         AssetLoader<Texture2D>::clear();
         AssetLoader<Sampler>::clear();
         AssetLoader<Mesh>::clear();
+        AssetLoader<AnimatedMesh>::clear();
         AssetLoader<Material>::clear();
     }
 

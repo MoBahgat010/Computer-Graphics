@@ -7,6 +7,32 @@ if(UNIX AND NOT APPLE)
         find_package(GLEW REQUIRED)
 endif()
 
+# Required for loading non-OBJ meshes (e.g., FBX)
+find_package(assimp CONFIG QUIET)
+
+# MSYS2 packages may provide assimp headers/libs without assimpConfig.cmake.
+if(NOT TARGET assimp::assimp)
+        find_path(ASSIMP_INCLUDE_DIRS
+                NAMES assimp/Importer.hpp
+                PATHS
+                        C:/msys64/mingw64/include
+                        C:/msys64/ucrt64/include
+                        C:/msys64/clang64/include
+        )
+
+        find_library(ASSIMP_LIBRARIES
+                NAMES assimp
+                PATHS
+                        C:/msys64/mingw64/lib
+                        C:/msys64/ucrt64/lib
+                        C:/msys64/clang64/lib
+        )
+
+        if(NOT ASSIMP_INCLUDE_DIRS OR NOT ASSIMP_LIBRARIES)
+                message(FATAL_ERROR "Assimp was not found. Install it (e.g., MSYS2 package mingw-w64-x86_64-assimp) or set assimp_DIR/ASSIMP_INCLUDE_DIRS/ASSIMP_LIBRARIES.")
+        endif()
+endif()
+
 # Here we select C++17 with all the standards required and all compiler-specific extensions disabled
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,8 +79,13 @@ set(VENDOR_SOURCES ${GLAD_SOURCE} ${IMGUI_SOURCES})
 set(COMMON_SOURCES
         source/common/application.hpp
         source/common/application.cpp
+        source/common/audio/audio-player.hpp
+        source/common/audio/audio-player.cpp
         source/common/input/keyboard.hpp
         source/common/input/mouse.hpp
+
+        source/common/components/PlayerComponents/player-component.hpp
+source/common/components/PlayerComponents/player-component.cpp
 
         source/common/asset-loader.cpp
         source/common/asset-loader.hpp
@@ -105,12 +136,26 @@ set(COMMON_SOURCES
         source/common/components/collider.cpp
         source/common/components/movement.hpp
         source/common/components/movement.cpp
+        source/common/components/animation-component.hpp
+        source/common/components/animation-component.cpp
+        source/common/components/PlayerComponents/player-component.hpp
+        source/common/components/PlayerComponents/player-component.cpp
         source/common/components/component-deserializer.hpp
+
+        source/common/animation/animated-mesh.hpp
+        source/common/animation/animation.hpp
+        source/common/animation/animation.cpp
+        source/common/animation/animator.hpp
+        source/common/animation/animator.cpp
+        source/common/animation/bone.hpp
+        source/common/animation/bone.cpp
 
         source/common/systems/forward-renderer.hpp
         source/common/systems/forward-renderer.cpp
         source/common/systems/free-camera-controller.hpp
         source/common/systems/movement.hpp
+        source/common/systems/PlayerController/player-controller.hpp
+        source/common/systems/PlayerController/player-controller.cpp
 
         source/common/systems/jolt-utils.hpp
         source/common/systems/jolt-physics-system.hpp
@@ -127,6 +172,7 @@ include_directories(
         vendor/glad/include
         vendor/glm
         vendor/imgui
+        vendor/miniaudio
         vendor/utils
 )
 
@@ -156,6 +202,17 @@ target_link_libraries(GAME_APPLICATION glfw)
 
 # Link the locally built Jolt library to your game
 target_link_libraries(GAME_APPLICATION Jolt)
+
+if(WIN32)
+        target_link_libraries(GAME_APPLICATION winmm ole32 avrt uuid)
+endif()
+
+if(TARGET assimp::assimp)
+        target_link_libraries(GAME_APPLICATION assimp::assimp)
+else()
+        target_include_directories(GAME_APPLICATION PRIVATE ${ASSIMP_INCLUDE_DIRS})
+        target_link_libraries(GAME_APPLICATION ${ASSIMP_LIBRARIES})
+endif()
 
 target_compile_definitions(GAME_APPLICATION PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD2)
 
