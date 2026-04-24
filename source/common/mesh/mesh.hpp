@@ -12,12 +12,12 @@
 
 namespace our {
 
-    #define ATTRIB_LOC_POSITION 0
-    #define ATTRIB_LOC_COLOR    1
-    #define ATTRIB_LOC_TEXCOORD 2
-    #define ATTRIB_LOC_NORMAL   3
-    #define ATTRIB_LOC_BONE_IDS     4
-    #define ATTRIB_LOC_BONE_WEIGHTS 5
+#define ATTRIB_LOC_POSITION 0
+#define ATTRIB_LOC_COLOR    1
+#define ATTRIB_LOC_TEXCOORD 2
+#define ATTRIB_LOC_NORMAL   3
+#define ATTRIB_LOC_BONE_IDS     4
+#define ATTRIB_LOC_BONE_WEIGHTS 5
 
     class Mesh {
     public:
@@ -26,6 +26,16 @@ namespace our {
             GLsizei indexCount = 0;
             GLuint texture = 0;
             bool hasTexture = false;
+
+            // Material properties for lighting to work
+            glm::vec3 ambient = { 0.0f, 0.0f, 0.0f };
+            glm::vec3 diffuse = { 0.0f, 0.0f, 0.0f };
+            glm::vec3 specular = { 0.0f, 0.0f, 0.0f };
+
+            float shininess = 0.0f;
+
+            GLuint diffuseTexture = 0;
+            GLuint specularTexture = 0;
         };
 
     private:
@@ -57,8 +67,7 @@ namespace our {
             const std::vector<unsigned int>& elements,
             const std::vector<DrawBatch>& drawBatches = {},
             const std::vector<GLuint>& ownedTextures = {}
-        ) : drawBatches(drawBatches), ownedTextures(ownedTextures)
-        {
+        ) : drawBatches(drawBatches), ownedTextures(ownedTextures) {
             VAO1.Bind();
 
             VBO1.SetVBO(vertices);
@@ -80,8 +89,8 @@ namespace our {
 
             elementCount = static_cast<GLsizei>(elements.size());
 
-            if(this->drawBatches.empty()) {
-                this->drawBatches.push_back({0, elementCount, 0, false});
+            if (this->drawBatches.empty()) {
+                this->drawBatches.push_back({ 0, elementCount, 0, false });
             }
             cpuVertices = vertices;
             cpuIndices = elements;
@@ -98,16 +107,16 @@ namespace our {
         }
 
         // this function should render the mesh
-        void draw() 
-        {
+        void draw() {
             VAO1.Bind();
 
-            if(drawBatches.empty()) {
+            if (drawBatches.empty()) {
                 glDrawElements(GL_TRIANGLES, elementCount, GL_UNSIGNED_INT, 0);
-            } else {
+            }
+            else {
                 glActiveTexture(GL_TEXTURE0);
-                for(const auto& batch : drawBatches) {
-                    if(batch.hasTexture) {
+                for (const auto& batch : drawBatches) {
+                    if (batch.hasTexture) {
                         glBindTexture(GL_TEXTURE_2D, batch.texture);
                     }
                     glDrawElements(
@@ -124,15 +133,15 @@ namespace our {
         }
 
         // this function should delete the vertex & element buffers and the vertex array object
-        ~Mesh(){
-            if(!ownedTextures.empty()) {
+        ~Mesh() {
+            if (!ownedTextures.empty()) {
                 glDeleteTextures(static_cast<GLsizei>(ownedTextures.size()), ownedTextures.data());
             }
             // VAO, VBO and EBO are deleted by their own destructors.
         }
 
-        Mesh(Mesh const &) = delete;
-        Mesh &operator=(Mesh const &) = delete;
+        Mesh(Mesh const&) = delete;
+        Mesh& operator=(Mesh const&) = delete;
     };
 
 }
