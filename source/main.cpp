@@ -7,6 +7,7 @@
 
 #include "states/menu-state.hpp"
 #include "states/start-screen-state.hpp"
+#include "states/settings-state.hpp"
 #include "states/game-over-state.hpp"
 #include "states/story-beginning-state.hpp"
 #include "states/play-state.hpp"
@@ -47,6 +48,7 @@ int main(int argc, char** argv) {
     // Register all the states of the project in the application
     app.registerState<Menustate>("menu");
     app.registerState<StartScreenState>("start-screen");
+    app.registerState<SettingsState>("settings");
     app.registerState<GameOverState>("game-over");
     app.registerState<StoryBeginningState>("story-beginning");
     app.registerState<Playstate>("play");

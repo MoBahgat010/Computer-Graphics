@@ -94,89 +94,95 @@ class Playstate: public our::State {
         }
         ImGui::End();
 
-        // ── Player Status Panel ──────────────────────────────────────────────
-        ImGui::SetNextWindowPos(ImVec2(20.0f, 160.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300.0f, 220.0f), ImGuiCond_FirstUseEver);
+        // ── Player HUD ───────────────────────────────────────────────────────
+        our::PlayerComponent* player = nullptr;
+        for(auto entity : world.getEntities()) {
+            player = entity->getComponent<our::PlayerComponent>();
+            if(player) break;
+        }
 
-        if(ImGui::Begin("Player Status")) {
+        if(player && !player->getIsDead()) {
+            ImGuiIO& io = ImGui::GetIO();
+            ImGuiWindowFlags hudFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | 
+                                        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | 
+                                        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground;
 
-            // Find the player component in the world
-            our::PlayerComponent* player = nullptr;
-            for(auto entity : world.getEntities()) {
-                player = entity->getComponent<our::PlayerComponent>();
-                if(player) break;
-            }
+            // ── HEALTH BAR (Bottom Left) ─────────────────────────────────────
+            ImVec2 healthPos(30.0f, io.DisplaySize.y - 70.0f);
+            ImGui::SetNextWindowPos(healthPos);
+            
+            // Draw a subtle dark background behind the health manually for a sleek look
+            ImGui::GetBackgroundDrawList()->AddRectFilled(
+                ImVec2(healthPos.x - 10.0f, healthPos.y - 10.0f), 
+                ImVec2(healthPos.x + 320.0f, healthPos.y + 45.0f), 
+                IM_COL32(10, 15, 20, 200), 5.0f);
 
-            if(player) {
-                // ── HEALTH BAR ───────────────────────────────────────────────
-                int   health     = player->getHealth();
+            if(ImGui::Begin("HUD_Health", nullptr, hudFlags)) {
+                int health = player->getHealth();
                 float healthFrac = health / 100.0f;
 
-                // Color: green > 50% | yellow > 25% | red otherwise
-                ImVec4 healthColor;
-                if     (healthFrac > 0.5f)  healthColor = ImVec4(0.15f, 0.80f, 0.15f, 1.0f);
-                else if(healthFrac > 0.25f) healthColor = ImVec4(0.90f, 0.70f, 0.10f, 1.0f);
-                else                        healthColor = ImVec4(0.90f, 0.10f, 0.10f, 1.0f);
-
-                ImGui::TextColored(ImVec4(0.9f, 0.9f, 0.9f, 1.0f), "HEALTH");
+                ImVec4 healthColor = (healthFrac > 0.3f) ? ImVec4(0.0f, 1.0f, 0.8f, 1.0f) : ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
+                
+                ImGui::SetWindowFontScale(1.5f);
+                ImGui::TextColored(healthColor, "HP");
+                ImGui::SameLine();
+                ImGui::SetWindowFontScale(1.0f);
+                
+                // Nudge the progress bar down a bit to align with the larger text
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
+                
                 ImGui::PushStyleColor(ImGuiCol_PlotHistogram, healthColor);
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1f, 0.1f, 0.1f, 0.8f));
                 char healthLabel[32];
-                snprintf(healthLabel, sizeof(healthLabel), "%d / 100", health);
-                ImGui::ProgressBar(healthFrac, ImVec2(-1.0f, 22.0f), healthLabel);
-                ImGui::PopStyleColor();
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                // ── AMMO ─────────────────────────────────────────────────────
-                int mag   = player->getMagazineAmmo();
-                int total = player->getTotalAmmo();
-
-                ImGui::TextColored(ImVec4(0.9f, 0.9f, 0.9f, 1.0f), "AMMO");
-
-                // Magazine bar (orange)
-                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.95f, 0.55f, 0.05f, 1.0f));
-                char magLabel[32];
-                snprintf(magLabel, sizeof(magLabel), "Magazine  %d / 30", mag);
-                ImGui::ProgressBar(mag / 30.0f, ImVec2(-1.0f, 18.0f), magLabel);
-                ImGui::PopStyleColor();
-
-                // Reserve bar (grey-blue)
-                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.30f, 0.55f, 0.85f, 1.0f));
-                char totalLabel[32];
-                snprintf(totalLabel, sizeof(totalLabel), "Reserve   %d / 180", total);
-                ImGui::ProgressBar(total / 180.0f, ImVec2(-1.0f, 18.0f), totalLabel);
-                ImGui::PopStyleColor();
-
-                // RELOAD prompt
-                if(mag == 0) {
-                    ImGui::Spacing();
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.20f, 0.20f, 1.0f));
-                    ImGui::Text("  !! RELOAD !!  Press  R");
-                    ImGui::PopStyleColor();
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                // ── STANCE & DEAD ─────────────────────────────────────────────
-                bool crouching = player->getIsCrouch();
-                ImGui::Text("Stance :  %s", crouching ? "CROUCHING" : "STANDING");
-
-                if(player->getIsDead()) {
-                    ImGui::Spacing();
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                    ImGui::Text("        -- YOU ARE DEAD --");
-                    ImGui::PopStyleColor();
-                }
-
-            } else {
-                ImGui::TextUnformatted("No player entity found.");
+                snprintf(healthLabel, sizeof(healthLabel), "%d", health);
+                ImGui::ProgressBar(healthFrac, ImVec2(250.0f, 20.0f), healthLabel);
+                ImGui::PopStyleColor(2);
             }
+            ImGui::End();
+
+            // ── AMMO COUNTER (Bottom Right) ──────────────────────────────────
+            ImVec2 ammoPos(io.DisplaySize.x - 220.0f, io.DisplaySize.y - 85.0f);
+            ImGui::SetNextWindowPos(ammoPos);
+
+            ImGui::GetBackgroundDrawList()->AddRectFilled(
+                ImVec2(ammoPos.x - 10.0f, ammoPos.y - 10.0f), 
+                ImVec2(ammoPos.x + 200.0f, ammoPos.y + 60.0f), 
+                IM_COL32(10, 15, 20, 200), 5.0f);
+
+            if(ImGui::Begin("HUD_Ammo", nullptr, hudFlags)) {
+                int mag = player->getMagazineAmmo();
+                int total = player->getTotalAmmo();
+                
+                // Print CROUCHING or RELOAD warnings at the top of this box
+                ImGui::SetWindowFontScale(1.0f);
+                if(player->getIsCrouch()) {
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "CROUCHING");
+                } else if(mag == 0) {
+                    // We can flash RELOAD up top instead, or just keep it blank if standing
+                    ImGui::TextColored(ImVec4(1.0f, 0.1f, 0.1f, 1.0f), "RELOAD [R]");
+                } else {
+                    // Empty space to keep the layout from jumping around when standing/crouching
+                    ImGui::Text(" "); 
+                }
+
+                ImVec4 ammoColor = (mag > 0) ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
+                
+                ImGui::SetWindowFontScale(2.5f);
+                ImGui::TextColored(ammoColor, "%02d", mag);
+                ImGui::SameLine();
+                
+                ImGui::SetWindowFontScale(1.2f);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15.0f);
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "/ %03d", total);
+                
+                ImGui::SetWindowFontScale(1.0f);
+                if(mag == 0 && player->getIsCrouch()) {
+                    // If they are both crouching AND empty, put reload at the bottom
+                    ImGui::TextColored(ImVec4(1.0f, 0.1f, 0.1f, 1.0f), "RELOAD [R]");
+                }
+            }
+            ImGui::End();
         }
-        ImGui::End();
         
         // ── Crosshair Overlay ────────────────────────────────────────────────
         auto* drawList = ImGui::GetForegroundDrawList();
