@@ -14,7 +14,7 @@ class PlayerComponent : public Component {
   int bulletDamage = 25; 
   bool isCrouch = false;
   bool isDead = false;
-  float speed = 1.0f;
+  float speed = 2.0f;
   float mouseSensitivity = 0.003f;
 
   

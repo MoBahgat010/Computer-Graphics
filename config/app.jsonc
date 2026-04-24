@@ -180,7 +180,7 @@
                 "material": "robot",
                 "scale": [0.00004, 0.00004, 0.00004],
                 "health": 100,
-                "damage": 0.5,
+                "damage": 3,
                 "speed": 1.5,
                 "attackRange": 1.5,
                 "detectionRange": 5.0,
@@ -248,17 +248,17 @@
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [5.0, 0.0, -10.0],
+                "position": [26.2637, 0.119991, -0.326302],
                 "rotation": [0.0, 0.0, 0.0]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [-8.0, 0.0, -15.0],
+                "position": [4.61593, 0.119991, -10.3189],
                 "rotation": [0.0, 0.0, 0.0]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [0.0, 0.0, -25.0],
+                "position": [-16.1855, 0.119991, -0.577851],
                 "rotation": [0.0, 0.0, 0.0]
             }
         ]

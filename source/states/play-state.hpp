@@ -25,6 +25,34 @@ class Playstate: public our::State {
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
     our::EnemySpawnerSystem enemySpawner;
+    bool freeCameraDebugMode = false;
+    bool hasSavedFreeCameraTransform = false;
+    our::Transform savedFreeCameraTransform;
+    our::Entity* freeCameraEntity = nullptr;
+
+    void setFreeCameraDebugMode(bool enabled) {
+        if(enabled == freeCameraDebugMode) return;
+
+        joltPhysics.setPlayerVelocity(glm::vec3(0.0f));
+        if(enabled) {
+            freeCameraEntity = getCameraEntity();
+            if(freeCameraEntity) {
+                savedFreeCameraTransform = freeCameraEntity->localTransform;
+                hasSavedFreeCameraTransform = true;
+            }
+            freeCameraDebugMode = true;
+            getApp()->getMouse().unlockMouse(getApp()->getWindow());
+        } else {
+            if(hasSavedFreeCameraTransform && freeCameraEntity) {
+                freeCameraEntity->localTransform = savedFreeCameraTransform;
+            }
+            hasSavedFreeCameraTransform = false;
+            freeCameraEntity = nullptr;
+            freeCameraDebugMode = false;
+            getApp()->getMouse().lockMouse(getApp()->getWindow());
+        }
+    }
+
     our::Entity* getCameraEntity() {
         for(auto entity : world.getEntities()) {
             if(entity->getComponent<our::CameraComponent>()) {
@@ -71,16 +99,24 @@ class Playstate: public our::State {
     void onDraw(double deltaTime) override {
         // Here, we just run a bunch of systems to control the world logic
         movementSystem.update(&world, (float)deltaTime);
-        playerController.update(&world, (float)deltaTime);
+
+        auto& keyboard = getApp()->getKeyboard();
+        if(keyboard.justPressed(GLFW_KEY_M)) {
+            setFreeCameraDebugMode(!freeCameraDebugMode);
+        }
+
+        if(freeCameraDebugMode) {
+            cameraController.update(&world, (float)deltaTime);
+        } else {
+            playerController.update(&world, (float)deltaTime);
+        }
+
         enemySoldierController.update(&world, (float)deltaTime);
         joltPhysics.update((float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
         // Delete any entities that were marked for removal this frame (e.g. dead enemies)
         world.deleteMarkedEntities();
-
-        // Get a reference to the keyboard object
-        auto& keyboard = getApp()->getKeyboard();
 
         if(keyboard.justPressed(GLFW_KEY_ESCAPE)){
             // If the escape  key is pressed in this frame, go to the play state
@@ -149,19 +185,29 @@ class Playstate: public our::State {
 
     void onImmediateGui() override {
         ImGui::SetNextWindowPos(ImVec2(20.0f, 20.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(340.0f, 120.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(420.0f, 180.0f), ImGuiCond_FirstUseEver);
 
         if(ImGui::Begin("Camera Debug")) {
-            if(auto* cameraEntity = getCameraEntity()) {
-                const glm::vec3 position = cameraEntity->localTransform.position;
-                ImGui::Text("Camera Position");
-                ImGui::Text("x: %.3f   y: %.3f   z: %.3f", position.x, position.y, position.z);
+            ImGui::Text("Free Tool: %s", freeCameraDebugMode ? "ON" : "OFF");
+            if(ImGui::Button(freeCameraDebugMode ? "Disable Free Tool" : "Enable Free Tool")) {
+                setFreeCameraDebugMode(!freeCameraDebugMode);
+            }
+            ImGui::SameLine();
+            ImGui::Text("(M)");
 
-                if(ImGui::Button("Print x,y,z")) {
+            ImGui::TextUnformatted("Move: Arrows only");
+
+            if(auto* cameraEntity = getCameraEntity()) {
+                const glm::mat4 localToWorld = cameraEntity->getLocalToWorldMatrix();
+                const glm::vec3 worldPosition = glm::vec3(localToWorld[3]);
+
+                ImGui::Text("Position: x %.3f  y %.3f  z %.3f", worldPosition.x, worldPosition.y, worldPosition.z);
+
+                if(ImGui::Button("Print to Console")) {
                     std::cout << "Camera Position (x,y,z): "
-                              << position.x << ", "
-                              << position.y << ", "
-                              << position.z << std::endl;
+                              << worldPosition.x << ", "
+                              << worldPosition.y << ", "
+                              << worldPosition.z << std::endl;
                 }
             } else {
                 ImGui::TextUnformatted("No camera entity found.");
