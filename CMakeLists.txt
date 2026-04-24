@@ -70,6 +70,9 @@ set(COMMON_SOURCES
         source/common/input/keyboard.hpp
         source/common/input/mouse.hpp
 
+        source/common/components/PlayerComponents/player-component.hpp
+source/common/components/PlayerComponents/player-component.cpp
+
         source/common/asset-loader.cpp
         source/common/asset-loader.hpp
         source/common/deserialize-utils.hpp
@@ -117,6 +120,8 @@ set(COMMON_SOURCES
         source/common/components/movement.cpp
         source/common/components/animation-component.hpp
         source/common/components/animation-component.cpp
+        source/common/components/PlayerComponents/player-component.hpp
+        source/common/components/PlayerComponents/player-component.cpp
         source/common/components/component-deserializer.hpp
 
         source/common/animation/animated-mesh.hpp
@@ -131,6 +136,8 @@ set(COMMON_SOURCES
         source/common/systems/forward-renderer.cpp
         source/common/systems/free-camera-controller.hpp
         source/common/systems/movement.hpp
+        source/common/systems/PlayerController/player-controller.hpp
+        source/common/systems/PlayerController/player-controller.cpp
 )
 
 # Define the directories in which to search for the included headers

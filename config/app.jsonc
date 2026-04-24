@@ -2,7 +2,7 @@
     "start-scene": "start-screen",
     "window":
     {
-        "title":"Mohamed Ahmed - 9230731",
+        "title":"Carrer Not Found 404",
         "size":{
             "width":1920,
             "height":1080
@@ -135,7 +135,7 @@
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true
+                            "enabled": true 
                         }
                     },
                     "tint": [
@@ -171,21 +171,41 @@
         },
         "world":[
             {
+                "name": "Player",
                 "position": [4.28409, 0.24859, -0.395433],
                 "rotation": [0, 180, 0],
                 "components": [
                     {
-                        "type": "Camera",
-                        "near": 0.05,
-                        "far": 3000,
-                        "fovY": 75
+                        "type": "Player"
+                        
+                    }
+                ],
+                "children": [
+                    {
+                        "name": "Camera",
+                        "position": [0, 0.249, 0],
+                        "rotation": [0, 0, 0],
+                        "components": [
+                            {
+                                "type": "Camera",
+                                "near": 0.05,
+                                "far": 3000,
+                                "fovY": 75
+                            }
+                        ]
                     },
                     {
-                        "type": "Free Camera Controller",
-                        "rotationSensitivity": 0.0035,
-                        "positionSensitivity": [8, 8, 8],
-                        "fovSensitivity": 0.08,
-                        "speedupFactor": 3.5
+                        "name": "Male Character Model",
+                        "position": [0, 0, 1],
+                        "rotation": [0, 180, 0],
+                        "scale": [0.005, 0.005, 0.005],
+                        "components": [
+                            {
+                                "type": "Mesh Renderer",
+                                "mesh": "male_character",
+                                "material": "male_character"
+                            }
+                        ]
                     }
                 ]
             },
@@ -200,62 +220,37 @@
                         "material": "city"
                     }
                 ]
-            },
-            {
-                "name": "Male Character Model",
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
-                "rotation": [
-                    0,
-                    45,
-                    0
-                ],
-                "scale": [
-                    0.01,
-                    0.01,
-                    0.01
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "male_character",
-                        "material": "male_character"
-                    }
-                ]
-            },
-            {
-                "name": "Robot Model",
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    0.001,
-                    0.001,
-                    0.001
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "robot",
-                        "material": "robot"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0
-                    }
-                ]
             }
+            // {
+            //     "name": "Robot Model",
+            //     "position": [
+            //         4.28409,
+            //         0.24859,
+            //         -0.5
+            //     ],
+            //     "rotation": [
+            //         0,
+            //         0,
+            //         0
+            //     ],
+            //     "scale": [
+            //         0.001,
+            //         0.001,
+            //         0.001
+            //     ],
+            //     "components": [
+            //         {
+            //             "type": "Mesh Renderer",
+            //             "mesh": "robot",
+            //             "material": "robot"
+            //         },
+            //         {
+            //             "type": "Animation",
+            //             "animatedMesh": "robot_anim",
+            //             "animationIndex": 0
+            //         }
+            //     ]
+            // }
         ]
     }
 }
