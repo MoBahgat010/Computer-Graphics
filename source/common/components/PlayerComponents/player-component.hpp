@@ -6,7 +6,7 @@ class PlayerComponent : public Component {
   
   private:
   int health = 100;
-    const int MAX_MAGAZINE_AMMO = 30;
+  const int MAX_MAGAZINE_AMMO = 30;
   const int MAX_TOTAL_AMMO = 180;
   int currentMagazineAmmo = 30;
 
