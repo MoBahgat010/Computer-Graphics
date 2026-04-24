@@ -61,7 +61,7 @@ GLuint createSolidTexture(const our::Color& color) {
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    const unsigned char pixel[] = {color.r, color.g, color.b, color.a};
+    const unsigned char pixel[] = { color.r, color.g, color.b, color.a };
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -171,7 +171,7 @@ GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, As
             *end == '\0' &&
             index >= 0 &&
             static_cast<unsigned long>(index) < static_cast<unsigned long>(scene->mNumTextures)
-        ) {
+            ) {
             embedded = scene->mTextures[index];
         }
     }
@@ -203,7 +203,8 @@ GLuint loadEmbeddedTexture(const aiString& texturePath, const aiScene* scene, As
             texture = uploadRGBA8Texture(pixels, width, height);
             stbi_image_free(pixels);
         }
-    } else {
+    }
+    else {
         if (embedded->mWidth > 0 && embedded->mHeight > 0) {
             std::vector<unsigned char> rgba;
             const size_t pixelCount = static_cast<size_t>(embedded->mWidth) * static_cast<size_t>(embedded->mHeight);
@@ -285,10 +286,30 @@ unsigned int countMaterialTextures(const aiMaterial* material) {
 
 void logMaterialTextureTypes(const aiMaterial* material) {
     for (int type = static_cast<int>(aiTextureType_NONE); type <= static_cast<int>(aiTextureType_UNKNOWN); type++) {
-        const unsigned int count = material->GetTextureCount(static_cast<aiTextureType>(type));
+        unsigned int count = material->GetTextureCount(static_cast<aiTextureType>(type));
         if (count > 0) {
-            std::cout << "Texture type " << type << " count: " << count << std::endl;
+            aiString path;
+            material->GetTexture(static_cast<aiTextureType>(type), 0, &path);
+            std::cout << "  - Has " << count << " texture(s) of type " << type << ". Path: " << path.C_Str() << std::endl;
         }
+    }
+}
+
+void logMaterialLightInfo(const aiMaterial* material) {
+    std::cout << "Material Lighting Properties:" << std::endl;
+    aiColor3D color;
+    if (material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) {
+        std::cout << "  - Ambient: " << color.r << ", " << color.g << ", " << color.b << std::endl;
+    }
+    if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+        std::cout << "  - Diffuse: " << color.r << ", " << color.g << ", " << color.b << std::endl;
+    }
+    if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+        std::cout << "  - Specular: " << color.r << ", " << color.g << ", " << color.b << std::endl;
+    }
+    float shininess;
+    if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
+        std::cout << "  - Shininess: " << shininess << std::endl;
     }
 }
 
@@ -300,11 +321,13 @@ void logMeshInfo(const aiMesh* mesh, const aiScene* scene) {
     material->Get(AI_MATKEY_NAME, materialName);
     std::cout << "Material Name: " << materialName.C_Str() << std::endl;
     logMaterialTextureTypes(material);
+    logMaterialLightInfo(material);
 
     unsigned int textureCount = countMaterialTextures(material);
     if (textureCount == 0) {
         std::cout << "Mesh has NO textures assigned in preferred channels." << std::endl;
-    } else {
+    }
+    else {
         std::cout << "Mesh loaded with " << textureCount << " textures in preferred channels." << std::endl;
     }
 
@@ -325,8 +348,36 @@ void appendAssimpMesh(
     logMeshInfo(mesh, scene);
 
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    logMaterialLightInfo(material);
+
     const our::Color materialColor = getMaterialColor(material);
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
+
+    our::Mesh::DrawBatch batch;
+
+    // Load material lighting properties into our 'batch' object.
+    aiColor3D color;
+    if (material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS)
+        batch.ambient = { color.r, color.g, color.b };
+    if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+        batch.diffuse = { color.r, color.g, color.b };
+    if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS)
+        batch.specular = { color.r, color.g, color.b };
+
+    material->Get(AI_MATKEY_SHININESS, batch.shininess);
+
+    aiString texturePath;
+    if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
+        batch.diffuseTexture = loadTexture2D(resolveTexturePath(texturePath, context.directory), context);
+    }
+    if (material->GetTexture(aiTextureType_SPECULAR, 0, &texturePath) == AI_SUCCESS) {
+        batch.specularTexture = loadTexture2D(resolveTexturePath(texturePath, context.directory), context);
+    }
+
+    if (batch.diffuseTexture == 0) {
+        batch.diffuseTexture = context.whiteTexture;
+    }
+
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
@@ -378,7 +429,11 @@ void appendAssimpMesh(
 
     const GLsizei indexCount = static_cast<GLsizei>(elements.size() - firstIndex);
     if (indexCount > 0) {
-        drawBatches.push_back({firstIndex, indexCount, texture, true});
+        batch.indexCount = indexCount;
+        batch.firstIndex = firstIndex;
+        batch.texture = texture;
+        batch.hasTexture = (texture != context.whiteTexture);
+        drawBatches.push_back(batch);
     }
 }
 
@@ -439,8 +494,8 @@ our::Mesh* loadWithAssimp(const std::string& filename) {
     }
 
     std::cout << "Loaded model file \"" << filename << "\" with "
-              << vertices.size() << " vertices and "
-              << (elements.size() / 3) << " triangles." << std::endl;
+        << vertices.size() << " vertices and "
+        << (elements.size() / 3) << " triangles." << std::endl;
 
     return new our::Mesh(vertices, elements, drawBatches, context.ownedTextures);
 }
@@ -483,16 +538,16 @@ our::Mesh* our::mesh_utils::loadOBJ(const std::string& filename) {
     // An obj file can have multiple shapes where each shape can have its own material
     // Ideally, we would load each shape into a separate mesh or store the start and end of it in the element buffer to be able to draw each shape separately
     // But we ignored this fact since we don't plan to use multiple materials in the examples
-    for (const auto &shape : shapes) {
-        for (const auto &index : shape.mesh.indices) {
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
             if (index.vertex_index < 0) continue;
 
             Vertex vertex = {};
 
-            vertex.position = {0.0f, 0.0f, 0.0f};
-            vertex.normal = {0.0f, 1.0f, 0.0f};
-            vertex.tex_coord = {0.0f, 0.0f};
-            vertex.color = {255, 255, 255, 255};
+            vertex.position = { 0.0f, 0.0f, 0.0f };
+            vertex.normal = { 0.0f, 1.0f, 0.0f };
+            vertex.tex_coord = { 0.0f, 0.0f };
+            vertex.color = { 255, 255, 255, 255 };
 
             // Read the data for a vertex from the "attrib" object
             if (index.vertex_index >= 0) {
@@ -535,7 +590,8 @@ our::Mesh* our::mesh_utils::loadOBJ(const std::string& filename) {
                 vertex_map[vertex] = new_vertex_index;
                 elements.push_back(new_vertex_index);
                 vertices.push_back(vertex);
-            } else {
+            }
+            else {
                 // if yes, just add its index in the elements vector
                 elements.push_back(it->second);
             }
@@ -547,30 +603,30 @@ our::Mesh* our::mesh_utils::loadOBJ(const std::string& filename) {
 
 // Create a sphere (the vertex order in the triangles are CCW from the outside)
 // Segments define the number of divisions on the both the latitude and the longitude
-our::Mesh* our::mesh_utils::sphere(const glm::ivec2& segments){
+our::Mesh* our::mesh_utils::sphere(const glm::ivec2& segments) {
     std::vector<our::Vertex> vertices;
     std::vector<GLuint> elements;
 
     // We populate the sphere vertices by looping over its longitude and latitude
-    for(int lat = 0; lat <= segments.y; lat++){
+    for (int lat = 0; lat <= segments.y; lat++) {
         float v = (float)lat / segments.y;
         float pitch = v * glm::pi<float>() - glm::half_pi<float>();
         float cos = glm::cos(pitch), sin = glm::sin(pitch);
-        for(int lng = 0; lng <= segments.x; lng++){
-            float u = (float)lng/segments.x;
+        for (int lng = 0; lng <= segments.x; lng++) {
+            float u = (float)lng / segments.x;
             float yaw = u * glm::two_pi<float>();
-            glm::vec3 normal = {cos * glm::cos(yaw), sin, cos * glm::sin(yaw)};
+            glm::vec3 normal = { cos * glm::cos(yaw), sin, cos * glm::sin(yaw) };
             glm::vec3 position = normal;
             glm::vec2 tex_coords = glm::vec2(u, v);
             our::Color color = our::Color(255, 255, 255, 255);
-            vertices.push_back({position, color, tex_coords, normal});
+            vertices.push_back({ position, color, tex_coords, normal });
         }
     }
 
-    for(int lat = 1; lat <= segments.y; lat++){
-        int start = lat*(segments.x+1);
-        for(int lng = 1; lng <= segments.x; lng++){
-            int prev_lng = lng-1;
+    for (int lat = 1; lat <= segments.y; lat++) {
+        int start = lat * (segments.x + 1);
+        for (int lng = 1; lng <= segments.x; lng++) {
+            int prev_lng = lng - 1;
             elements.push_back(lng + start);
             elements.push_back(lng + start - segments.x - 1);
             elements.push_back(prev_lng + start - segments.x - 1);
@@ -674,13 +730,14 @@ void extractBoneWeightForVertices(
             boneInfoMap[boneName] = newBoneInfo;
             boneID = boneCounter;
             boneCounter++;
-        } else {
+        }
+        else {
             boneID = it->second.id;
 
             if (!matricesNearlyEqual(it->second.offset, boneOffset)) {
                 std::cerr << "[ANIM] WARNING: Bone offset mismatch for bone \"" << boneName
-                          << "\" while processing mesh \"" << mesh->mName.C_Str()
-                          << "\". Keeping first discovered offset matrix." << std::endl;
+                    << "\" while processing mesh \"" << mesh->mName.C_Str()
+                    << "\". Keeping first discovered offset matrix." << std::endl;
             }
         }
 
@@ -696,7 +753,7 @@ void extractBoneWeightForVertices(
     }
 
     std::cout << "[ANIM] Extracted bones from mesh \"" << mesh->mName.C_Str()
-              << "\": " << mesh->mNumBones << " bones, total bone count now: " << boneCounter << std::endl;
+        << "\": " << mesh->mNumBones << " bones, total bone count now: " << boneCounter << std::endl;
 }
 
 void appendAssimpMeshAnimated(
@@ -729,9 +786,10 @@ void appendAssimpMeshAnimated(
         std::string nodeName = node->mName.C_Str();
         auto it = boneInfoMap.find(nodeName);
         if (it == boneInfoMap.end()) {
-            boneInfoMap[nodeName] = {boneCounter, glm::inverse(nodeTransform)};
+            boneInfoMap[nodeName] = { boneCounter, glm::inverse(nodeTransform) };
             nodeBoneID = boneCounter++;
-        } else {
+        }
+        else {
             nodeBoneID = it->second.id;
         }
     }
@@ -741,12 +799,12 @@ void appendAssimpMeshAnimated(
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
         our::Vertex vertex{};
 
-        glm::vec3 position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        glm::vec3 position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
         vertex.position = hasBones ? position : glm::vec3(nodeTransform * glm::vec4(position, 1.0f));
 
         vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
         if (mesh->HasNormals()) {
-            glm::vec3 normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+            glm::vec3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
             vertex.normal = hasBones ? normal : glm::normalize(normalTransform * normal);
         }
 
@@ -765,7 +823,7 @@ void appendAssimpMeshAnimated(
             vertex.boneIDs[j] = -1;
             vertex.boneWeights[j] = 0.0f;
         }
-        
+
         if (!hasBones && nodeBoneID != -1) {
             vertex.boneIDs[0] = nodeBoneID;
             vertex.boneWeights[0] = 1.0f;
@@ -789,7 +847,7 @@ void appendAssimpMeshAnimated(
 
     const GLsizei indexCount = static_cast<GLsizei>(elements.size() - firstIndex);
     if (indexCount > 0) {
-        drawBatches.push_back({static_cast<GLuint>(firstIndex), indexCount, texture, true});
+        drawBatches.push_back({ static_cast<GLuint>(firstIndex), indexCount, texture, true });
     }
 }
 
@@ -845,7 +903,7 @@ our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename
 
     std::cout << "[ANIM] Loading animated mesh from \"" << filename << "\"" << std::endl;
     std::cout << "[ANIM] Scene has " << scene->mNumAnimations << " animation(s), "
-              << scene->mNumMeshes << " mesh(es)" << std::endl;
+        << scene->mNumMeshes << " mesh(es)" << std::endl;
 
     AssimpBuildContext context;
     context.directory = std::filesystem::path(filename).parent_path().string();
@@ -860,7 +918,7 @@ our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename
     std::vector<our::Mesh::DrawBatch> drawBatches;
 
     processAssimpNodeAnimated(scene->mRootNode, scene, glm::mat4(1.0f), vertices, elements, drawBatches, context,
-                              animMesh->boneInfoMap, animMesh->boneCounter);
+        animMesh->boneInfoMap, animMesh->boneCounter);
 
     if (vertices.empty() || elements.empty()) {
         glDeleteTextures(static_cast<GLsizei>(context.ownedTextures.size()), context.ownedTextures.data());
@@ -870,8 +928,8 @@ our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename
     }
 
     std::cout << "[ANIM] Animated mesh loaded: " << vertices.size() << " vertices, "
-              << (elements.size() / 3) << " triangles, "
-              << animMesh->boneCounter << " bones" << std::endl;
+        << (elements.size() / 3) << " triangles, "
+        << animMesh->boneCounter << " bones" << std::endl;
 
     animMesh->mesh = new our::Mesh(vertices, elements, drawBatches, context.ownedTextures);
     return animMesh;
