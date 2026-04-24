@@ -24,6 +24,7 @@
 #include "components/mesh-renderer.hpp"
 #include "components/movement.hpp"
 #include "components/PlayerComponents/player-component.hpp"
+#include "components/EnemyComponents/enemy-soldier-component.hpp"
 
 #include <iostream>
 #include <cstdarg>
@@ -118,12 +119,19 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
         if (!entity || isDescendantOfPlayer(entity)) continue;
 
         auto* collider = entity->getComponent<ColliderComponent>();
-        auto* movement = entity->getComponent<MovementComponent>();
-        const bool isMoving = movement &&
-            (glm::length(movement->linearVelocity) > 0.0f || glm::length(movement->angularVelocity) > 0.0f);
-        if (!collider) continue;
-
+        auto* enemySoldier = entity->getComponent<EnemySoldierComponent>();
         auto* meshRenderer = entity->getComponent<MeshRendererComponent>();
+
+        // Enemies with mesh renderers should always get a dynamic convex hull,
+        // even if they don't have an explicit ColliderComponent in config.
+        const bool forceDynamicConvexHull = enemySoldier && meshRenderer && meshRenderer->mesh;
+
+        if (!collider && !forceDynamicConvexHull) continue;
+
+        auto* movement = entity->getComponent<MovementComponent>();
+        const bool hasMovementVelocity = movement &&
+            (glm::length(movement->linearVelocity) > 0.0f || glm::length(movement->angularVelocity) > 0.0f);
+        const bool isMoving = hasMovementVelocity || forceDynamicConvexHull;
 
         glm::mat4 m = entity->getLocalToWorldMatrix();
         glm::vec3 skew;
@@ -172,6 +180,12 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
                 ++staticBodies;
                 continue;
             }
+        }
+
+        // If this entity was forced to use dynamic hull (enemy mesh) and hull creation failed,
+        // skip box fallback when there is no ColliderComponent.
+        if (!collider) {
+            continue;
         }
 
         const glm::vec3 halfExtents = glm::max(glm::abs(collider->halfExtents * worldScale), glm::vec3(0.01f));
@@ -270,6 +284,12 @@ void JoltPhysicsSystem::update(float deltaTime) {
     for (auto& pair : mEntityToBody) {
         Entity* entity = pair.first;
         if (!entity || entity == mPlayerEntity) continue;
+
+        // Enemy soldiers are currently driven by gameplay logic (controller updates
+        // local transform directly). For dynamic convex hulls, Jolt body position is
+        // COM-based and writing it back can visually offset the mesh upward.
+        // Keep enemies ECS-driven for now and only mirror non-enemy dynamic bodies.
+        if (entity->getComponent<EnemySoldierComponent>()) continue;
 
         JPH::BodyID id(pair.second);
         if (!bodyInterface.IsAdded(id)) continue;
