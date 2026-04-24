@@ -6,6 +6,7 @@
 #include <systems/forward-renderer.hpp>
 #include <systems/free-camera-controller.hpp>
 #include <systems/movement.hpp>
+#include <systems/jolt-physics-system.hpp>
 #include <systems/PlayerController/player-controller.hpp>
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <asset-loader.hpp>
@@ -19,6 +20,7 @@ class Playstate: public our::State {
     our::ForwardRenderer renderer;
     our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
+    our::JoltPhysicsSystem joltPhysics;
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
     our::Entity* getCameraEntity() {
@@ -42,13 +44,17 @@ class Playstate: public our::State {
             world.deserialize(config["world"]);
         }
         // We initialize the camera controller system since it needs a pointer to the app
-        cameraController.enter(getApp());
+        cameraController.enter(getApp(), &joltPhysics);
+        // Initialize Jolt physics (Part 1 integration milestone)
+        joltPhysics.init();
+        // Build physics bodies/character from the current ECS world
+        joltPhysics.buildFromWorld(&world);
         // Then we initialize the renderer
         auto size = getApp()->getFrameBufferSize();
         renderer.initialize(size, config["renderer"]);
 
         // Initialize the player controller system
-        playerController.enter(getApp());
+        playerController.enter(getApp(), &joltPhysics);
 
         // Initialize the enemy soldier controller system
         enemySoldierController.enter(getApp());
@@ -60,6 +66,7 @@ class Playstate: public our::State {
         movementSystem.update(&world, (float)deltaTime);
         playerController.update(&world, (float)deltaTime);
         enemySoldierController.update(&world, (float)deltaTime);
+        joltPhysics.update((float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
 
@@ -208,6 +215,8 @@ class Playstate: public our::State {
     void onDestroy() override {
         // Don't forget to destroy the renderer
         renderer.destroy();
+        // Shutdown Jolt physics and release all related resources
+        joltPhysics.shutdown();
         // On exit, we call exit for the camera controller system to make sure that the mouse is unlocked
         cameraController.exit();
         playerController.exit();

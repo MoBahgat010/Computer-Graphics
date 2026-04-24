@@ -29,7 +29,10 @@
                 }
             },
             "textures":{
-                "fallback": "assets/textures/grass_ground_d.jpg"
+                "fallback": "assets/textures/grass_ground_d.jpg",
+                "grass": "assets/textures/grass_ground_d.jpg",
+                "monkey": "assets/textures/monkey.png",
+                "moon": "assets/textures/moon.jpg"
             },
             "meshes": {
                 "cube": "assets/models/cube.obj",
@@ -198,7 +201,7 @@
                         "name": "Male Character Model",
                         "position": [0, 0, 1],
                         "rotation": [0, 180, 0],
-                        "scale": [0.005, 0.005, 0.005],
+                        "scale": [0.0015, 0.0015, 0.0015],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
@@ -218,6 +221,9 @@
                         "type": "Mesh Renderer",
                         "mesh": "city",
                         "material": "city"
+                    },
+                    {
+                        "type": "Collider"
                     }
                 ]
             },
