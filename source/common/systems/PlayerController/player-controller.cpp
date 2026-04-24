@@ -126,11 +126,13 @@ namespace our {
       if(playerIsCrouch){
         // stand up → restore head height
         cameraPosition.y *=2;
-        player->setSpeed(5.0f);
+        float speed = player->getSpeed();
+        player->setSpeed(speed*2);
       } else {
         // crouch → lower head height
         cameraPosition.y /=2;
-        player->setSpeed(2.5f);
+        float speed = player->getSpeed();
+        player->setSpeed(speed/2);
       }
       player->setIsCrouch(!playerIsCrouch);
     }
