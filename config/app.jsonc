@@ -220,37 +220,41 @@
                         "material": "city"
                     }
                 ]
+            },
+            {
+                "name": "Robot Enemy",
+                "position": [
+                    4.28409,
+                    0.24859,
+                    -5.0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    0.001,
+                    0.001,
+                    0.001
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "robot",
+                        "material": "robot"
+                    },
+                    {
+                        "type": "EnemySoldier",
+                        "health": 100,
+                        "damage": 5,
+                        "speed": 1.5,
+                        "attackRange": 1.5,
+                        "detectionRange": 10.0,
+                        "attackCooldown": 1.0
+                    }
+                ]
             }
-            // {
-            //     "name": "Robot Model",
-            //     "position": [
-            //         4.28409,
-            //         0.24859,
-            //         -0.5
-            //     ],
-            //     "rotation": [
-            //         0,
-            //         0,
-            //         0
-            //     ],
-            //     "scale": [
-            //         0.001,
-            //         0.001,
-            //         0.001
-            //     ],
-            //     "components": [
-            //         {
-            //             "type": "Mesh Renderer",
-            //             "mesh": "robot",
-            //             "material": "robot"
-            //         },
-            //         {
-            //             "type": "Animation",
-            //             "animatedMesh": "robot_anim",
-            //             "animationIndex": 0
-            //         }
-            //     ]
-            // }
         ]
     }
 }

@@ -122,6 +122,8 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/components/animation-component.cpp
         source/common/components/PlayerComponents/player-component.hpp
         source/common/components/PlayerComponents/player-component.cpp
+        source/common/components/EnemyComponents/enemy-soldier-component.hpp
+        source/common/components/EnemyComponents/enemy-soldier-component.cpp
         source/common/components/component-deserializer.hpp
 
         source/common/animation/animated-mesh.hpp
@@ -138,6 +140,8 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/systems/movement.hpp
         source/common/systems/PlayerController/player-controller.hpp
         source/common/systems/PlayerController/player-controller.cpp
+        source/common/systems/EnemyController/enemy-soldier-controller.hpp
+        source/common/systems/EnemyController/enemy-soldier-controller.cpp
 )
 
 # Define the directories in which to search for the included headers

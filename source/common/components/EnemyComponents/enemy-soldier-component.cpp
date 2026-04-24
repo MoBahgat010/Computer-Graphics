@@ -10,11 +10,18 @@ namespace our {
     bool EnemySoldierComponent::getIsDead() { return isDead; }
     float EnemySoldierComponent::getAttackCooldown() { return attackCooldown; }
     float EnemySoldierComponent::getAttackTimer() { return attackTimer; }
+    float EnemySoldierComponent::getMaxChaseDuration() { return maxChaseDuration; }
+    float EnemySoldierComponent::getRestDuration() { return restDuration; }
+    float EnemySoldierComponent::getChaseTimer() { return chaseTimer; }
+    bool EnemySoldierComponent::getIsResting() { return isResting; }
+
     EnemyState EnemySoldierComponent::getCurrentState() { return currentState; }
 
     void EnemySoldierComponent::setCurrentState(EnemyState state) { currentState = state; }
     void EnemySoldierComponent::setIsDead(bool dead) { isDead = dead; }
     void EnemySoldierComponent::setAttackTimer(float timer) { attackTimer = timer; }
+    void EnemySoldierComponent::setChaseTimer(float timer) { chaseTimer = timer; }
+    void EnemySoldierComponent::setIsResting(bool resting) { isResting = resting; }
 
     void EnemySoldierComponent::decreaseHealth(float amount) {
         health -= amount;
@@ -34,6 +41,8 @@ namespace our {
         detectionRange = data.value("detectionRange", detectionRange);
         speed = data.value("speed", speed);
         attackCooldown = data.value("attackCooldown", attackCooldown);
+        maxChaseDuration = data.value("maxChaseDuration", maxChaseDuration);
+        restDuration = data.value("restDuration", restDuration);
     }
 
 }

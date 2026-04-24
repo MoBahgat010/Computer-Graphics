@@ -1,6 +1,7 @@
 #include "enemy-soldier-controller.hpp"
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 
 
@@ -46,21 +47,51 @@ namespace our {
       return;
     } 
   
-    if(distanceToPlayer <= enemy->getAttackRange() ){
-      handleAttack(enemy,player,deltaTime);
-    }else if(distanceToPlayer <= enemy->getDetectionRange()){
-      handleChase(enemy,player,deltaTime);
-    }else{
-      handleIdle(enemy);
+    if (enemy->getIsResting()) {
+      // Resting logic: tick the timer until rested
+      enemy->setChaseTimer(enemy->getChaseTimer() + deltaTime);
+      if (enemy->getChaseTimer() >= enemy->getRestDuration()) {
+        enemy->setIsResting(false);
+        enemy->setChaseTimer(0.0f); // Reset for the next chase
+      }
+      handleIdle(enemy); // Force idle while resting
+    } 
+    else {
+      // Normal behavior
+      if(distanceToPlayer <= enemy->getAttackRange() ) {
+        handleAttack(enemy,player,deltaTime);
+        // Slowly recover stamina while attacking, or just keep it paused
+        enemy->setChaseTimer(std::max(0.0f, enemy->getChaseTimer() - deltaTime));
+      } 
+      else if(distanceToPlayer <= enemy->getDetectionRange()) {
+        // Chasing logic: tick the timer up
+        enemy->setChaseTimer(enemy->getChaseTimer() + deltaTime);
+        if (enemy->getChaseTimer() >= enemy->getMaxChaseDuration()) {
+          // Exhausted! Start resting
+          enemy->setIsResting(true);
+          enemy->setChaseTimer(0.0f);
+          handleIdle(enemy);
+        } else {
+          handleChase(enemy,player,deltaTime);
+        }
+      } 
+      else {
+        // Player is far away: recover stamina quickly and idle
+        enemy->setChaseTimer(0.0f);
+        handleIdle(enemy);
+      }
     }
   }
 
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
     enemy->setCurrentState(EnemyState::ATTACKING);
+    
+    std::cout << "Enemy is attacking" << std::endl;   
+    
     // handle cooldown
     if(enemy->getAttackTimer() <= enemy->getAttackCooldown()){
-    
+      std::cout << "Enemy is on cooldown" << std::endl;   
       enemy->setAttackTimer(enemy->getAttackTimer() + deltaTime); 
       return;
     }
@@ -68,6 +99,7 @@ namespace our {
     player->decreaseHealth(enemy->getDamage());
     // reset timer
     enemy->setAttackTimer(0.0f);
+    std::cout << "Enemy attacked" << std::endl;   
 
 
 
@@ -78,7 +110,7 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
-
+    std::cout << "Enemy is chasing" << std::endl;   
     enemy->setCurrentState(EnemyState::CHASING);
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
@@ -106,12 +138,17 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy){
 
+    // std::cout << "Enemy is idle" << std::endl;   
     enemy->setCurrentState(EnemyState::IDLE);
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
+    std::cout << "Enemy is dead" << std::endl;   
       //  remove from world
-        world->removeEntity(enemy->getOwner());
+      Entity* enemyEntity = enemy->getOwner();
+      if(enemyEntity && enemyEntity->getWorld()) {
+          enemyEntity->getWorld()->markForRemoval(enemyEntity);
+      }
   }
 
 

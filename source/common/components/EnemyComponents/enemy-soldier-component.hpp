@@ -20,6 +20,13 @@ class EnemySoldierComponent : public Component {
       bool isDead =false;
       float attackCooldown=1.0;
       float attackTimer=0.0; // let say it is a stopwatch 
+      
+      // Stamina system variables
+      float maxChaseDuration = 5.0f; // Can run for 5 seconds
+      float restDuration = 3.0f;     // Needs to rest for 3 seconds
+      float chaseTimer = 0.0f;
+      bool isResting = false;
+
       EnemyState currentState = EnemyState::IDLE;
       
     public:
@@ -36,11 +43,19 @@ class EnemySoldierComponent : public Component {
     bool getIsDead();
     float getAttackCooldown();
     float getAttackTimer();
+    
+    float getMaxChaseDuration();
+    float getRestDuration();
+    float getChaseTimer();
+    bool getIsResting();
+
     EnemyState getCurrentState();
     // setters
     void setCurrentState(EnemyState state);
     void setIsDead(bool isDead) ;
     void setAttackTimer(float attackTimer);
+    void setChaseTimer(float timer);
+    void setIsResting(bool resting);
 
     void decreaseHealth(float amount);
     
