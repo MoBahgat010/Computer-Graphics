@@ -25,4 +25,15 @@ namespace our {
         }
     }
 
+    void EnemySoldierComponent::deserialize(const nlohmann::json& data) {
+        if(!data.is_object()) return;
+        
+        health = data.value("health", health);
+        damage = data.value("damage", damage);
+        attackRange = data.value("attackRange", attackRange);
+        detectionRange = data.value("detectionRange", detectionRange);
+        speed = data.value("speed", speed);
+        attackCooldown = data.value("attackCooldown", attackCooldown);
+    }
+
 }

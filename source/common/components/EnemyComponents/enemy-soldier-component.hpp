@@ -23,6 +23,10 @@ class EnemySoldierComponent : public Component {
       EnemyState currentState = EnemyState::IDLE;
       
     public:
+
+    static std::string getID() { return "EnemySoldier"; }
+    void deserialize(const nlohmann::json& data) override;
+
     // getters 
     float getHealth();
     float getDamage();
