@@ -41,6 +41,10 @@ namespace our {
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
     float distanceToPlayer = glm::distance(enemyEntity->localTransform.position, playerEntity->localTransform.position); 
+    if(enemy->getIsDead()) {
+      handleDead(enemy);
+      return;
+    } 
   
     if(distanceToPlayer <= enemy->getAttackRange() ){
       handleAttack(enemy,player,deltaTime);
@@ -52,8 +56,7 @@ namespace our {
   }
 
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
-    // enemy should not attack if dead
-    if(enemy->getIsDead()) return;
+
     enemy->setCurrentState(EnemyState::ATTACKING);
     // handle cooldown
     if(enemy->getAttackTimer() <= enemy->getAttackCooldown()){
@@ -74,12 +77,12 @@ namespace our {
   }
 
   void EnemySoldierControllerSystem::handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
-    if(enemy->getIsDead()) return;
+
 
     enemy->setCurrentState(EnemyState::CHASING);
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
-    
+
     // 1. get direction 
     glm::vec3 directionToPlayer = (playerEntity->localTransform.position - enemyEntity->localTransform.position);
     // 2. remove y axis
@@ -102,11 +105,13 @@ namespace our {
   }
 
   void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy){
-     
+
+    enemy->setCurrentState(EnemyState::IDLE);
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
-      
+      //  remove from world
+        world->removeEntity(enemy->getOwner());
   }
 
 
