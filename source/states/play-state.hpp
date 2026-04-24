@@ -171,6 +171,26 @@ class Playstate: public our::State {
             }
         }
         ImGui::End();
+        
+        // ── Crosshair Overlay ────────────────────────────────────────────────
+        auto* drawList = ImGui::GetForegroundDrawList();
+        glm::ivec2 frameSize = getApp()->getFrameBufferSize();
+        ImVec2 center((float)frameSize.x / 2.0f, (float)frameSize.y / 2.0f);
+        ImU32 color = IM_COL32(255, 255, 255, 220); // Semi-transparent white
+        
+        float gap = 4.0f;
+        float size = 10.0f;
+        float thickness = 1.5f;
+
+        // Draw the 4 arms of the crosshair
+        drawList->AddLine(ImVec2(center.x - gap - size, center.y), ImVec2(center.x - gap, center.y), color, thickness); // Left
+        drawList->AddLine(ImVec2(center.x + gap, center.y), ImVec2(center.x + gap + size, center.y), color, thickness); // Right
+        drawList->AddLine(ImVec2(center.x, center.y - gap - size), ImVec2(center.x, center.y - gap), color, thickness); // Top
+        drawList->AddLine(ImVec2(center.x, center.y + gap), ImVec2(center.x, center.y + gap + size), color, thickness); // Bottom
+
+        // Center dot
+        drawList->AddCircleFilled(center, 2.0f, color);
+    
     }
 
     void onDestroy() override {
