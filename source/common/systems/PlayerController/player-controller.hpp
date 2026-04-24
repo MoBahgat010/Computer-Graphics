@@ -17,6 +17,7 @@ namespace our {
     void handleCrouch(PlayerComponent* player,Entity* cameraEntity);
     void handleFire(PlayerComponent* player);
     void handleReload(PlayerComponent* player);
+    void handleDeath();
 
     public:
     void enter(Application* app);

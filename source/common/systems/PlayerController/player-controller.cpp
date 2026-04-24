@@ -32,6 +32,10 @@ namespace our {
 
       if(!cameraEntity) return;
 
+      if ( player->getIsDead()){
+        handleDeath();
+      } 
+
       handleMovement(player,playerEntity,deltaTime);
       handleLook(player,playerEntity, cameraEntity);
       handleCrouch(player, cameraEntity);
@@ -125,6 +129,11 @@ namespace our {
       std::cout << "reload" << std::endl;  
       player->reloadWeapon();
     }
+  }
+
+  void PlayerControllerSystem::handleDeath(){
+    app->getMouse().unlockMouse(app->getWindow());
+    app->changeState("game-over");
   }
 
   void PlayerControllerSystem::exit(){
