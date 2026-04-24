@@ -1,10 +1,12 @@
 #include "player-controller.hpp"
+#include "../jolt-physics-system.hpp"
 #include <iostream>
 namespace our {
 
 
-  void PlayerControllerSystem::enter(Application* app){
+  void PlayerControllerSystem::enter(Application* app, JoltPhysicsSystem* physics){
       this->app = app;
+      this->joltPhysics = physics;
       app->getMouse().lockMouse(app->getWindow());
   }
 
@@ -53,25 +55,38 @@ namespace our {
     right.y = 0;
     right = glm::normalize(right);
 
-    // Get a reference to the position
-    glm::vec3& position = playerEntity->localTransform.position;
+    glm::vec3 desiredVelocity(0.0f);
 
     //  move forward
     if (keyboard.isPressed(GLFW_KEY_W) ){
-      position += front * player->getSpeed() * deltaTime;
+      desiredVelocity += front * player->getSpeed();
     }
 
     // move backward
     if (keyboard.isPressed(GLFW_KEY_S) ){
-      position -= front * player->getSpeed() * deltaTime;
+      desiredVelocity -= front * player->getSpeed();
     }
     //  move left
     if (keyboard.isPressed(GLFW_KEY_A) ){
-      position -= right * player->getSpeed() * deltaTime;
+      desiredVelocity -= right * player->getSpeed();
     }
     //  move right
     if (keyboard.isPressed(GLFW_KEY_D) ){
-      position += right * player->getSpeed() * deltaTime;
+      desiredVelocity += right * player->getSpeed();
+    }
+
+    float len = glm::length(desiredVelocity);
+    if(len > player->getSpeed() && len > 1e-6f) {
+      desiredVelocity = (desiredVelocity / len) * player->getSpeed();
+    }
+
+    if(joltPhysics && joltPhysics->isInitialized()) {
+      joltPhysics->setPlayerEntity(playerEntity);
+      joltPhysics->setPlayerVelocity(desiredVelocity);
+    } else {
+      // Fallback when physics is disabled.
+      glm::vec3& position = playerEntity->localTransform.position;
+      position += desiredVelocity * deltaTime;
     }
   }
 
@@ -82,17 +97,22 @@ namespace our {
 
     glm::vec3& rotation = playerEntity->localTransform.rotation;
     glm::vec3& cameraRotation = cameraEntity->localTransform.rotation;
+    
+    // Yaw: Rotate the player horizontally
     rotation.y -= delta.x * player->getMouseSensitivity();
+    
+    // Pitch: Rotate the camera vertically
     cameraRotation.x -= delta.y * player->getMouseSensitivity();
+
     // Clamp pitch: don't go beyond straight up or down
     if(cameraRotation.x < -glm::half_pi<float>() * 0.99f) cameraRotation.x = -glm::half_pi<float>() * 0.99f;
     if(cameraRotation.x >  glm::half_pi<float>() * 0.99f) cameraRotation.x =  glm::half_pi<float>() * 0.99f;
+    
     rotation.y = glm::wrapAngle(rotation.y);
-
   }
 
 
-  void PlayerControllerSystem::handleCrouch(PlayerComponent* player,Entity* cameraEntity){
+  void PlayerControllerSystem::handleCrouch(PlayerComponent* player, Entity* cameraEntity){
     auto& keyboard = app->getKeyboard();
     
     if (keyboard.justPressed(GLFW_KEY_C) ){

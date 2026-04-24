@@ -3,6 +3,7 @@
 #include "../ecs/world.hpp"
 #include "../components/camera.hpp"
 #include "../components/free-camera-controller.hpp"
+#include "jolt-physics-system.hpp"
 
 #include "../application.hpp"
 
@@ -20,26 +21,33 @@ namespace our
     class FreeCameraControllerSystem {
         Application* app; // The application in which the state runs
         bool mouse_locked = false; // Is the mouse locked
+        JoltPhysicsSystem* joltPhysics = nullptr; // Optional physics bridge for FPS movement
 
     public:
         // When a state enters, it should call this function and give it the pointer to the application
-        void enter(Application* app){
+        void enter(Application* app, JoltPhysicsSystem* physics = nullptr){
             this->app = app;
+            this->joltPhysics = physics;
         }
 
         // This should be called every frame to update all entities containing a FreeCameraControllerComponent 
         void update(World* world, float deltaTime) {
-            // First of all, we search for an entity containing both a CameraComponent and a FreeCameraControllerComponent
-            // As soon as we find one, we break
+            // First of all, we search for an entity containing a CameraComponent.
+            // If it also has a FreeCameraControllerComponent, we use its settings.
+            // Otherwise, we fallback to default settings so movement still works.
             CameraComponent* camera = nullptr;
             FreeCameraControllerComponent *controller = nullptr;
             for(auto entity : world->getEntities()){
                 camera = entity->getComponent<CameraComponent>();
                 controller = entity->getComponent<FreeCameraControllerComponent>();
-                if(camera && controller) break;
+                if(camera) break;
             }
-            // If there is no entity with both a CameraComponent and a FreeCameraControllerComponent, we can do nothing so we return
-            if(!(camera && controller)) return;
+            // If there is no camera entity, we can do nothing.
+            if(!camera) return;
+
+            // Default settings if the scene doesn't provide a FreeCameraController component.
+            FreeCameraControllerComponent defaultController;
+            if(!controller) controller = &defaultController;
             // Get the entity that we found via getOwner of camera (we could use controller->getOwner())
             Entity* entity = camera->getOwner();
 
@@ -88,16 +96,39 @@ namespace our
             // If the LEFT SHIFT key is pressed, we multiply the position sensitivity by the speed up factor
             if(app->getKeyboard().isPressed(GLFW_KEY_LEFT_SHIFT)) current_sensitivity *= controller->speedupFactor;
 
-            // We change the camera position based on the keys WASD/QE
-            // S & W moves the player back and forth
-            if(app->getKeyboard().isPressed(GLFW_KEY_W)) position += front * (deltaTime * current_sensitivity.z);
-            if(app->getKeyboard().isPressed(GLFW_KEY_S)) position -= front * (deltaTime * current_sensitivity.z);
-            // Q & E moves the player up and down
-            if(app->getKeyboard().isPressed(GLFW_KEY_Q)) position += up * (deltaTime * current_sensitivity.y);
-            if(app->getKeyboard().isPressed(GLFW_KEY_E)) position -= up * (deltaTime * current_sensitivity.y);
-            // A & D moves the player left or right 
-            if(app->getKeyboard().isPressed(GLFW_KEY_D)) position += right * (deltaTime * current_sensitivity.x);
-            if(app->getKeyboard().isPressed(GLFW_KEY_A)) position -= right * (deltaTime * current_sensitivity.x);
+            // Build keyboard movement vector from WASD/QE
+            glm::vec3 desiredVelocity(0.0f);
+
+            // Ground-locked horizontal movement for FPS controls.
+            glm::vec3 flatFront = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
+            if(glm::length(flatFront) < 1e-6f) flatFront = glm::vec3(0.0f, 0.0f, -1.0f);
+            glm::vec3 flatRight = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
+            if(glm::length(flatRight) < 1e-6f) flatRight = glm::vec3(1.0f, 0.0f, 0.0f);
+
+            if(app->getKeyboard().isPressed(GLFW_KEY_W)) desiredVelocity += flatFront * current_sensitivity.z;
+            if(app->getKeyboard().isPressed(GLFW_KEY_S)) desiredVelocity -= flatFront * current_sensitivity.z;
+            if(app->getKeyboard().isPressed(GLFW_KEY_D)) desiredVelocity += flatRight * current_sensitivity.x;
+            if(app->getKeyboard().isPressed(GLFW_KEY_A)) desiredVelocity -= flatRight * current_sensitivity.x;
+
+            // Optional vertical fly controls (kept for free-cam fallback).
+            if(app->getKeyboard().isPressed(GLFW_KEY_Q)) desiredVelocity += up * current_sensitivity.y;
+            if(app->getKeyboard().isPressed(GLFW_KEY_E)) desiredVelocity -= up * current_sensitivity.y;
+
+            // Normalize diagonal movement so speed is consistent.
+            float len = glm::length(desiredVelocity);
+            if(len > 1e-6f) {
+                float maxSpeed = glm::max(current_sensitivity.x, glm::max(current_sensitivity.y, current_sensitivity.z));
+                desiredVelocity = (desiredVelocity / len) * maxSpeed;
+            }
+
+            if(joltPhysics && joltPhysics->isInitialized()) {
+                // Drive the player using Jolt character velocity.
+                joltPhysics->setPlayerEntity(entity);
+                joltPhysics->setPlayerVelocity(desiredVelocity);
+            } else {
+                // Fallback: old free camera movement without physics.
+                position += desiredVelocity * deltaTime;
+            }
         }
 
         // When the state exits, it should call this function to ensure the mouse is unlocked
