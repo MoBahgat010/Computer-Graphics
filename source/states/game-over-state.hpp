@@ -55,18 +55,25 @@ class GameOverState : public our::State {
             IM_COL32(0, 0, 0, 255)
         );
 
-        const float quoteWidth = io.DisplaySize.x * 0.68f;
+        const float quoteWidth = io.DisplaySize.x * 0.74f;
         const float quoteX = (io.DisplaySize.x - quoteWidth) * 0.5f;
-        const float quoteY = io.DisplaySize.y * 0.33f;
+        const float quoteY = io.DisplaySize.y * 0.30f;
+        const ImVec2 boldOffset(0.9f, 0.0f);
 
-        ImGui::SetWindowFontScale(1.5f);
+        ImGui::SetWindowFontScale(2.0f);
         ImGui::PushTextWrapPos(quoteX + quoteWidth);
+        ImGui::SetCursorPos(ImVec2(quoteX + boldOffset.x, quoteY + boldOffset.y));
+        ImGui::TextColored(ImVec4(0.70f, 0.70f, 0.70f, 0.9f), "%s", quotes[selectedQuote].line);
         ImGui::SetCursorPos(ImVec2(quoteX, quoteY));
         ImGui::TextColored(ImVec4(0.95f, 0.95f, 0.95f, 1.0f), "%s", quotes[selectedQuote].line);
         ImGui::PopTextWrapPos();
 
-        ImGui::SetWindowFontScale(1.0f);
-        ImGui::SetCursorPos(ImVec2(quoteX, quoteY + 72.0f));
+        const ImVec2 quoteTextSize = ImGui::CalcTextSize(quotes[selectedQuote].line, nullptr, false, quoteWidth);
+
+        ImGui::SetWindowFontScale(1.35f);
+        ImGui::SetCursorPos(ImVec2(quoteX + boldOffset.x, quoteY + quoteTextSize.y + 28.0f + boldOffset.y));
+        ImGui::TextColored(ImVec4(0.56f, 0.56f, 0.56f, 0.9f), "-- %s", quotes[selectedQuote].author);
+        ImGui::SetCursorPos(ImVec2(quoteX, quoteY + quoteTextSize.y + 28.0f));
         ImGui::TextColored(ImVec4(0.72f, 0.72f, 0.72f, 1.0f), "-- %s", quotes[selectedQuote].author);
 
         // Metallic rustic button at bottom center.
