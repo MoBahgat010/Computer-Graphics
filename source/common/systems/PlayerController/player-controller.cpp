@@ -1,5 +1,5 @@
 #include "player-controller.hpp"
-
+#include <iostream>
 namespace our {
 
 
@@ -23,7 +23,8 @@ namespace our {
       if(!player || !playerEntity) return;
       handleMovement(player,playerEntity,deltaTime);
       handleCrouch(player,playerEntity);
-      
+      handleFire(player);
+      handleReload(player);
   }
 
   void PlayerControllerSystem::handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime){
@@ -79,6 +80,22 @@ namespace our {
         player->setSpeed(2.5f);
       }
       player->setIsCrouch(!playerIsCrouch);
+    }
+  }
+
+  void PlayerControllerSystem::handleFire(PlayerComponent* player){
+    auto& mouse=app->getMouse();
+    if(mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT))  {
+      std::cout << "fire" << std::endl;  
+      player->decreaseMagazineAmmo();
+    }  
+  }
+
+  void PlayerControllerSystem::handleReload(PlayerComponent*player){
+    auto& keyboard = app->getKeyboard();
+    if(keyboard.justPressed(GLFW_KEY_R))  {
+      std::cout << "reload" << std::endl;  
+      player->reloadWeapon();
     }
   }
 

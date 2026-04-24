@@ -10,6 +10,9 @@ namespace our {
     Application* app = nullptr;
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
     void handleCrouch(PlayerComponent* player, Entity* playerEntity);
+    void handleFire(PlayerComponent* player);
+    void handleReload(PlayerComponent* player);
+
     public:
     void enter(Application* app);
     void update(World* world, float deltaTime);
