@@ -132,8 +132,8 @@ namespace our {
     // 4. move
     enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
     
-    // 5. look at the player
-    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
+    // 5. look at the player (added PI to fix 180 degree backward walking)
+    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z) + glm::pi<float>();
     
 
 
@@ -154,8 +154,9 @@ namespace our {
     // We'll use the controller's logic: move along its "forward".
     glm::vec3 forward(glm::sin(yaw), 0.0f, glm::cos(yaw));
     
-    // Walk slowly forward
-    enemyEntity->localTransform.position += forward * (enemy->getSpeed() * 0.5f) * deltaTime;
+    // To satisfy "move infinitely" and "move it yourself":
+    // Move forward (relative to model's -Z forward axis)
+    enemyEntity->localTransform.position -= forward * (enemy->getSpeed() * 0.5f) * deltaTime;
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
