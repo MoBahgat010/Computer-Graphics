@@ -24,7 +24,7 @@ uniform vec3 materialDiffuse;    // Reflectivity
 uniform vec3 materialSpecular;   // Reflectivity
 uniform float materialShininess; 
 
-uniform DirectionalLight directional_light;
+uniform DirectionalLight light;
 
 float calculate_lambert(vec3 normal, vec3 light_direction){
         return max(0.0f, dot(normal, -light_direction));
@@ -41,10 +41,10 @@ void main() {
     vec3 view_direction = normalize(frag_in.view_direction);
 
     vec3 ambient = light.ambient * materialAmbient;
-    float diffuse_factor = calculate_lambert(normal, directional_light.direction);
-    vec3 diffuse = directional_light.diffuse * materialDiffuse * diffuse_factor;
-    float specular_factor = calculate_phong(normal, directional_light.direction, view_direction, materialShininess);
-    vec3 specular = directional_light.specular * materialSpecular * specular_factor;
+    float diffuse_factor = calculate_lambert(normal, light.direction);
+    vec3 diffuse = light.diffuse * materialDiffuse * diffuse_factor;
+    float specular_factor = calculate_phong(normal, light.direction, view_direction, materialShininess);
+    vec3 specular = light.specular * materialSpecular * specular_factor;
 
     frag_color = vec4(ambient + diffuse + specular, 1.0f) * frag_in.color;
 }

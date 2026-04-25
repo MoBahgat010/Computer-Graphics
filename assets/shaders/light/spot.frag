@@ -5,9 +5,9 @@ in varyings{
     vec3 Normal;   // Normal vector in world space
     vec3 ViewDir;  // Direction from fragment to viewer
     vec4 Color;   // Color of the fragment
-} fs_in;
+} frag_in;
 // Output color
-out vec4 FragColor;
+out vec4 frag_color;
 
 
 struct SpotLight {
@@ -50,10 +50,10 @@ float calculate_phong(vec3 normal, vec3 light_direction, vec3 view, float shinin
 
 void main()
 {
-    vec3 normal = normalize(fs_in.normal);
-    vec3 view_direction = normalize(fs_in.view_direction);
+    vec3 normal = normalize(frag_in.normal);
+    vec3 view_direction = normalize(frag_in.view_direction);
 
-    vec3 light_direction = fs_in.FragPos - light.position;
+    vec3 light_direction = frag_in.FragPos - light.position;
     float distance = length(light_direction);
     light_direction = normalize(light_direction);
 
@@ -75,5 +75,5 @@ void main()
     vec3 specular = spec * light.specular * materialSpecular;
 
     vec3 lighting = (diffuse + specular) * attenuation * angle_attenuation + ambient;
-    frag_color = fs_in.Color * vec4(lighting, 1.0);
+    frag_color = frag_in.Color * vec4(lighting, 1.0);
 }
