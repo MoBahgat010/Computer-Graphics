@@ -64,7 +64,7 @@ class Playstate: public our::State {
         return nullptr;
     }
 
-    virtual std::string getSceneName() const { return "scene"; }
+    virtual std::string getSceneName() const { return "level1_scene"; }
 
     void onInitialize() override {
         // First of all, we get the scene configuration from the app config
@@ -131,10 +131,12 @@ class Playstate: public our::State {
         }
 
         // Check level 1 victory condition
-        if (getSceneName() == "scene") { // Assuming "scene" is Level 1
+        if (getSceneName() == "level1_scene") { //  "level1_scene" is Level 1
             int enemyCount = 0;
             for(auto entity : world.getEntities()){
-                if(entity->getComponent<our::EnemySoldierComponent>()) enemyCount++;
+                if(entity->getComponent<our::EnemySoldierComponent>()) {enemyCount++;
+                break;
+                }
             }
             if (enemyCount == 0) {
                 // Enemies cleared! Go to Level 1 Victory screen

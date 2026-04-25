@@ -8,7 +8,7 @@
         },
         "fullscreen": false
     },
-    "scene": {
+    "level1_scene": {
         "renderer": {
             "postprocess": "assets/shaders/postprocess/vignette.frag"
         },
@@ -39,7 +39,6 @@
                 "male_character": "assets/models/male_character/player_gun.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx",
                 "opus": "assets/models/opus/sci-fi_humanoid_robot.glb"
-                // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx",
@@ -149,26 +148,6 @@
                     "texture": "moon",
                     "sampler": "default"
                 }
-                // "room": {
-                //     "type": "textured",
-                //     "shader": "textured",
-                //     "pipelineState": {
-                //         "faceCulling": {
-                //             "enabled": false
-                //         },
-                //         "depthTesting": {
-                //             "enabled": true
-                //         }
-                //     },
-                //     "tint": [
-                //         1,
-                //         1,
-                //         1,
-                //         1
-                //     ],
-                //     "texture": "moon",
-                //     "sampler": "default"
-                // }
             }
         },
         "enemySpawner": {
@@ -186,9 +165,9 @@
                 "mesh": "robot",
                 "material": "robot",
                 "scale": [
-                    0.00004,
-                    0.00004,
-                    0.00004
+                    4e-05,
+                    4e-05,
+                    4e-05
                 ],
                 "health": 100,
                 "damage": 1,
@@ -285,9 +264,21 @@
                 ]
             },
             {
-                "position": [0, 0, 0],
-                "rotation": [0, 0, 0],
-                "scale": [15, 15, 15],
+                "position": [
+                    0,
+                    0,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    15,
+                    15,
+                    15
+                ],
                 "components": [
                     {
                         "type": "Mesh Renderer",
@@ -338,21 +329,291 @@
                     0.0
                 ]
             }
-            // {
-            //     "position": [0, 0, 0],
-            //     "rotation": [0, 0, 0],
-            //     "scale": [15, 15, 15],
-            //     "components": [
-            //         {
-            //             "type": "Mesh Renderer",
-            //             "mesh": "opus",
-            //             "material": "opus"
-            //         },
-            //         {
-            //             "type": "Collider"
-            //         }
-            //     ]
-            // }
+        ]
+    },
+    "level2_scene": {
+        "renderer": {
+            "postprocess": "assets/shaders/postprocess/vignette.frag"
+        },
+        "assets": {
+            "shaders": {
+                "tinted": {
+                    "vs": "assets/shaders/tinted.vert",
+                    "fs": "assets/shaders/tinted.frag"
+                },
+                "textured": {
+                    "vs": "assets/shaders/textured.vert",
+                    "fs": "assets/shaders/textured.frag"
+                },
+                "skinned": {
+                    "vs": "assets/shaders/skinned.vert",
+                    "fs": "assets/shaders/skinned.frag"
+                }
+            },
+            "textures": {
+                "fallback": "assets/textures/grass_ground_d.jpg"
+            },
+            "meshes": {
+                "cube": "assets/models/cube.obj",
+                "monkey": "assets/models/monkey.obj",
+                "plane": "assets/models/plane.obj",
+                "sphere": "assets/models/sphere.obj",
+                "male_character": "assets/models/male_character/player_gun.fbx",
+                "robot": "assets/models/robot/robot_gun.fbx",
+                "opus": "assets/models/opus/sci-fi_humanoid_robot.glb",
+                "room": "assets/models/room/room.fbx"
+            },
+            "animatedMeshes": {
+                "robot_anim": "assets/models/robot/robot_gun.fbx",
+                "player_anim": "assets/models/male_character/player_gun.fbx"
+            },
+            "samplers": {
+                "default": {}
+            },
+            "materials": {
+                "main-map": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "grass",
+                    "sampler": "default"
+                },
+                "male_character": {
+                    "type": "textured",
+                    "shader": "skinned",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "player",
+                    "sampler": "default"
+                },
+                "robot": {
+                    "type": "textured",
+                    "shader": "skinned",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "opus": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "room": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                }
+            }
+        },
+        "world": [
+            {
+                "name": "Player",
+                "position": [
+                    4.28409,
+                    0.12,
+                    -0.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
+                "components": [
+                    {
+                        "type": "Player"
+                    },
+                    {
+                        "type": "Collider",
+                        "halfExtents": [
+                            0.11,
+                            0.12,
+                            0.11
+                        ],
+                        "centerOffset": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                ],
+                "children": [
+                    {
+                        "name": "Camera",
+                        "position": [
+                            0,
+                            0.12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "components": [
+                            {
+                                "type": "Camera",
+                                "near": 0.05,
+                                "far": 3000,
+                                "fovY": 75
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Male Character Model",
+                        "position": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ],
+                        "scale": [
+                            0.0015,
+                            0.0015,
+                            0.0015
+                        ],
+                        "components": [
+                            {
+                                "type": "Mesh Renderer",
+                                "mesh": "male_character",
+                                "material": "male_character"
+                            },
+                            {
+                                "type": "Animation",
+                                "animatedMesh": "player_anim",
+                                "animationIndex": 1,
+                                "inPlace": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "position": [
+                    0,
+                    0,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "room",
+                        "material": "room"
+                    },
+                    {
+                        "type": "Collider"
+                    }
+                ]
+            },
+            {
+                "name": "Opus",
+                "position": [
+                    0,
+                    0.12,
+                    -10
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    15,
+                    15,
+                    15
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "opus",
+                        "material": "opus"
+                    },
+                    {
+                        "type": "Collider"
+                    }
+                ]
+            }
         ]
     }
 }
