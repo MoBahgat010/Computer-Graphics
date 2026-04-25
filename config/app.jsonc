@@ -160,6 +160,19 @@
                         "animatedMesh": "robot_anim",
                         "animationIndex": 0,
                         "inPlace": true
+                    },
+                    {
+                        "type": "Collider",
+                        "halfExtents": [
+                            0.11,
+                            0.3,
+                            0.11
+                        ],
+                        "centerOffset": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
                     }
                 ],
                 "mesh": "robot",
@@ -197,9 +210,9 @@
                     {
                         "type": "Collider",
                         "halfExtents": [
-                            0.11,
-                            0.12,
-                            0.11
+                            0.17,
+                            0.2,
+                            0.17
                         ],
                         "centerOffset": [
                             0.0,
@@ -213,7 +226,7 @@
                         "name": "Camera",
                         "position": [
                             0.01,
-                            0.45,
+                            0.18,
                             -0.09
                         ],
                         "rotation": [
@@ -224,7 +237,7 @@
                         "components": [
                             {
                                 "type": "Camera",
-                                "near": 0.05,
+                                "near": 0.01,
                                 "far": 3000,
                                 "fovY": 75
                             }
@@ -234,7 +247,7 @@
                         "name": "Male Character Model",
                         "position": [
                             0.02,
-                            0.31,
+                            0.1,
                             -0.05
                         ],
                         "rotation": [
@@ -243,9 +256,9 @@
                             0
                         ],
                         "scale": [
-                            0.00010,
-                            0.00010,
-                            0.00010
+                            0.00006,
+                            0.00006,
+                            0.00006
                         ],
                         "components": [
                             {
