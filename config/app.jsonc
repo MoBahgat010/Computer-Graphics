@@ -1,11 +1,10 @@
 {
     "start-scene": "start-screen",
-    "window":
-    {
-        "title":"Carrer Not Found 404",
-        "size":{
-            "width":1920,
-            "height":960
+    "window": {
+        "title": "Carrer Not Found 404",
+        "size": {
+            "width": 1920,
+            "height": 960
         },
         "fullscreen": false
     },
@@ -68,46 +67,6 @@
                     "texture": "grass",
                     "sampler": "default"
                 },
-                "monkey": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "monkey",
-                    "sampler": "default"
-                },
-                "moon": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
                 "city": {
                     "type": "textured",
                     "shader": "textured",
@@ -136,7 +95,7 @@
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true 
+                            "enabled": true
                         }
                     },
                     "tint": [
@@ -194,37 +153,73 @@
             "enemiesPerPoint": 2,
             "spawnOffset": 0.6,
             "enemy": {
+                "components": [
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "robot_anim",
+                        "animationIndex": 0,
+                        "inPlace": true
+                    }
+                ],
                 "mesh": "robot",
                 "material": "robot",
-                "scale": [0.00004, 0.00004, 0.00004],
+                "scale": [
+                    0.00004,
+                    0.00004,
+                    0.00004
+                ],
                 "health": 100,
                 "damage": 3,
-                "speed": 1.5,
+                "speed": 3.0,
                 "attackRange": 1.5,
                 "detectionRange": 5.0,
                 "attackCooldown": 1.0
             }
         },
-        "world":[
+        "world": [
             {
                 "name": "Player",
-                "position": [4.28409, 0.12, -0.395433],
-                "rotation": [0, 180, 0],
+                "position": [
+                    4.28409,
+                    0.12,
+                    -0.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
                 "components": [
                     {
                         "type": "Player"
                     },
                     {
                         "type": "Collider",
-                        "halfExtents": [0.11, 0.12, 0.11],
-                        "centerOffset": [0.0, 0.0, 0.0]
+                        "halfExtents": [
+                            0.11,
+                            0.12,
+                            0.11
+                        ],
+                        "centerOffset": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
                     }
                 ],
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [0, 0.12, 0],
-                        "rotation": [0, 0, 0],
+                        "position": [
+                            0,
+                            0.12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ],
                         "components": [
                             {
                                 "type": "Camera",
@@ -236,14 +231,32 @@
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [0, 0, 1],
-                        "rotation": [0, 180, 0],
-                        "scale": [0.0015, 0.0015, 0.0015],
+                        "position": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ],
+                        "scale": [
+                            0.0015,
+                            0.0015,
+                            0.0015
+                        ],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
                                 "mesh": "male_character",
                                 "material": "male_character"
+                            },
+                            {
+                                "type": "Animation",
+                                "animatedMesh": "male_character_anim",
+                                "animationIndex": 1,
+                                "inPlace": true
                             }
                         ]
                     }
@@ -266,44 +279,43 @@
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [26.2637, 0.119991, -0.326302],
-                "rotation": [0.0, 0.0, 0.0]
+                "position": [
+                    26.2637,
+                    0.119991,
+                    -0.326302
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [4.61593, 0.119991, -10.3189],
-                "rotation": [0.0, 0.0, 0.0]
+                "position": [
+                    4.61593,
+                    0.119991,
+                    -10.3189
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [-16.1855, 0.119991, -0.577851],
-                "rotation": [0.0, 0.0, 0.0]
+                "position": [
+                    -16.1855,
+                    0.119991,
+                    -0.577851
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             }
-            // {
-            //     "name": "Room Model",
-            //     "position": [
-            //         0,
-            //         0,
-            //         0
-            //     ],
-            //     "rotation": [
-            //         0,
-            //         0,
-            //         0
-            //     ],
-            //     "scale": [
-            //         1,
-            //         1,
-            //         1
-            //     ],
-            //     "components": [
-            //         {
-            //             "type": "Mesh Renderer",
-            //             "mesh": "room",
-            //             "material": "room"
-            //         }
-            //     ]
-            // }
         ]
     }
 }
