@@ -687,9 +687,9 @@
                     0
                 ],
                 "scale": [
-                    5,
-                    5,
-                    5
+                    4,
+                    4,
+                    4
                 ],
                 "components": [
                     {
@@ -711,7 +711,7 @@
                         "health": 500,
                         "attackDamage": 10,
                         "speed": 2.0,
-                        "attackRange": 10.0,
+                        "attackRange": 20.0,
                         "detectionRange": 100.0,
                         "phaseThreshold": 0.4
                     }
