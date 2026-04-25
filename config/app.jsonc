@@ -37,13 +37,12 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/male_character/palyer_gun.fbx",
+                "male_character": "assets/models/male_character/survival_character.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx"
                 // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
-                "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "male_character_anim": "assets/models/male_character/palyer_gun.fbx"
+                "robot_anim": "assets/models/robot/robot_gun.fbx"
             },
             "samplers": {
                 "default": {}
@@ -131,7 +130,7 @@
                 },
                 "male_character": {
                     "type": "textured",
-                    "shader": "skinned",
+                    "shader": "textured",
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -195,13 +194,6 @@
             "enemiesPerPoint": 2,
             "spawnOffset": 0.6,
             "enemy": {
-                "components": [
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0
-                    }
-                ],
                 "mesh": "robot",
                 "material": "robot",
                 "scale": [0.00004, 0.00004, 0.00004],
@@ -258,21 +250,9 @@
                 ]
             },
             {
-                "position": [
-                    0,
-                    0,
-                    0
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    15,
-                    15,
-                    15
-                ],
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [15, 15, 15],
                 "components": [
                     {
                         "type": "Mesh Renderer",
@@ -285,64 +265,19 @@
                 ]
             },
             {
-                "name": "Male Character Model",
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
-                "rotation": [
-                    0,
-                    45,
-                    0
-                ],
-                "scale": [
-                    0.01,
-                    0.01,
-                    0.01
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "male_character",
-                        "material": "male_character"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "male_character_anim",
-                        "animationIndex": 1
-                    }
-                ]
+                "name": "EnemySpawnPoint",
+                "position": [26.2637, 0.119991, -0.326302],
+                "rotation": [0.0, 0.0, 0.0]
             },
             {
-                "name": "Robot Model",
-                "position": [
-                    0,
-                    0,
-                    10
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    0.001,
-                    0.001,
-                    0.001
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "robot",
-                        "material": "robot"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0
-                    }
-                ]
+                "name": "EnemySpawnPoint",
+                "position": [4.61593, 0.119991, -10.3189],
+                "rotation": [0.0, 0.0, 0.0]
+            },
+            {
+                "name": "EnemySpawnPoint",
+                "position": [-16.1855, 0.119991, -0.577851],
+                "rotation": [0.0, 0.0, 0.0]
             }
             // {
             //     "name": "Room Model",
