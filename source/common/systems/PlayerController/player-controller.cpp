@@ -142,7 +142,10 @@ namespace our {
     auto& mouse=app->getMouse();
     if(mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT))  {
       std::cout << "fire" << std::endl;  
-      if (player->getMagazineAmmo()<=0) return;
+      if (player->getMagazineAmmo()<=0) {
+        emptyAmmoAudioPlayer.play("assets/audio/game/empty-ammo-sound.mp3", 0.7f);
+        return;
+      }
       glm::mat4 cameraToWorld = cameraEntity->getLocalToWorldMatrix();
       
       //  (camera position in world space)

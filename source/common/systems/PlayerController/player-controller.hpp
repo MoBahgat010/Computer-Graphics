@@ -20,6 +20,7 @@ namespace our {
     Application* app = nullptr;
     JoltPhysicsSystem* joltPhysics = nullptr;
     AudioPlayer fireAudioPlayer;
+    AudioPlayer emptyAmmoAudioPlayer;
     AudioPlayer reloadAudioPlayer;
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
     void handleLook(PlayerComponent* player, Entity* playerEntity,Entity* cameraEntity);
