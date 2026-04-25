@@ -1,74 +1,110 @@
 #pragma once
 
 #include <application.hpp>
-#include <imgui.h>
+#include <shader/shader.hpp>
+#include <texture/texture2d.hpp>
+#include <texture/texture-utils.hpp>
+#include <material/material.hpp>
+#include <mesh/mesh.hpp>
 #include <audio/audio-player.hpp>
+#include <vector>
+#include <string>
 
 class CreditsState : public our::State {
+    our::TexturedMaterial* slideMaterial = nullptr;
+    our::Mesh* rectangle = nullptr;
     our::AudioPlayer creditsAudioPlayer;
+    std::vector<our::Texture2D*> slides;
+    size_t currentSlide = 0;
+    float slideTimer = 0.0f;
+    static constexpr float SlideDurationSeconds = 15.0f;
 
     void onInitialize() override {
         getApp()->getMouse().unlockMouse(getApp()->getWindow());
+
+        slideMaterial = new our::TexturedMaterial();
+        slideMaterial->shader = new our::ShaderProgram();
+        slideMaterial->shader->attach("assets/shaders/textured.vert", GL_VERTEX_SHADER);
+        slideMaterial->shader->attach("assets/shaders/textured.frag", GL_FRAGMENT_SHADER);
+        slideMaterial->shader->link();
+        slideMaterial->tint = glm::vec4(1.0f);
+
+        rectangle = new our::Mesh({
+            {{0.0f, 0.0f, 0.0f}, {255, 255, 255, 255}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+            {{1.0f, 0.0f, 0.0f}, {255, 255, 255, 255}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+            {{1.0f, 1.0f, 0.0f}, {255, 255, 255, 255}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+            {{0.0f, 1.0f, 0.0f}, {255, 255, 255, 255}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+        }, {
+            0, 1, 2, 2, 3, 0,
+        });
+
+        const std::vector<std::string> slidePaths = {
+            "assets/images/credits/credits-1.png",
+            "assets/images/credits/credits-2.png",
+            "assets/images/credits/credits-3.png",
+            "assets/images/credits/credits-4.png",
+            "assets/images/credits/credits-5.png",
+            "assets/images/credits/credits-6.png"
+        };
+
+        slides.reserve(slidePaths.size());
+        for(const auto& path : slidePaths) {
+            if(auto* texture = our::texture_utils::loadImage(path)) {
+                slides.push_back(texture);
+            }
+        }
+
+        currentSlide = 0;
+        slideTimer = 0.0f;
         (void)creditsAudioPlayer.playLoop("assets/audio/creditsScreen/end-game-audio.mp3", 0.1f);
     }
 
     void onDestroy() override {
         creditsAudioPlayer.stop();
+
+        delete rectangle;
+        rectangle = nullptr;
+
+        for(auto* texture : slides) {
+            delete texture;
+        }
+        slides.clear();
+
+        if(slideMaterial) {
+            delete slideMaterial->shader;
+            delete slideMaterial;
+            slideMaterial = nullptr;
+        }
     }
 
     void onDraw(double deltaTime) override {
-        glClearColor(0.02f, 0.02f, 0.03f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
+        const glm::ivec2 size = getApp()->getFrameBufferSize();
+        glViewport(0, 0, size.x, size.y);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    void onImmediateGui() override {
-        ImGuiIO& io = ImGui::GetIO();
-
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-                                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground;
-
-        ImGui::Begin("Credits", nullptr, flags);
-
-        ImGui::GetWindowDrawList()->AddRectFilled(
-            ImVec2(0, 0), io.DisplaySize,
-            IM_COL32(6, 8, 12, 255)
-        );
-
-        ImGui::SetWindowFontScale(2.5f);
-        const char* title = "CREDITS";
-        ImVec2 titleSize = ImGui::CalcTextSize(title);
-        ImGui::SetCursorPos(ImVec2((io.DisplaySize.x - titleSize.x) * 0.5f, io.DisplaySize.y * 0.16f));
-        ImGui::TextColored(ImVec4(0.95f, 0.82f, 0.42f, 1.0f), "%s", title);
-
-        ImGui::SetWindowFontScale(1.4f);
-        const char* body = "Career Not Found 404\n\n"
-                           "Thanks for playing.\n"
-                           "You saved Earth from Opus.";
-        ImVec2 bodySize = ImGui::CalcTextSize(body, nullptr, false, io.DisplaySize.x * 0.7f);
-        ImGui::SetCursorPos(ImVec2((io.DisplaySize.x - bodySize.x) * 0.5f, io.DisplaySize.y * 0.34f));
-        ImGui::PushTextWrapPos(io.DisplaySize.x * 0.85f);
-        ImGui::TextColored(ImVec4(0.92f, 0.94f, 0.97f, 1.0f), "%s", body);
-        ImGui::PopTextWrapPos();
-
-        ImGui::SetWindowFontScale(1.0f);
-        ImVec2 buttonSize(280.0f, 56.0f);
-        ImGui::SetCursorPos(ImVec2((io.DisplaySize.x - buttonSize.x) * 0.5f, io.DisplaySize.y * 0.78f));
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.72f, 0.14f, 0.18f, 0.90f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.20f, 0.24f, 0.96f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.62f, 0.11f, 0.15f, 0.98f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-
-        if(ImGui::Button("Back to Main Menu", buttonSize)) {
-            getApp()->changeState("start-screen");
+        if(slides.empty()) {
+            return;
         }
 
-        ImGui::PopStyleVar();
-        ImGui::PopStyleColor(3);
+        slideTimer += (float)deltaTime;
+        while(slideTimer >= SlideDurationSeconds) {
+            slideTimer -= SlideDurationSeconds;
+            if(currentSlide + 1 >= slides.size()) {
+                getApp()->changeState("start-screen");
+                return;
+            }
+            currentSlide++;
+        }
 
-        ImGui::End();
+        slideMaterial->texture = slides[currentSlide];
+
+        glm::mat4 VP = glm::ortho(0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f, -1.0f);
+        glm::mat4 M = glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+
+        slideMaterial->setup();
+        slideMaterial->shader->use();
+        slideMaterial->shader->set("transform", VP * M);
+        rectangle->draw();
     }
 };
