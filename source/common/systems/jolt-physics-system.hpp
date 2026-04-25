@@ -178,11 +178,12 @@ public:
     JPH::BodyID addDynamicBox(Entity* entity, glm::vec3 halfExtents,
                               glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     JPH::BodyID addDynamicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
-                                     glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
+                                     glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f), bool lockRotation = false);
     JPH::BodyID addKinematicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
                                        glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
     JPH::BodyID addKinematicCapsule(Entity* entity, float halfHeight, float radius,
                                     glm::vec3 position, glm::vec3 eulerRotation = glm::vec3(0.0f));
+    JPH::BodyID addDynamicCapsule(Entity* entity, float halfHeight, float radius, float centerY, glm::vec3 position, glm::vec3 eulerRotation, JPH::ObjectLayer layer);
     void        removeBody(Entity* entity);
 
     JPH::BodyID createEnemySoldierBody(Entity* entity, MeshRendererComponent* meshRenderer);
@@ -192,6 +193,8 @@ public:
                           float capsuleCenterY = 0.5f);
     void setPlayerEntity(Entity* entity) { mPlayerEntity = entity; }
     void setPlayerVelocity(const glm::vec3& velocity) { mPendingPlayerVelocity = velocity; }
+
+    void setLinearVelocity(Entity* entity, const glm::vec3& velocity);
 
     // ── Raycasting ─────────────────────────────────────────────────────────
     struct RaycastResult {
