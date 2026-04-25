@@ -173,7 +173,7 @@
                 "damage": 3,
                 "speed": 3.0,
                 "attackRange": 1.5,
-                "detectionRange": 5.0,
+                "detectionRange": 50.0,
                 "attackCooldown": 1.0
             }
         },
