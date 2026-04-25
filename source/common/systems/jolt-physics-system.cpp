@@ -26,6 +26,7 @@
 #include "components/movement.hpp"
 #include "components/PlayerComponents/player-component.hpp"
 #include "components/EnemyComponents/enemy-soldier-component.hpp"
+#include "components/EnemyComponents/opus-boss-component.hpp"
 
 #include <iostream>
 #include <cstdarg>
@@ -141,10 +142,11 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
         auto* collider = entity->getComponent<ColliderComponent>();
         auto* enemySoldier = entity->getComponent<EnemySoldierComponent>();
+        auto* opus = entity->getComponent<OpusBossComponent>();
         auto* meshRenderer = entity->getComponent<MeshRendererComponent>();
 
         // Enemy soldiers get a Kinematic Convex Hull (or Capsule) handled by a dedicated function.
-        if (enemySoldier) {
+        if (enemySoldier || opus) {
             JPH::BodyID id = createEnemySoldierBody(entity, meshRenderer);
             if (!id.IsInvalid()) {
                 ++dynamicBodies; // count as dynamic for logging
@@ -278,6 +280,7 @@ void JoltPhysicsSystem::update(float deltaTime) {
 
         // Enemies are moved by physics velocity, skip syncing ECS -> Jolt
         if (entity->getComponent<EnemySoldierComponent>()) continue;
+        if (entity->getComponent<OpusBossComponent>()) continue;
 
         JPH::BodyID id(pair.second);
         if (!bodyInterface.IsAdded(id)) continue;

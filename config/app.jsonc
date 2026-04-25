@@ -185,9 +185,9 @@
                     {
                         "type": "Collider",
                         "halfExtents": [
-                            750.0,  
-                            2250.0, 
-                            750.0
+                            800.0,  
+                            3000.0, 
+                            800.0
                         ],
                         "centerOffset": [
                             0.0,
@@ -199,9 +199,9 @@
                 "mesh": "robot",
                 "material": "robot",
                 "scale": [
-                    0.0002,
-                    0.0002,
-                    0.0002
+                    0.00007,
+                    0.00007,
+                    0.00007
                 ],
                 "health": 100,
                 "attackDamage": 3,
@@ -400,7 +400,7 @@
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/player_gun.fbx",
+                "player_anim": "assets/models/male_character/palyer_gun.fbx",
                 "opus_anim": "assets/models/opus/opus_gun.fbx"
             },
             "samplers": {
@@ -534,7 +534,7 @@
                 "name": "Player",
                 "position": [
                     2.18265,
-                    -1.84298,
+                    -4.0,
                     -64.8008
                 ],
                 "rotation": [
@@ -565,9 +565,9 @@
                     {
                         "name": "Camera",
                         "position": [
-                            0,
-                            0.8,
-                            -0.1
+                            0.02,
+                            0.79,
+                            -0.09
                         ],
                         "rotation": [
                             0,
@@ -577,7 +577,7 @@
                         "components": [
                             {
                                 "type": "Camera",
-                                "near": 0.05,
+                                "near": 0.01,
                                 "far": 3000,
                                 "fovY": 75
                             }
@@ -586,9 +586,9 @@
                     {
                         "name": "Male Character Model",
                         "position": [
-                            0.2,
+                            0.01,
                             0.65,
-                            -0.4
+                            -0.05
                         ],
                         "rotation": [
                             0,
@@ -596,9 +596,9 @@
                             0
                         ],
                         "scale": [
-                            0.01,
-                            0.01,
-                            0.01
+                            0.0001,
+                            0.0001,
+                            0.0001
                         ],
                         "components": [
                             {
@@ -646,7 +646,7 @@
             {
                 "position": [
                     -8,
-                    -3.6,
+                    -4.3,
                     -74
                 ],
                 "rotation": [
@@ -677,7 +677,7 @@
             {
                 "position": [
                     -16,
-                    -3.6,
+                    -4.3,
                     -44
                 ],
                 "rotation": [
@@ -708,7 +708,7 @@
             {
                 "position": [
                     16,
-                    -3.6,
+                    -4.3,
                     -44
                 ],
                 "rotation": [
@@ -739,7 +739,7 @@
             {
                 "position": [
                     0,
-                    -3.6,
+                    -4.3,
                     -90
                 ],
                 "rotation": [
@@ -771,7 +771,7 @@
                 "name": "Opus",
                 "position": [
                     0,
-                    6,
+                    4,
                     -10
                 ],
                 "rotation": [
@@ -780,9 +780,9 @@
                     0
                 ],
                 "scale": [
-                    0.1,
-                    0.1,
-                    0.1
+                    0.05,
+                    0.05,
+                    0.05
                 ],
                 "components": [
                     {
@@ -797,7 +797,17 @@
                         "inPlace": true
                     },
                     {
-                        "type": "Collider"
+                        "type": "Collider",
+                        "halfExtents": [
+                            35.0,   
+                            80.0,  
+                            35.0
+                        ],
+                        "centerOffset": [
+                            0.0,
+                            -1.8,
+                            0.0
+                        ]
                     },
                     {
                         "type": "Animation",
