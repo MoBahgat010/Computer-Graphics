@@ -37,7 +37,8 @@
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
-                "robot": "assets/models/robot/robot_gun.fbx"
+                "robot": "assets/models/robot/robot_gun.fbx",
+                "opus": "assets/models/opus/sci-fi_humanoid_robot.glb"
                 // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
@@ -111,6 +112,26 @@
                 "robot": {
                     "type": "textured",
                     "shader": "skinned",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "opus": {
+                    "type": "textured",
+                    "shader": "textured",
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -315,6 +336,21 @@
                     0.0,
                     0.0,
                     0.0
+                ]
+            },
+            {
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [15, 15, 15],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "opus",
+                        "material": "opus"
+                    },
+                    {
+                        "type": "Collider"
+                    }
                 ]
             }
         ]
