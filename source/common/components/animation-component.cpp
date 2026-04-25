@@ -50,6 +50,11 @@ namespace our {
 
             // Select the requested animation
             currentAnimationIndex = data.value("animationIndex", 0);
+            inPlace = data.value("inPlace", false);
+            if (animator) {
+                animator->setIgnoreRootTranslation(inPlace);
+            }
+
             if (!animations.empty()) {
                 playAnimation(currentAnimationIndex);
                 std::cout << "[ANIM] AnimationComponent active animation index is "

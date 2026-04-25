@@ -47,7 +47,7 @@ void Animator::UpdateAnimation(float deltaTime) {
         m_LoggedFirstFrame = true;
     }
 
-    CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+    CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f), false);
 }
 
 void Animator::PlayAnimation(Animation* animation) {
@@ -67,7 +67,7 @@ bool Animator::HasAnimation() const {
     return m_CurrentAnimation != nullptr && m_CurrentAnimation->IsValid();
 }
 
-void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat4& parentTransform) {
+void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat4& parentTransform, bool hasBoneParent) {
     if (node == nullptr || m_CurrentAnimation == nullptr) {
         return;
     }
@@ -83,6 +83,13 @@ void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat
     if (bone != nullptr) {
         bone->Update(m_CurrentTime);
         nodeTransform = bone->GetLocalTransform();
+
+        if (m_IgnoreRootTranslation && !hasBoneParent) {
+            // Neutralize the translation part of the root bone matrix
+            nodeTransform[3][0] = 0;
+            nodeTransform[3][1] = 0;
+            nodeTransform[3][2] = 0;
+        }
     }
 
     const glm::mat4 globalTransformation = parentTransform * nodeTransform;
@@ -100,7 +107,7 @@ void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat
     }
 
     for (int i = 0; i < node->childrenCount; ++i) {
-        CalculateBoneTransform(&node->children[i], globalTransformation);
+        CalculateBoneTransform(&node->children[i], globalTransformation, hasBoneParent || (bone != nullptr));
     }
 }
 

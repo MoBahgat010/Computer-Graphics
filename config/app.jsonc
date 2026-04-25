@@ -1,11 +1,10 @@
 {
     "start-scene": "start-screen",
-    "window":
-    {
-        "title":"Carrer Not Found 404",
-        "size":{
-            "width":1920,
-            "height":960
+    "window": {
+        "title": "Carrer Not Found 404",
+        "size": {
+            "width": 1920,
+            "height": 960
         },
         "fullscreen": false
     },
@@ -137,7 +136,7 @@
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true 
+                            "enabled": true
                         }
                     },
                     "tint": [
@@ -197,7 +196,11 @@
             "enemy": {
                 "mesh": "robot",
                 "material": "robot",
-                "scale": [0.00004, 0.00004, 0.00004],
+                "scale": [
+                    0.00004,
+                    0.00004,
+                    0.00004
+                ],
                 "health": 100,
                 "damage": 3,
                 "speed": 1.5,
@@ -206,26 +209,50 @@
                 "attackCooldown": 1.0
             }
         },
-        "world":[
+        "world": [
             {
                 "name": "Player",
-                "position": [4.28409, 0.12, -0.395433],
-                "rotation": [0, 180, 0],
+                "position": [
+                    4.28409,
+                    0.12,
+                    -0.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
                 "components": [
                     {
                         "type": "Player"
                     },
                     {
                         "type": "Collider",
-                        "halfExtents": [0.11, 0.12, 0.11],
-                        "centerOffset": [0.0, 0.0, 0.0]
+                        "halfExtents": [
+                            0.11,
+                            0.12,
+                            0.11
+                        ],
+                        "centerOffset": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
                     }
                 ],
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [0, 0.12, 0],
-                        "rotation": [0, 0, 0],
+                        "position": [
+                            0,
+                            0.12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ],
                         "components": [
                             {
                                 "type": "Camera",
@@ -237,9 +264,21 @@
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [0, 0, 1],
-                        "rotation": [0, 180, 0],
-                        "scale": [0.0015, 0.0015, 0.0015],
+                        "position": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ],
+                        "scale": [
+                            0.0015,
+                            0.0015,
+                            0.0015
+                        ],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
@@ -280,8 +319,8 @@
             {
                 "name": "Male Character Model",
                 "position": [
-                    0,
-                    0,
+                    10,
+                    10,
                     10
                 ],
                 "rotation": [
@@ -303,7 +342,16 @@
                     {
                         "type": "Animation",
                         "animatedMesh": "male_character_anim",
-                        "animationIndex": 1
+                        "animationIndex": 1,
+                        "inPlace": true
+                    },
+                    {
+                        "type": "Movement",
+                        "linearVelocity": [
+                            0,
+                            0,
+                            -2
+                        ]
                     }
                 ]
             },
@@ -333,7 +381,16 @@
                     {
                         "type": "Animation",
                         "animatedMesh": "robot_anim",
-                        "animationIndex": 0
+                        "animationIndex": 0,
+                        "inPlace": true
+                    },
+                    {
+                        "type": "Movement",
+                        "linearVelocity": [
+                            0,
+                            0,
+                            -1
+                        ]
                     }
                 ]
             }

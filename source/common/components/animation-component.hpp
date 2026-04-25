@@ -16,6 +16,7 @@ namespace our {
         std::unique_ptr<Animator> animator;
         AnimatedMesh* animatedMesh = nullptr; // Not owned, managed by AssetLoader
         int currentAnimationIndex = 0;
+        bool inPlace = false;
 
         static std::string getID() { return "Animation"; }
 
