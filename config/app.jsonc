@@ -185,9 +185,9 @@
                     {
                         "type": "Collider",
                         "halfExtents": [
-                            0.11,
-                            0.3,
-                            0.11
+                            1500.0,  
+                            3000.0, 
+                            1500.0
                         ],
                         "centerOffset": [
                             0.0,

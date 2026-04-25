@@ -90,6 +90,9 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
+    if (physics) {
+        physics->setLinearVelocity(enemy->getOwner(), glm::vec3(0.0f));
+    }
     enemy->setCurrentState(EnemyState::ATTACKING);
     if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
     
@@ -132,8 +135,12 @@ namespace our {
 
     // 3. normalize
     directionToPlayer = glm::normalize(directionToPlayer);
-    // 4. move
-    enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
+    // 4. move using physics
+    if (physics) {
+        physics->setLinearVelocity(enemyEntity, directionToPlayer * enemy->getSpeed());
+    } else {
+        enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
+    }
     
     // 5. look at the player
     enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
@@ -144,6 +151,9 @@ namespace our {
   }
 
   void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime){
+    if (physics) {
+        physics->setLinearVelocity(enemyEntity, glm::vec3(0.0f));
+    }
     enemy->setCurrentState(EnemyState::IDLE);
     if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = true;
   }
