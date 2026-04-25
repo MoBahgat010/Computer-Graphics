@@ -198,7 +198,8 @@
                     {
                         "type": "Animation",
                         "animatedMesh": "robot_anim",
-                        "animationIndex": 0
+                        "animationIndex": 0,
+                        "inPlace": true
                     }
                 ],
                 "mesh": "robot",
@@ -291,6 +292,12 @@
                                 "type": "Mesh Renderer",
                                 "mesh": "male_character",
                                 "material": "male_character"
+                            },
+                            {
+                                "type": "Animation",
+                                "animatedMesh": "male_character_anim",
+                                "animationIndex": 1,
+                                "inPlace": true
                             }
                         ]
                     }
@@ -326,13 +333,13 @@
             {
                 "name": "Male Character Model",
                 "position": [
-                    10,
-                    10,
+                    0,
+                    0,
                     10
                 ],
                 "rotation": [
                     0,
-                    45,
+                    0,
                     0
                 ],
                 "scale": [
@@ -367,7 +374,7 @@
                 "position": [
                     0,
                     0,
-                    10
+                    12
                 ],
                 "rotation": [
                     0,
@@ -401,31 +408,6 @@
                     }
                 ]
             }
-            // {
-            //     "name": "Room Model",
-            //     "position": [
-            //         0,
-            //         0,
-            //         0
-            //     ],
-            //     "rotation": [
-            //         0,
-            //         0,
-            //         0
-            //     ],
-            //     "scale": [
-            //         1,
-            //         1,
-            //         1
-            //     ],
-            //     "components": [
-            //         {
-            //             "type": "Mesh Renderer",
-            //             "mesh": "room",
-            //             "material": "room"
-            //         }
-            //     ]
-            // }
         ]
     }
 }
