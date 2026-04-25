@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <unordered_set>
+#include "../components/EnemyComponents/opus-boss-component.hpp"
 
 namespace our {
 
@@ -59,7 +60,34 @@ namespace our {
             this->skyMaterial->alphaThreshold = 1.0f;
             this->skyMaterial->transparent = false;
         }
+        
+        // Opus shield resources
+opusShieldMesh = mesh_utils::sphere(glm::ivec2(24, 24));
 
+ShaderProgram* shieldShader = new ShaderProgram();
+shieldShader->attach("assets/shaders/tinted.vert", GL_VERTEX_SHADER);
+shieldShader->attach("assets/shaders/tinted.frag", GL_FRAGMENT_SHADER);
+shieldShader->link();
+
+PipelineState shieldPipelineState{};
+shieldPipelineState.depthTesting.enabled = true;
+shieldPipelineState.depthTesting.function = GL_LEQUAL;
+shieldPipelineState.depthMask = false; // transparent pass should not write depth
+
+shieldPipelineState.faceCulling.enabled = false; // view from all angles
+
+shieldPipelineState.blending.enabled = true;
+shieldPipelineState.blending.equation = GL_FUNC_ADD;
+shieldPipelineState.blending.sourceFactor = GL_SRC_ALPHA;
+shieldPipelineState.blending.destinationFactor = GL_ONE_MINUS_SRC_ALPHA;
+
+opusShieldMaterial = new TintedMaterial();
+opusShieldMaterial->shader = shieldShader;
+opusShieldMaterial->pipelineState = shieldPipelineState;
+opusShieldMaterial->transparent = true;
+
+// Stronger blue, semi-transparent
+opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
         // Then we check if there is a postprocessing shader in the configuration
         if(config.contains("postprocess")){
             //TODO: (Req 11) Create a framebuffer
@@ -119,6 +147,13 @@ namespace our {
             delete skyMaterial->sampler;
             delete skyMaterial;
         }
+        if(opusShieldMaterial) {
+    delete opusShieldMesh;
+    delete opusShieldMaterial->shader;
+    delete opusShieldMaterial;
+    opusShieldMesh = nullptr;
+    opusShieldMaterial = nullptr;
+}
         // Delete all objects related to post processing
         if(postprocessMaterial){
             glDeleteFramebuffers(1, &postprocessFrameBuffer);
@@ -156,6 +191,25 @@ namespace our {
             // If this entity has a mesh renderer component
             if(auto meshRenderer = entity->getComponent<MeshRendererComponent>(); meshRenderer){
                 std::string entityName = entity->name.empty() ? "<unnamed>" : entity->name;
+                if(opusShieldMesh && opusShieldMaterial) {
+    if(auto* opusBoss = entity->getComponent<OpusBossComponent>()) {
+        if(opusBoss->getIsSheildActive()) { // keep existing project spelling
+            RenderCommand shieldCommand;
+            const glm::mat4 opusModel = entity->getLocalToWorldMatrix();
+
+            // Slightly larger sphere around Opus
+            const glm::mat4 shieldScale = glm::scale(glm::mat4(1.0f), glm::vec3(1.35f));
+            shieldCommand.localToWorld = opusModel * shieldScale;
+
+            shieldCommand.center = glm::vec3(opusModel * glm::vec4(0, 0, 0, 1));
+            shieldCommand.mesh = opusShieldMesh;
+            shieldCommand.material = opusShieldMaterial;
+            shieldCommand.animationComponent = nullptr;
+
+            transparentCommands.push_back(shieldCommand);
+        }
+    }
+}
                 if(meshRenderer->material == nullptr){
                     if(loggedMissingMaterial.insert(entity).second){
                         std::cerr << "[ANIM] Skipping entity \"" << entityName
