@@ -35,6 +35,8 @@ class Playstate: public our::State {
     bool hasSavedFreeCameraTransform = false;
     our::Transform savedFreeCameraTransform;
     our::Entity* freeCameraEntity = nullptr;
+    bool sawOpusAlive = false;
+    bool level2EndingTriggered = false;
 
     void setFreeCameraDebugMode(bool enabled) {
         if(enabled == freeCameraDebugMode) return;
@@ -108,6 +110,9 @@ class Playstate: public our::State {
         // Play start game sound
         startGameAudioPlayer.play("assets/audio/game/ak47_start_game.wav", 1.0f);
 
+        sawOpusAlive = false;
+        level2EndingTriggered = false;
+
     }
 
     void onDraw(double deltaTime) override {
@@ -149,6 +154,22 @@ class Playstate: public our::State {
             if (enemyCount == 0) {
                 // Enemies cleared! Go to Level 1 Victory screen
                 getApp()->changeState("level1-victory");
+            }
+        } else if (getSceneName() == "level2_scene" && !level2EndingTriggered) {
+            bool opusAlive = false;
+            for(auto entity : world.getEntities()) {
+                if(auto* opusBoss = entity->getComponent<our::OpusBossComponent>()) {
+                    if(!opusBoss->getIsDead()) {
+                        sawOpusAlive = true;
+                        opusAlive = true;
+                        break;
+                    }
+                }
+            }
+
+            if(sawOpusAlive && !opusAlive) {
+                level2EndingTriggered = true;
+                getApp()->changeState("level2-ending-cutscene");
             }
         }
     }

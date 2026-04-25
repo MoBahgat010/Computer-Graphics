@@ -103,6 +103,10 @@ class StartScreenState: public our::State {
                    getApp()->changeState("play-level2");
             }
 
+                 if(drawStyledButton("StartDev End Level 2", ImVec4(0.30f, 0.22f, 0.42f, 0.95f), ImVec4(0.40f, 0.30f, 0.56f, 1.00f), ImVec4(0.23f, 0.17f, 0.32f, 1.00f))) {
+                     getApp()->changeState("level2-ending-cutscene");
+                 }
+
             if(drawStyledButton("Settings", ImVec4(0.85f, 0.70f, 0.15f, 0.95f), ImVec4(0.95f, 0.80f, 0.20f, 1.00f), ImVec4(0.70f, 0.55f, 0.10f, 1.00f))) {
                    getApp()->changeState("settings");
             }
