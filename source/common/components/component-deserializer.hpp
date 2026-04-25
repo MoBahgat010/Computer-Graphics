@@ -9,6 +9,7 @@
 #include "animation-component.hpp"
 #include "PlayerComponents/player-component.hpp"
 #include "EnemyComponents/enemy-soldier-component.hpp"
+#include "EnemyComponents/opus-boss-component.hpp"
 
 namespace our {
 
@@ -35,6 +36,9 @@ namespace our {
             component = entity->addComponent<PlayerComponent>();
         } else if (type == EnemySoldierComponent::getID()) {
             component = entity->addComponent<EnemySoldierComponent>();
+        }
+         else if (type == OpusBossComponent::getID()) {
+            component = entity->addComponent<OpusBossComponent>();
         }
         if(component) component->deserialize(data);
     }

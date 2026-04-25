@@ -11,7 +11,7 @@ enum class EnemyState {
 
 
 class EnemySoldierComponent : public Component {
-    private:
+    protected:
       double health=100.0;
       float damage=3.0;
       float attackRange=10.0;
