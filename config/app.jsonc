@@ -199,9 +199,9 @@
                 "mesh": "robot",
                 "material": "robot",
                 "scale": [
-                    4e-05,
-                    4e-05,
-                    4e-05
+                    0.0002,
+                    0.0002,
+                    0.0002
                 ],
                 "health": 100,
                 "attackDamage": 3,
@@ -328,7 +328,7 @@
                 "name": "EnemySpawnPoint",
                 "position": [
                     26.2637,
-                    0.119991,
+                    0.4,
                     -0.326302
                 ],
                 "rotation": [
@@ -341,7 +341,7 @@
                 "name": "EnemySpawnPoint",
                 "position": [
                     4.61593,
-                    0.119991,
+                    0.4,
                     -10.3189
                 ],
                 "rotation": [
@@ -354,7 +354,7 @@
                 "name": "EnemySpawnPoint",
                 "position": [
                     -16.1855,
-                    0.119991,
+                    0.4,
                     -0.577851
                 ],
                 "rotation": [
@@ -648,6 +648,99 @@
                     2,
                     -3.6,
                     -64
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "server",
+                        "material": "server"
+                    },
+                    {
+                        "type": "Collider"
+                    },
+                    {
+                        "type": "Server",
+                        "health": 100
+                    }
+                ]
+            },
+            {
+                "position": [
+                    -16,
+                    -3.6,
+                    -44
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "server",
+                        "material": "server"
+                    },
+                    {
+                        "type": "Collider"
+                    },
+                    {
+                        "type": "Server",
+                        "health": 100
+                    }
+                ]
+            },
+            {
+                "position": [
+                    16,
+                    -3.6,
+                    -44
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "server",
+                        "material": "server"
+                    },
+                    {
+                        "type": "Collider"
+                    },
+                    {
+                        "type": "Server",
+                        "health": 100
+                    }
+                ]
+            },
+            {
+                "position": [
+                    0,
+                    -3.6,
+                    -90
                 ],
                 "rotation": [
                     0,

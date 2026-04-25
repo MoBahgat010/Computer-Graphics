@@ -11,6 +11,8 @@
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <systems/EnemySpawner/enemy-spawner-system.hpp>
 #include <systems/ServerController/server-controller.hpp>
+#include <components/EnemyComponents/opus-boss-component.hpp>
+#include <components/ServerComponents/server-component.hpp>
 #include <asset-loader.hpp>
 #include <audio/audio-player.hpp>
 
@@ -190,22 +192,28 @@ class Playstate: public our::State {
         float mapScale = 3.0f; // 1 meter in 3D = 3 pixels on map
         glm::vec3 pPos = playerEntity->localTransform.position;
 
-        // Enemy Dots (Red)
+        // Minimap markers: servers in green, enemies (including Opus) in red.
         for (auto entity : world.getEntities()) {
-            if (entity->getComponent<our::EnemySoldierComponent>()) {
-                glm::vec3 ePos = entity->localTransform.position;
-                float dx = ePos.x - pPos.x;
-                float dz = ePos.z - pPos.z; // Z is forward/backward in the world
+            const bool isServer = entity->getComponent<our::ServerComponent>() != nullptr;
+            const bool isEnemy = entity->getComponent<our::EnemySoldierComponent>() != nullptr ||
+                                 entity->getComponent<our::OpusBossComponent>() != nullptr;
 
-                float mapDx = dx * mapScale;
-                float mapDz = dz * mapScale;
+            if(!isServer && !isEnemy) continue;
 
-                // Check if within minimap bounds to avoid drawing outside the box
-                if (mapDx > -minimapSize.x*0.45f && mapDx < minimapSize.x*0.45f &&
-                    mapDz > -minimapSize.y*0.45f && mapDz < minimapSize.y*0.45f) {
-                    ImVec2 enemyMapPos(minimapCenter.x + mapDx, minimapCenter.y + mapDz);
-                    ImGui::GetBackgroundDrawList()->AddCircleFilled(enemyMapPos, 4.0f, IM_COL32(255, 50, 50, 255));
-                }
+            glm::vec3 ePos = entity->localTransform.position;
+            float dx = ePos.x - pPos.x;
+            float dz = ePos.z - pPos.z; // Z is forward/backward in the world
+
+            float mapDx = dx * mapScale;
+            float mapDz = dz * mapScale;
+
+            // Check if within minimap bounds to avoid drawing outside the box
+            if (mapDx > -minimapSize.x*0.45f && mapDx < minimapSize.x*0.45f &&
+                mapDz > -minimapSize.y*0.45f && mapDz < minimapSize.y*0.45f) {
+                ImVec2 markerPos(minimapCenter.x + mapDx, minimapCenter.y + mapDz);
+                ImU32 markerColor = isServer ? IM_COL32(50, 220, 80, 255) : IM_COL32(255, 50, 50, 255);
+                float markerRadius = isServer ? 3.5f : 4.0f;
+                ImGui::GetBackgroundDrawList()->AddCircleFilled(markerPos, markerRadius, markerColor);
             }
         }
     }
