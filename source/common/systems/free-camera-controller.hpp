@@ -110,6 +110,8 @@ namespace our
             if(app->getKeyboard().isPressed(GLFW_KEY_DOWN)) desiredVelocity -= flatFront * current_sensitivity.z;
             if(app->getKeyboard().isPressed(GLFW_KEY_RIGHT)) desiredVelocity += flatRight * current_sensitivity.x;
             if(app->getKeyboard().isPressed(GLFW_KEY_LEFT)) desiredVelocity -= flatRight * current_sensitivity.x;
+            if(app->getKeyboard().isPressed(GLFW_KEY_E)) desiredVelocity.y += current_sensitivity.y;
+            if(app->getKeyboard().isPressed(GLFW_KEY_Q)) desiredVelocity.y -= current_sensitivity.y;
 
             // Normalize diagonal movement so speed is consistent.
             float len = glm::length(desiredVelocity);

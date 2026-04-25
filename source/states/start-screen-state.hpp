@@ -40,7 +40,7 @@ class StartScreenState: public our::State {
 
     void onImmediateGui() override {
         auto size = getApp()->getFrameBufferSize();
-        const ImVec2 panelSize(330.0f, 320.0f);
+        const ImVec2 panelSize(330.0f, 380.0f);
         const float margin = 160.0f;
         const ImVec2 panelPos((float)size.x - panelSize.x - margin, ((float)size.y - panelSize.y) * 0.60f);
 
@@ -95,8 +95,12 @@ class StartScreenState: public our::State {
                 getApp()->changeState("story-beginning");
             }
 
-            if(drawStyledButton("StartDev", ImVec4(0.18f, 0.26f, 0.40f, 0.95f), ImVec4(0.24f, 0.34f, 0.52f, 1.00f), ImVec4(0.14f, 0.20f, 0.31f, 1.00f))) {
+            if(drawStyledButton("StartDev Level 1", ImVec4(0.18f, 0.26f, 0.40f, 0.95f), ImVec4(0.24f, 0.34f, 0.52f, 1.00f), ImVec4(0.14f, 0.20f, 0.31f, 1.00f))) {
                    getApp()->changeState("play");
+            }
+
+            if(drawStyledButton("StartDev Level 2", ImVec4(0.18f, 0.35f, 0.25f, 0.95f), ImVec4(0.24f, 0.45f, 0.35f, 1.00f), ImVec4(0.14f, 0.25f, 0.20f, 1.00f))) {
+                   getApp()->changeState("play-level2");
             }
 
             if(drawStyledButton("Settings", ImVec4(0.85f, 0.70f, 0.15f, 0.95f), ImVec4(0.95f, 0.80f, 0.20f, 1.00f), ImVec4(0.70f, 0.55f, 0.10f, 1.00f))) {
