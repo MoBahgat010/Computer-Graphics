@@ -38,7 +38,8 @@
                 "city": "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/opus_gun.fbx"
+                "opus": "assets/models/opus/opus_gun.fbx",
+                "server": "assets/models/server/server_racking_system.glb"
                 // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
@@ -71,6 +72,26 @@
                     "sampler": "default"
                 },
                 "city": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "server": {
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
@@ -294,6 +315,21 @@
                         "type": "Mesh Renderer",
                         "mesh": "city",
                         "material": "city"
+                    },
+                    {
+                        "type": "Collider"
+                    }
+                ]
+            },
+            {
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "server",
+                        "material": "server"
                     },
                     {
                         "type": "Collider"
