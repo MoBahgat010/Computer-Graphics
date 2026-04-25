@@ -2,6 +2,8 @@
 #include "../../ecs/world.hpp"
 #include "../../components/PlayerComponents/player-component.hpp"
 #include "../../components/EnemyComponents/enemy-soldier-component.hpp"
+#include "../../components/EnemyComponents/opus-boss-component.hpp"
+#include "../../components/ServerComponents/server-component.hpp"
 #include "../../application.hpp"
 #include "../../audio/audio-player.hpp"
 #include <glm/glm.hpp>

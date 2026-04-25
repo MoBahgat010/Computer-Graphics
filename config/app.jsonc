@@ -204,7 +204,7 @@
                     4e-05
                 ],
                 "health": 100,
-                "damage": 1,
+                "attackDamage": 3,
                 "speed": 1.0,
                 "attackRange": 1.5,
                 "detectionRange": 5.0,
@@ -544,7 +544,8 @@
                 ],
                 "components": [
                     {
-                        "type": "Player"
+                        "type": "Player",
+                        "speed": 5.0
                     },
                     {
                         "type": "Collider",
@@ -666,6 +667,10 @@
                     },
                     {
                         "type": "Collider"
+                    },
+                    {
+                        "type": "Server",
+                        "health": 100
                     }
                 ]
             },
@@ -700,6 +705,21 @@
                     },
                     {
                         "type": "Collider"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "opus_anim",
+                        "animationIndex": 0,
+                        "inPlace": true
+                    },
+                    {
+                        "type": "OpusBoss",
+                        "health": 500,
+                        "attackDamage": 10,
+                        "speed": 2.0,
+                        "attackRange": 20.0,
+                        "detectionRange": 100.0,
+                        "phaseThreshold": 0.4
                     }
                 ]
             }

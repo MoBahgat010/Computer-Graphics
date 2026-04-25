@@ -154,16 +154,21 @@ namespace our {
       if (joltPhysics && joltPhysics->isInitialized()) {
         JoltPhysicsSystem::RaycastResult result = joltPhysics->raycast(origin, direction, 50.0f);
 
-        std::cout << "raycast hit: " << result.hit << std::endl;
-        std::cout << "raycast hit entity: " << result.entity << std::endl;
+
         
         if (result.hit && result.entity) {
           std::cout << "hit entity!" << std::endl;
-          auto* enemy = result.entity->getComponent<EnemySoldierComponent>();
-          std::cout << "enemy: " << enemy << std::endl;
-          if (enemy) {
-            enemy->decreaseHealth(player->getBulletDamage());
-            std::cout << "Dealt " << player->getBulletDamage() << " damage to enemy!" << std::endl;
+          float playerDamage = player->getBulletDamage();
+          
+          if (auto* opusBoss = result.entity->getComponent<OpusBossComponent>()) {
+            opusBoss->damage(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to Opus Boss!" << std::endl;
+          } else if (auto* enemySoldier = result.entity->getComponent<EnemySoldierComponent>()) {
+            enemySoldier->damage(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to enemy!" << std::endl;
+          } else if (auto* server = result.entity->getComponent<ServerComponent>()) {
+            server->decreaseHealth(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to Server!" << std::endl;
           }
         }
       }
