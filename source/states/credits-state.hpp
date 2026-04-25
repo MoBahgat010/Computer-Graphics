@@ -2,10 +2,18 @@
 
 #include <application.hpp>
 #include <imgui.h>
+#include <audio/audio-player.hpp>
 
 class CreditsState : public our::State {
+    our::AudioPlayer creditsAudioPlayer;
+
     void onInitialize() override {
         getApp()->getMouse().unlockMouse(getApp()->getWindow());
+        (void)creditsAudioPlayer.playLoop("assets/audio/creditsScreen/end-game-audio.mp3", 0.1f);
+    }
+
+    void onDestroy() override {
+        creditsAudioPlayer.stop();
     }
 
     void onDraw(double deltaTime) override {
