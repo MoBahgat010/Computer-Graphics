@@ -1,8 +1,6 @@
 #include "server-component.hpp"
 namespace our {
-  std::string ServerComponent::getID() {
-    return "Server";
-  }
+  // getID is defined as static in the header
   void ServerComponent::deserialize(const nlohmann::json& data) {
     Health = data.value("health", 100.0f);
   }
@@ -11,5 +9,11 @@ namespace our {
   }
   float ServerComponent::getHealth() {
     return Health;
+  }
+  bool ServerComponent::getIsDestroyed() {
+    return isDestroyed;
+  }
+  void ServerComponent::setIsDestroyed(bool destroyed) {
+    isDestroyed = destroyed;
   }
 }

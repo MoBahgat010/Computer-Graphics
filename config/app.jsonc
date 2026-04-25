@@ -665,6 +665,10 @@
                     },
                     {
                         "type": "Collider"
+                    },
+                    {
+                        "type": "Server",
+                        "health": 100
                     }
                 ]
             },

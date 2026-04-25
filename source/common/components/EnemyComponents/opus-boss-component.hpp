@@ -10,7 +10,7 @@ namespace our {
       void deserialize(const nlohmann::json& data) override;
       bool getIsSheildActive();
       void setIsSheildActive(bool isSheildActive);
-      void damage(float amount);
+      void damage(float amount) override;
 
   };
 }

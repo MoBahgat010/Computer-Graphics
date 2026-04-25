@@ -140,6 +140,8 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/components/PlayerComponents/player-component.cpp
         source/common/components/EnemyComponents/enemy-soldier-component.hpp
         source/common/components/EnemyComponents/enemy-soldier-component.cpp
+        source/common/components/EnemyComponents/opus-boss-component.cpp
+        source/common/components/ServerComponents/server-component.cpp
         source/common/components/component-deserializer.hpp
 
         source/common/animation/animated-mesh.hpp

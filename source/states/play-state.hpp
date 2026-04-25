@@ -10,6 +10,7 @@
 #include <systems/PlayerController/player-controller.hpp>
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <systems/EnemySpawner/enemy-spawner-system.hpp>
+#include <systems/ServerController/server-controller.hpp>
 #include <asset-loader.hpp>
 #include <audio/audio-player.hpp>
 
@@ -26,6 +27,7 @@ class Playstate: public our::State {
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
     our::EnemySpawnerSystem enemySpawner;
+    our::ServerControllerSystem serverController;
     our::AudioPlayer startGameAudioPlayer;
     bool freeCameraDebugMode = false;
     bool hasSavedFreeCameraTransform = false;
@@ -119,6 +121,7 @@ class Playstate: public our::State {
         }
 
         enemySoldierController.update(&world, (float)deltaTime);
+        serverController.update(&world, (float)deltaTime);
         joltPhysics.update((float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
