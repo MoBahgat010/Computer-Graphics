@@ -38,12 +38,13 @@
                 "city": "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/sci-fi_humanoid_robot.glb"
+                "opus": "assets/models/opus/opus_gun.fbx"
                 // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/player_gun.fbx"
+                "player_anim": "assets/models/male_character/player_gun.fbx",
+                "opus_anim": "assets/models/opus/opus_gun.fbx"
             },
             "samplers": {
                 "default": {}
@@ -131,7 +132,7 @@
                 },
                 "opus": {
                     "type": "textured",
-                    "shader": "textured",
+                    "shader": "skinned",
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -337,22 +338,51 @@
                     0.0,
                     0.0
                 ]
+            },
+            {
+                "name": "opus",
+                "position": [
+                    4.28409,
+                    0.6,
+                    -5.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
+                "scale": [
+                    0.01,
+                    0.01,
+                    0.01
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "opus",
+                        "material": "opus"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "opus_anim",
+                        "animationIndex": 1,
+                        "inPlace": true,
+                        "paused": false
+                    },
+                    {
+                        "type": "Movement",
+                        "linearVelocity": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "type": "Collider",
+                        "isKinematic": true
+                    }
+                ]
             }
-            // {
-            //     "position": [0, 0, 0],
-            //     "rotation": [0, 0, 0],
-            //     "scale": [15, 15, 15],
-            //     "components": [
-            //         {
-            //             "type": "Mesh Renderer",
-            //             "mesh": "opus",
-            //             "material": "opus"
-            //         },
-            //         {
-            //             "type": "Collider"
-            //         }
-            //     ]
-            // }
         ]
     }
 }
