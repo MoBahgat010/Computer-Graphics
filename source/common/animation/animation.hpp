@@ -22,7 +22,6 @@ namespace our {
 
     class Animation {
     public:
-        // Load animation from the AnimatedMesh's embedded scene
         Animation(AnimatedMesh* animatedMesh, unsigned int animationIndex = 0);
 
         Bone* FindBone(const std::string& name);
@@ -46,4 +45,4 @@ namespace our {
         std::string m_Name;
     };
 
-} // namespace our
+}

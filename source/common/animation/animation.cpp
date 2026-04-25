@@ -6,23 +6,23 @@
 #include <iostream>
 
 namespace {
-glm::mat4 ConvertMatrixToGLM(const aiMatrix4x4& mat) {
-    glm::mat4 glm_mat;
-    glm_mat[0][0] = mat.a1; glm_mat[1][0] = mat.a2; glm_mat[2][0] = mat.a3; glm_mat[3][0] = mat.a4;
-    glm_mat[0][1] = mat.b1; glm_mat[1][1] = mat.b2; glm_mat[2][1] = mat.b3; glm_mat[3][1] = mat.b4;
-    glm_mat[0][2] = mat.c1; glm_mat[1][2] = mat.c2; glm_mat[2][2] = mat.c3; glm_mat[3][2] = mat.c4;
-    glm_mat[0][3] = mat.d1; glm_mat[1][3] = mat.d2; glm_mat[2][3] = mat.d3; glm_mat[3][3] = mat.d4;
-    return glm_mat;
-}
-
-std::string StripAssimpFbxSuffix(const std::string& name) {
-    const size_t pos = name.find("_$AssimpFbx$");
-    if (pos == std::string::npos) {
-        return name;
+    glm::mat4 ConvertMatrixToGLM(const aiMatrix4x4& mat) {
+        glm::mat4 glm_mat;
+        glm_mat[0][0] = mat.a1; glm_mat[1][0] = mat.a2; glm_mat[2][0] = mat.a3; glm_mat[3][0] = mat.a4;
+        glm_mat[0][1] = mat.b1; glm_mat[1][1] = mat.b2; glm_mat[2][1] = mat.b3; glm_mat[3][1] = mat.b4;
+        glm_mat[0][2] = mat.c1; glm_mat[1][2] = mat.c2; glm_mat[2][2] = mat.c3; glm_mat[3][2] = mat.c4;
+        glm_mat[0][3] = mat.d1; glm_mat[1][3] = mat.d2; glm_mat[2][3] = mat.d3; glm_mat[3][3] = mat.d4;
+        return glm_mat;
     }
-    return name.substr(0, pos);
+
+    std::string StripAssimpFbxSuffix(const std::string& name) {
+        const size_t pos = name.find("_$AssimpFbx$");
+        if (pos == std::string::npos) {
+            return name;
+        }
+        return name.substr(0, pos);
+    }
 }
-} // namespace
 
 namespace our {
 
@@ -130,7 +130,6 @@ void Animation::ReadMissingBones(const aiAnimation* animation, AnimatedMesh& ani
         const std::string channelName = channel->mNodeName.data;
         std::string boneName;
 
-        // Prefer exact channel-to-bone matches
         auto it = boneInfoMap.find(channelName);
         if (it != boneInfoMap.end()) {
             boneName = channelName;
@@ -162,7 +161,6 @@ void Animation::ReadMissingBones(const aiAnimation* animation, AnimatedMesh& ani
         m_Bones.emplace_back(boneName, it->second.id, channel);
     }
 
-    // Keep offsets and ids from the render model only.
     m_BoneInfoMap = boneInfoMap;
 
     std::cout << "[ANIM] ReadMissingBones: " << m_Bones.size() << " bones matched from "
@@ -185,4 +183,4 @@ void Animation::ReadHierarchyData(AssimpNodeData& dest, const aiNode* src) {
     }
 }
 
-} // namespace our
+}

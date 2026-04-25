@@ -33,4 +33,4 @@ namespace our {
         bool m_IgnoreRootTranslation = false;
     };
 
-} // namespace our
+}

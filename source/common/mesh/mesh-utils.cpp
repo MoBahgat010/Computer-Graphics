@@ -23,6 +23,9 @@
 #include <vector>
 #include <unordered_map>
 
+#include "../animation/animated-mesh.hpp"
+#include <map>
+
 namespace {
 
 glm::mat4 aiToGlm(const aiMatrix4x4& m) {
@@ -327,8 +330,8 @@ void appendAssimpMesh(
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
     const our::Color materialColor = (texture != context.whiteTexture)
-        ? our::Color(255, 255, 255, 255)   // has texture: don't tint it
-        : getMaterialColor(material);       // no texture: use material color as fallbackw
+        ? our::Color(255, 255, 255, 255)
+        : getMaterialColor(material);
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
@@ -585,13 +588,6 @@ our::Mesh* our::mesh_utils::sphere(const glm::ivec2& segments){
     return new our::Mesh(vertices, elements);
 }
 
-// ============================================================================
-// Animated Mesh Loading (with bone extraction)
-// ============================================================================
-
-#include "../animation/animated-mesh.hpp"
-#include <map>
-
 namespace {
 
 void setVertexBoneData(our::Vertex& vertex, int boneID, float weight) {
@@ -718,14 +714,12 @@ void appendAssimpMeshAnimated(
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
     const our::Color materialColor = (texture != context.whiteTexture)
-        ? our::Color(255, 255, 255, 255)   // has texture: don't tint it
-        : getMaterialColor(material);       // no texture: use material color as fallback
+        ? our::Color(255, 255, 255, 255)
+        : getMaterialColor(material);
 
     const unsigned int vertexOffset = static_cast<unsigned int>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
 
-    // For skinned meshes: do NOT bake nodeTransform into vertex positions! The skeleton handles transforms.
-    // For unskinned meshes parented to nodes: bake nodeTransform and assign them to a pseudo-bone representing the node.
     bool hasBones = mesh->HasBones();
     int nodeBoneID = -1;
 
@@ -764,7 +758,6 @@ void appendAssimpMeshAnimated(
             vertex.color = multiplyColor(materialColor, colorFromAssimp(mesh->mColors[0][i]));
         }
 
-        // Initialize bone data
         for (int j = 0; j < MAX_BONE_INFLUENCE; j++) {
             vertex.boneIDs[j] = -1;
             vertex.boneWeights[j] = 0.0f;
@@ -785,7 +778,6 @@ void appendAssimpMeshAnimated(
         }
     }
 
-    // Extract bone weights for the vertices we just added
     if (mesh->HasBones()) {
         extractBoneWeightForVertices(vertices, vertexOffset, mesh, boneInfoMap, boneCounter);
         normalizeVertexBoneWeights(vertices, vertexOffset, mesh->mNumVertices);
@@ -820,7 +812,7 @@ void processAssimpNodeAnimated(
     }
 }
 
-} // namespace
+}
 
 our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename) {
     auto animMesh = new our::AnimatedMesh();
@@ -843,7 +835,6 @@ our::AnimatedMesh* our::mesh_utils::loadAnimatedMesh(const std::string& filename
 
     animMesh->scene = scene;
 
-    // Compute global inverse transform
     aiMatrix4x4 globalTransform = scene->mRootNode->mTransformation;
     animMesh->globalInverseTransform = glm::inverse(aiToGlm(globalTransform));
 
