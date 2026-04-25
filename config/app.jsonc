@@ -364,7 +364,7 @@
                         "linearVelocity": [
                             0,
                             0,
-                            -2
+                            2
                         ]
                     }
                 ]
@@ -403,7 +403,7 @@
                         "linearVelocity": [
                             0,
                             0,
-                            -1
+                            1
                         ]
                     }
                 ]
