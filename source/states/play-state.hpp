@@ -64,9 +64,11 @@ class Playstate: public our::State {
         return nullptr;
     }
 
+    virtual std::string getSceneName() const { return "scene"; }
+
     void onInitialize() override {
         // First of all, we get the scene configuration from the app config
-        auto& config = getApp()->getConfig()["scene"];
+        auto& config = getApp()->getConfig()[getSceneName()];
         // If we have assets in the scene config, we deserialize them
         if(config.contains("assets")){
             our::deserializeAllAssets(config["assets"]);
@@ -126,6 +128,18 @@ class Playstate: public our::State {
         if(keyboard.justPressed(GLFW_KEY_ESCAPE)){
             // If the escape  key is pressed in this frame, go to the play state
             getApp()->changeState("menu");
+        }
+
+        // Check level 1 victory condition
+        if (getSceneName() == "scene") { // Assuming "scene" is Level 1
+            int enemyCount = 0;
+            for(auto entity : world.getEntities()){
+                if(entity->getComponent<our::EnemySoldierComponent>()) enemyCount++;
+            }
+            if (enemyCount == 0) {
+                // Enemies cleared! Go to Level 1 Victory screen
+                getApp()->changeState("level1-victory");
+            }
         }
     }
 
@@ -351,4 +365,9 @@ class Playstate: public our::State {
         // and we delete all the loaded assets to free memory on the RAM and the VRAM
         our::clearAllAssets();
     }
+};
+
+class PlaystateLevel2 : public Playstate {
+protected:
+    std::string getSceneName() const override { return "level2_scene"; }
 };
