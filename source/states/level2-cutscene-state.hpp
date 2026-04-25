@@ -16,8 +16,16 @@ class Level2CutsceneState: public our::State {
     our::Mesh* rectangle = nullptr;
     our::AudioPlayer backgroundMusic;
     std::vector<our::Texture2D*> slides;
+    std::vector<std::string> musicPaths;
     size_t currentSlide = 0;
     float time = 0.0f;
+
+    void playCurrentSlideVoice() {
+        if(musicPaths.empty()) return;
+
+        const size_t index = currentSlide < musicPaths.size() ? currentSlide : musicPaths.size() - 1;
+        (void)backgroundMusic.play(musicPaths[index], 0.85f);
+    }
 
     void onInitialize() override {
         getApp()->getMouse().unlockMouse(getApp()->getWindow());
@@ -44,6 +52,12 @@ class Level2CutsceneState: public our::State {
             "assets/images/storyMid/mid-3.jpeg"
         };
 
+        musicPaths = {
+            "assets/audio/storyMid/mid-1-sound.mp3",
+            "assets/audio/storyMid/mid-2-sound.mp3",
+            "assets/audio/storyMid/mid-3-sound.mp3"
+        };
+
         slides.reserve(slidePaths.size());
         for(const auto& path : slidePaths) {
             if(auto* texture = our::texture_utils::loadImage(path)) {
@@ -53,6 +67,7 @@ class Level2CutsceneState: public our::State {
 
         currentSlide = 0;
         time = 0.0f;
+        playCurrentSlideVoice();
     }
 
     void onImmediateGui() override {
@@ -82,6 +97,7 @@ class Level2CutsceneState: public our::State {
                 } else {
                     currentSlide++;
                     time = 0.0f;
+                    playCurrentSlideVoice();
                 }
             }
             ImGui::PopStyleColor(3);
