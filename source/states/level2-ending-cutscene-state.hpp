@@ -6,6 +6,7 @@
 #include <texture/texture-utils.hpp>
 #include <material/material.hpp>
 #include <mesh/mesh.hpp>
+#include <audio/audio-player.hpp>
 
 #include <string>
 #include <vector>
@@ -13,9 +14,18 @@
 class Level2EndingCutsceneState: public our::State {
     our::TexturedMaterial* slideMaterial = nullptr;
     our::Mesh* rectangle = nullptr;
+    our::AudioPlayer backgroundMusic;
     std::vector<our::Texture2D*> slides;
+    std::vector<std::string> musicPaths;
     size_t currentSlide = 0;
     float time = 0.0f;
+
+    void playCurrentSlideVoice() {
+        if(musicPaths.empty()) return;
+
+        const size_t index = currentSlide < musicPaths.size() ? currentSlide : musicPaths.size() - 1;
+        (void)backgroundMusic.play(musicPaths[index], 0.85f);
+    }
 
     void onInitialize() override {
         getApp()->getMouse().unlockMouse(getApp()->getWindow());
@@ -42,6 +52,12 @@ class Level2EndingCutsceneState: public our::State {
             "assets/images/storyEnd/end-3.png"
         };
 
+        musicPaths = {
+            "assets/audio/storyEnd/final1.mp3",
+            "assets/audio/storyEnd/final2.mp3",
+            "assets/audio/storyEnd/final3.mp3"
+        };
+
         slides.reserve(slidePaths.size());
         for(const auto& path : slidePaths) {
             if(auto* texture = our::texture_utils::loadImage(path)) {
@@ -51,6 +67,7 @@ class Level2EndingCutsceneState: public our::State {
 
         currentSlide = 0;
         time = 0.0f;
+        playCurrentSlideVoice();
     }
 
     void onImmediateGui() override {
@@ -78,6 +95,7 @@ class Level2EndingCutsceneState: public our::State {
                 } else {
                     currentSlide++;
                     time = 0.0f;
+                    playCurrentSlideVoice();
                 }
             }
             ImGui::PopStyleColor(3);
@@ -111,6 +129,8 @@ class Level2EndingCutsceneState: public our::State {
     }
 
     void onDestroy() override {
+        backgroundMusic.stop();
+
         delete rectangle;
         rectangle = nullptr;
 
