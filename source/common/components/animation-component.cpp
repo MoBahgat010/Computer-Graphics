@@ -68,7 +68,7 @@ namespace our {
 
     void AnimationComponent::update(float deltaTime) {
         if (animator) {
-            animator->UpdateAnimation(deltaTime);
+            animator->UpdateAnimation(paused ? 0.0f : deltaTime);
         }
     }
 

@@ -1,5 +1,6 @@
 #include "enemy-soldier-controller.hpp"
 #include "../jolt-physics-system.hpp"
+#include "../../components/animation-component.hpp"
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -90,6 +91,7 @@ namespace our {
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
     enemy->setCurrentState(EnemyState::ATTACKING);
+    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
     
     // std::cout << "Enemy is attacking" << std::endl;   
     
@@ -116,6 +118,7 @@ namespace our {
 
     // std::cout << "Enemy is chasing" << std::endl;   
     enemy->setCurrentState(EnemyState::CHASING);
+    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
 
@@ -132,8 +135,8 @@ namespace our {
     // 4. move
     enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
     
-    // 5. look at the player (added PI to fix 180 degree backward walking)
-    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z) + glm::pi<float>();
+    // 5. look at the player
+    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
     
 
 
@@ -142,21 +145,7 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime){
     enemy->setCurrentState(EnemyState::IDLE);
-
-    // MOVE THE MODEL YOURSELF:
-    // This implements the "infinite movement" even when not chasing.
-    if(!enemyEntity) return;
-
-    // Use current facing direction to move forward.
-    float yaw = enemyEntity->localTransform.rotation.y;
-    // For these models, forward is (sin(yaw), 0, cos(yaw)) 
-    // or sometimes just along Z depending on the base rotation.
-    // We'll use the controller's logic: move along its "forward".
-    glm::vec3 forward(glm::sin(yaw), 0.0f, glm::cos(yaw));
-    
-    // To satisfy "move infinitely" and "move it yourself":
-    // Move forward (relative to model's -Z forward axis)
-    enemyEntity->localTransform.position -= forward * (enemy->getSpeed() * 0.5f) * deltaTime;
+    if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = true;
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){

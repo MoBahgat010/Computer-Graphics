@@ -191,10 +191,10 @@
                     0.00004
                 ],
                 "health": 100,
-                "damage": 3,
-                "speed": 3.0,
+                "damage": 1,
+                "speed": 1.0,
                 "attackRange": 1.5,
-                "detectionRange": 50.0,
+                "detectionRange": 5.0,
                 "attackCooldown": 1.0
             }
         },
@@ -337,22 +337,22 @@
                     0.0,
                     0.0
                 ]
-            },
-            {
-                "position": [0, 0, 0],
-                "rotation": [0, 0, 0],
-                "scale": [15, 15, 15],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "opus",
-                        "material": "opus"
-                    },
-                    {
-                        "type": "Collider"
-                    }
-                ]
             }
+            // {
+            //     "position": [0, 0, 0],
+            //     "rotation": [0, 0, 0],
+            //     "scale": [15, 15, 15],
+            //     "components": [
+            //         {
+            //             "type": "Mesh Renderer",
+            //             "mesh": "opus",
+            //             "material": "opus"
+            //         },
+            //         {
+            //             "type": "Collider"
+            //         }
+            //     ]
+            // }
         ]
     }
 }
