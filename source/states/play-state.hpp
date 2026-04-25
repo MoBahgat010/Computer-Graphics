@@ -99,6 +99,9 @@ class Playstate: public our::State {
 
         // Initialize the enemy soldier controller system
         enemySoldierController.enter(getApp(), &joltPhysics);
+        
+        // Initialize the server controller system
+        serverController.enter(&joltPhysics);
 
         // Play start game sound
         startGameAudioPlayer.play("assets/audio/game/ak47_start_game.wav", 1.0f);

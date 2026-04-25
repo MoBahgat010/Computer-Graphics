@@ -3,7 +3,11 @@
 #include <algorithm>
 namespace our {
   void PlayerComponent::deserialize(const nlohmann::json& data) {
-    (void)data; // Intentionally ignored: defaults are defined in the component class.
+    if(!data.is_object()) return;
+    health = data.value("health", health);
+    bulletDamage = data.value("damage", bulletDamage);
+    speed = data.value("speed", speed);
+    mouseSensitivity = data.value("mouseSensitivity", mouseSensitivity);
   }
 
 

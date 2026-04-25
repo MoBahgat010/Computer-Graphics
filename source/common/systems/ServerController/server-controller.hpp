@@ -1,5 +1,6 @@
 #pragma once
 #include "../../ecs/world.hpp"
+#include "../jolt-physics-system.hpp"
 #include "../../components/ServerComponents/server-component.hpp"
 #include "../../components/EnemyComponents/opus-boss-component.hpp"
 
@@ -7,7 +8,12 @@ namespace our {
 
     // This system handles the server logic, specifically checking health and removing destroyed servers.
     class ServerControllerSystem {
+        JoltPhysicsSystem* physics = nullptr;
     public:
+        void enter(JoltPhysicsSystem* physics) {
+            this->physics = physics;
+        }
+
         void update(World* world, float deltaTime) {
             if(!world) return;
             
@@ -19,6 +25,7 @@ namespace our {
                     // If the server health reaches zero, mark it as destroyed and remove it from the world
                     if(server->getHealth() <= 0.0f && !server->getIsDestroyed()) {
                         server->setIsDestroyed(true);
+                        if(physics) physics->removeBody(entity);
                         world->markForRemoval(entity);
                     } else {
                         serverCount++;

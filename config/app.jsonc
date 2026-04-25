@@ -204,7 +204,7 @@
                     4e-05
                 ],
                 "health": 100,
-                "damage": 1,
+                "attackDamage": 3,
                 "speed": 1.0,
                 "attackRange": 1.5,
                 "detectionRange": 5.0,
@@ -400,7 +400,8 @@
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/player_gun.fbx"
+                "player_anim": "assets/models/male_character/player_gun.fbx",
+                "opus_anim": "assets/models/opus/sci-fi_humanoid_robot.glb"
             },
             "samplers": {
                 "default": {}
@@ -543,7 +544,8 @@
                 ],
                 "components": [
                     {
-                        "type": "Player"
+                        "type": "Player",
+                        "speed": 5.0
                     },
                     {
                         "type": "Collider",
@@ -676,18 +678,18 @@
                 "name": "Opus",
                 "position": [
                     0,
-                    0.12,
+                    -1.84,
                     -10
                 ],
                 "rotation": [
                     0,
-                    0,
+                    90,
                     0
                 ],
                 "scale": [
-                    15,
-                    15,
-                    15
+                    5,
+                    5,
+                    5
                 ],
                 "components": [
                     {
@@ -697,6 +699,21 @@
                     },
                     {
                         "type": "Collider"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "opus_anim",
+                        "animationIndex": 0,
+                        "inPlace": true
+                    },
+                    {
+                        "type": "OpusBoss",
+                        "health": 500,
+                        "attackDamage": 10,
+                        "speed": 2.0,
+                        "attackRange": 10.0,
+                        "detectionRange": 100.0,
+                        "phaseThreshold": 0.4
                     }
                 ]
             }

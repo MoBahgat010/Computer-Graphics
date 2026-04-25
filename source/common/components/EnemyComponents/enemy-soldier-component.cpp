@@ -40,7 +40,7 @@ namespace our {
         if(!data.is_object()) return;
         
         health = data.value("health", health);
-        attackDamage = data.value("damage", attackDamage);
+        attackDamage = data.value("attackDamage", attackDamage);
         attackRange = data.value("attackRange", attackRange);
         detectionRange = data.value("detectionRange", detectionRange);
         speed = data.value("speed", speed);
