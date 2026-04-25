@@ -36,9 +36,9 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/male_character/palyer_gun.fbx",
+                "male_character": "assets/models/male_character/player_gun.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/sci-fi_humanoid_robot.glb",
+                "opus": "assets/models/opus/opus_gun.fbx",
                 "server": "assets/models/server/server_racking_system.glb"
             },
             "animatedMeshes": {
@@ -395,7 +395,8 @@
                 "male_character": "assets/models/male_character/player_gun.fbx",
                 "robot": "assets/models/robot/robot_gun.fbx",
                 "opus": "assets/models/opus/sci-fi_humanoid_robot.glb",
-                "room": "assets/models/room/room.fbx"
+                "room": "assets/models/room/room.fbx",
+                "server": "assets/models/server/server_racking_system.glb"
             },
             "animatedMeshes": {
                 "robot_anim": "assets/models/robot/robot_gun.fbx",
@@ -641,7 +642,6 @@
                 ]
             },
             {
-                "name": "Server",
                 "position": [
                     2,
                     -3.6,
@@ -653,9 +653,9 @@
                     0
                 ],
                 "scale": [
-                    10,
-                    10,
-                    10
+                    1,
+                    1,
+                    1
                 ],
                 "components": [
                     {
