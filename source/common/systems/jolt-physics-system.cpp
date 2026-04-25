@@ -796,6 +796,9 @@ void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
     bodySettings.mMassPropertiesOverride.mMass = 70.0f;
     bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
 
+    bodySettings.mFriction = 0.0f;     
+    bodySettings.mRestitution = 0.0f;  
+
     JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
     JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
 
