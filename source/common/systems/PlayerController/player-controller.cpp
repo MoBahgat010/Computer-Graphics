@@ -143,7 +143,6 @@ namespace our {
     if(mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT))  {
       std::cout << "fire" << std::endl;  
       if (player->getMagazineAmmo()<=0) return;
-
       glm::mat4 cameraToWorld = cameraEntity->getLocalToWorldMatrix();
       
       //  (camera position in world space)
@@ -169,6 +168,8 @@ namespace our {
         }
       }
       player->decreaseMagazineAmmo();
+            // Play fire sound
+      fireAudioPlayer.play("assets/audio/game/ak47_fire.wav", 0.4f);
     }  
   }
 
@@ -177,6 +178,7 @@ namespace our {
     if(keyboard.justPressed(GLFW_KEY_R))  {
       std::cout << "reload" << std::endl;  
       player->reloadWeapon();
+      reloadAudioPlayer.play("assets/audio/game/ak47_reload.wav", 0.7f);
     }
   }
 

@@ -50,6 +50,11 @@ namespace our {
 
             // Select the requested animation
             currentAnimationIndex = data.value("animationIndex", 0);
+            inPlace = data.value("inPlace", false);
+            if (animator) {
+                animator->setIgnoreRootTranslation(inPlace);
+            }
+
             if (!animations.empty()) {
                 playAnimation(currentAnimationIndex);
                 std::cout << "[ANIM] AnimationComponent active animation index is "
@@ -63,7 +68,7 @@ namespace our {
 
     void AnimationComponent::update(float deltaTime) {
         if (animator) {
-            animator->UpdateAnimation(deltaTime);
+            animator->UpdateAnimation(paused ? 0.0f : deltaTime);
         }
     }
 

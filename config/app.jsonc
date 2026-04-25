@@ -1,16 +1,15 @@
 {
     "start-scene": "start-screen",
-    "window":
-    {
-        "title":"Carrer Not Found 404",
-        "size":{
-            "width":1920,
-            "height":1080
+    "window": {
+        "title": "Carrer Not Found 404",
+        "size": {
+            "width": 1920,
+            "height": 960
         },
         "fullscreen": false
     },
     "scene": {
-        "renderer":{
+        "renderer": {
             "postprocess": "assets/shaders/postprocess/vignette.frag"
         },
         "assets": {
@@ -28,11 +27,8 @@
                     "fs": "assets/shaders/skinned.frag"
                 }
             },
-            "textures":{
-                "fallback": "assets/textures/grass_ground_d.jpg",
-                "grass": "assets/textures/grass_ground_d.jpg",
-                "monkey": "assets/textures/monkey.png",
-                "moon": "assets/textures/moon.jpg"
+            "textures": {
+                "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
                 "cube": "assets/models/cube.obj",
@@ -40,24 +36,27 @@
                 "plane": "assets/models/plane.obj",
                 "sphere": "assets/models/sphere.obj",
                 "city": "assets/models/city/Cyberpunk_City.fbx",
-                "male_character": "assets/models/male_character/survival_character.fbx",
-                "robot": "assets/models/robot/robot_gun.fbx"
+                "male_character": "assets/models/male_character/player_gun.fbx",
+                "robot": "assets/models/robot/robot_gun.fbx",
+                "opus": "assets/models/opus/sci-fi_humanoid_robot.glb"
+                // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
-                "robot_anim": "assets/models/robot/robot_gun.fbx"
+                "robot_anim": "assets/models/robot/robot_gun.fbx",
+                "player_anim": "assets/models/male_character/player_gun.fbx"
             },
-            "samplers":{
-                "default":{}
+            "samplers": {
+                "default": {}
             },
-            "materials":{
-                "main-map":{
+            "materials": {
+                "main-map": {
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
-                        "faceCulling":{
+                        "faceCulling": {
                             "enabled": false
                         },
-                        "depthTesting":{
+                        "depthTesting": {
                             "enabled": true
                         }
                     },
@@ -68,46 +67,6 @@
                         1
                     ],
                     "texture": "grass",
-                    "sampler": "default"
-                },
-                "monkey": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "monkey",
-                    "sampler": "default"
-                },
-                "moon": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
                     "sampler": "default"
                 },
                 "city": {
@@ -132,13 +91,13 @@
                 },
                 "male_character": {
                     "type": "textured",
-                    "shader": "textured",
+                    "shader": "skinned",
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
                         },
                         "depthTesting": {
-                            "enabled": true 
+                            "enabled": true
                         }
                     },
                     "tint": [
@@ -147,7 +106,7 @@
                         1,
                         1
                     ],
-                    "texture": "moon",
+                    "texture": "player",
                     "sampler": "default"
                 },
                 "robot": {
@@ -169,14 +128,89 @@
                     ],
                     "texture": "moon",
                     "sampler": "default"
+                },
+                "opus": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
                 }
+                // "room": {
+                //     "type": "textured",
+                //     "shader": "textured",
+                //     "pipelineState": {
+                //         "faceCulling": {
+                //             "enabled": false
+                //         },
+                //         "depthTesting": {
+                //             "enabled": true
+                //         }
+                //     },
+                //     "tint": [
+                //         1,
+                //         1,
+                //         1,
+                //         1
+                //     ],
+                //     "texture": "moon",
+                //     "sampler": "default"
+                // }
             }
         },
-        "world":[
+        "enemySpawner": {
+            "enemiesPerPoint": 2,
+            "spawnOffset": 0.6,
+            "enemy": {
+                "components": [
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "robot_anim",
+                        "animationIndex": 0,
+                        "inPlace": true
+                    }
+                ],
+                "mesh": "robot",
+                "material": "robot",
+                "scale": [
+                    0.00004,
+                    0.00004,
+                    0.00004
+                ],
+                "health": 100,
+                "damage": 1,
+                "speed": 1.0,
+                "attackRange": 1.5,
+                "detectionRange": 5.0,
+                "attackCooldown": 1.0
+            }
+        },
+        "world": [
             {
                 "name": "Player",
-                "position": [4.28409, 0.12, -0.395433],
-                "rotation": [0, 180, 0],
+                "position": [
+                    4.28409,
+                    0.12,
+                    -0.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
                 "components": [
                     {
                         "type": "Player"
@@ -190,8 +224,16 @@
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [0, 0.12, 0],
-                        "rotation": [0, 0, 0],
+                        "position": [
+                            0,
+                            0.12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ],
                         "components": [
                             {
                                 "type": "Camera",
@@ -203,14 +245,32 @@
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [0, 0, 1],
-                        "rotation": [0, 180, 0],
-                        "scale": [0.0015, 0.0015, 0.0015],
+                        "position": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ],
+                        "scale": [
+                            0.0015,
+                            0.0015,
+                            0.0015
+                        ],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
                                 "mesh": "male_character",
                                 "material": "male_character"
+                            },
+                            {
+                                "type": "Animation",
+                                "animatedMesh": "player_anim",
+                                "animationIndex": 1,
+                                "inPlace": true
                             }
                         ]
                     }
@@ -232,39 +292,59 @@
                 ]
             },
             {
-                "name": "Robot Enemy",
+                "name": "EnemySpawnPoint",
                 "position": [
-                    4.28409,
-                    0.0,
-                    -5.0
+                    26.2637,
+                    0.119991,
+                    -0.326302
                 ],
                 "rotation": [
-                    0,
-                    0,
-                    0
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            {
+                "name": "EnemySpawnPoint",
+                "position": [
+                    4.61593,
+                    0.119991,
+                    -10.3189
                 ],
-                "scale": [
-                    0.00004,
-                    0.00004,
-                    0.00004
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            {
+                "name": "EnemySpawnPoint",
+                "position": [
+                    -16.1855,
+                    0.119991,
+                    -0.577851
                 ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "robot",
-                        "material": "robot"
-                    },
-                    {
-                        "type": "EnemySoldier",
-                        "health": 100,
-                        "damage": 0.5,
-                        "speed": 1.5,
-                        "attackRange": 1.5,
-                        "detectionRange": 5.0,
-                        "attackCooldown": 1.0
-                    }
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
                 ]
             }
+            // {
+            //     "position": [0, 0, 0],
+            //     "rotation": [0, 0, 0],
+            //     "scale": [15, 15, 15],
+            //     "components": [
+            //         {
+            //             "type": "Mesh Renderer",
+            //             "mesh": "opus",
+            //             "material": "opus"
+            //         },
+            //         {
+            //             "type": "Collider"
+            //         }
+            //     ]
+            // }
         ]
     }
 }

@@ -1,8 +1,11 @@
 #include "enemy-soldier-controller.hpp"
 #include "../jolt-physics-system.hpp"
+#include "../../components/animation-component.hpp"
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <array>
+#include <random>
 
 
 
@@ -56,7 +59,7 @@ namespace our {
         enemy->setIsResting(false);
         enemy->setChaseTimer(0.0f); // Reset for the next chase
       }
-      handleIdle(enemy); // Force idle while resting
+      handleIdle(enemy, enemyEntity, deltaTime); // Force idle while resting
     } 
     else {
       // Normal behavior
@@ -72,7 +75,7 @@ namespace our {
           // Exhausted! Start resting
           enemy->setIsResting(true);
           enemy->setChaseTimer(0.0f);
-          handleIdle(enemy);
+          handleIdle(enemy, enemyEntity, deltaTime);
         } else {
           handleChase(enemy,player,deltaTime);
         }
@@ -80,7 +83,7 @@ namespace our {
       else {
         // Player is far away: recover stamina quickly and idle
         enemy->setChaseTimer(0.0f);
-        handleIdle(enemy);
+        handleIdle(enemy, enemyEntity, deltaTime);
       }
     }
   }
@@ -88,6 +91,7 @@ namespace our {
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
     enemy->setCurrentState(EnemyState::ATTACKING);
+    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
     
     // std::cout << "Enemy is attacking" << std::endl;   
     
@@ -114,6 +118,7 @@ namespace our {
 
     // std::cout << "Enemy is chasing" << std::endl;   
     enemy->setCurrentState(EnemyState::CHASING);
+    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
 
@@ -138,14 +143,22 @@ namespace our {
       
   }
 
-  void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy){
-
-    // std::cout << "Enemy is idle" << std::endl;   
+  void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime){
     enemy->setCurrentState(EnemyState::IDLE);
+    if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = true;
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){
     std::cout << "Enemy is dead" << std::endl;   
+      static const std::array<const char*, 3> deathVoicelines = {
+          "assets/audio/game/Got'em tango down..mp3",
+          "assets/audio/game/He's down, Goodnight.mp3",
+          "assets/audio/game/Target eliminated..mp3"
+      };
+      static std::mt19937 rng(std::random_device{}());
+      std::uniform_int_distribution<int> pick(0, (int)deathVoicelines.size() - 1);
+      enemyDeathAudioPlayer.play(deathVoicelines[pick(rng)], 0.7f);
+
       //  remove physics body first (before entity is deleted)
       Entity* enemyEntity = enemy->getOwner();
       if(enemyEntity) {
