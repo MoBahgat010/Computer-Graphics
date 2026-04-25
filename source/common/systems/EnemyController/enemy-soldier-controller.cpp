@@ -58,7 +58,7 @@ namespace our {
         enemy->setIsResting(false);
         enemy->setChaseTimer(0.0f); // Reset for the next chase
       }
-      handleIdle(enemy); // Force idle while resting
+      handleIdle(enemy, enemyEntity, deltaTime); // Force idle while resting
     } 
     else {
       // Normal behavior
@@ -74,7 +74,7 @@ namespace our {
           // Exhausted! Start resting
           enemy->setIsResting(true);
           enemy->setChaseTimer(0.0f);
-          handleIdle(enemy);
+          handleIdle(enemy, enemyEntity, deltaTime);
         } else {
           handleChase(enemy,player,deltaTime);
         }
@@ -82,7 +82,7 @@ namespace our {
       else {
         // Player is far away: recover stamina quickly and idle
         enemy->setChaseTimer(0.0f);
-        handleIdle(enemy);
+        handleIdle(enemy, enemyEntity, deltaTime);
       }
     }
   }
@@ -140,10 +140,22 @@ namespace our {
       
   }
 
-  void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy){
-
-    // std::cout << "Enemy is idle" << std::endl;   
+  void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime){
     enemy->setCurrentState(EnemyState::IDLE);
+
+    // MOVE THE MODEL YOURSELF:
+    // This implements the "infinite movement" even when not chasing.
+    if(!enemyEntity) return;
+
+    // Use current facing direction to move forward.
+    float yaw = enemyEntity->localTransform.rotation.y;
+    // For these models, forward is (sin(yaw), 0, cos(yaw)) 
+    // or sometimes just along Z depending on the base rotation.
+    // We'll use the controller's logic: move along its "forward".
+    glm::vec3 forward(glm::sin(yaw), 0.0f, glm::cos(yaw));
+    
+    // Walk slowly forward
+    enemyEntity->localTransform.position += forward * (enemy->getSpeed() * 0.5f) * deltaTime;
   }
 
   void EnemySoldierControllerSystem::handleDead(EnemySoldierComponent* enemy){

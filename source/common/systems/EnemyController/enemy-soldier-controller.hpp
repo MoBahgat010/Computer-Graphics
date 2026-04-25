@@ -22,7 +22,7 @@ namespace our{
     void handleEnemySoldierBehavior(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
-    void handleIdle(EnemySoldierComponent* enemy);
+    void handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime);
     void handleDead(EnemySoldierComponent* enemy);
     
     public:

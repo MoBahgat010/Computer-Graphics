@@ -68,46 +68,6 @@
                     "texture": "grass",
                     "sampler": "default"
                 },
-                "monkey": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "monkey",
-                    "sampler": "default"
-                },
-                "moon": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
                 "city": {
                     "type": "textured",
                     "shader": "textured",
@@ -211,7 +171,7 @@
                 ],
                 "health": 100,
                 "damage": 3,
-                "speed": 1.5,
+                "speed": 3.0,
                 "attackRange": 1.5,
                 "detectionRange": 5.0,
                 "attackCooldown": 1.0
@@ -331,81 +291,42 @@
                 ]
             },
             {
-                "name": "Male Character Model",
+                "name": "EnemySpawnPoint",
                 "position": [
-                    0,
-                    0,
-                    10
+                    26.2637,
+                    0.119991,
+                    -0.326302
                 ],
                 "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    0.01,
-                    0.01,
-                    0.01
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "male_character",
-                        "material": "male_character"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "male_character_anim",
-                        "animationIndex": 1,
-                        "inPlace": true
-                    },
-                    {
-                        "type": "Movement",
-                        "linearVelocity": [
-                            0,
-                            0,
-                            2
-                        ]
-                    }
+                    0.0,
+                    0.0,
+                    0.0
                 ]
             },
             {
-                "name": "Robot Model",
+                "name": "EnemySpawnPoint",
                 "position": [
-                    0,
-                    0,
-                    12
+                    4.61593,
+                    0.119991,
+                    -10.3189
                 ],
                 "rotation": [
-                    0,
-                    0,
-                    0
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            {
+                "name": "EnemySpawnPoint",
+                "position": [
+                    -16.1855,
+                    0.119991,
+                    -0.577851
                 ],
-                "scale": [
-                    0.001,
-                    0.001,
-                    0.001
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "robot",
-                        "material": "robot"
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0,
-                        "inPlace": true
-                    },
-                    {
-                        "type": "Movement",
-                        "linearVelocity": [
-                            0,
-                            0,
-                            1
-                        ]
-                    }
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
                 ]
             }
         ]
