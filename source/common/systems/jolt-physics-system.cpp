@@ -33,6 +33,7 @@
 #include <thread>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -70,6 +71,26 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
     mPlayerEntity = nullptr;
     mPendingPlayerVelocity = glm::vec3(0.0f);
+
+    bool hasWorldBounds = false;
+    glm::vec3 worldMin(std::numeric_limits<float>::max());
+    glm::vec3 worldMax(std::numeric_limits<float>::lowest());
+    float safetyFloorTopY = std::numeric_limits<float>::lowest();
+    bool hasSafetyFloorTop = false;
+    glm::vec3 playerStartPosition(0.0f);
+    bool hasPlayerStart = false;
+
+    auto expandBounds = [&](const glm::vec3& p) {
+        worldMin = glm::min(worldMin, p);
+        worldMax = glm::max(worldMax, p);
+        hasWorldBounds = true;
+    };
+
+    auto expandBoundsBox = [&](const glm::vec3& minP, const glm::vec3& maxP) {
+        worldMin = glm::min(worldMin, minP);
+        worldMax = glm::max(worldMax, maxP);
+        hasWorldBounds = true;
+    };
 
     // Pass 1: detect player entity.
     // Prefer explicit PlayerComponent, fallback to first camera.
@@ -119,6 +140,11 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
         }
 
         createPlayerBody(worldTranslation, capsuleHalfHeight, capsuleRadius, capsuleCenterY);
+
+        playerStartPosition = worldTranslation;
+        hasPlayerStart = true;
+        safetyFloorTopY = worldTranslation.y + capsuleCenterY - (capsuleHalfHeight + capsuleRadius);
+        hasSafetyFloorTop = true;
     }
 
     auto isDescendantOfPlayer = [&](Entity* entity) {
@@ -200,7 +226,10 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
             std::vector<glm::vec3> triangleVertices;
             triangleVertices.reserve(meshVertices.size());
             for (const auto& v : meshVertices) {
-                triangleVertices.push_back(v.position * worldScale);
+                const glm::vec3 localVertex = v.position * worldScale;
+                const glm::vec3 worldVertex = localVertex + worldTranslation;
+                triangleVertices.push_back(localVertex);
+                expandBounds(worldVertex);
             }
 
             JPH::BodyID id = addStaticTriangleMesh(entity, triangleVertices, meshIndices, worldTranslation, eulerRotation);
@@ -226,8 +255,57 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
         if (!id.IsInvalid()) {
             if (isMoving) ++dynamicBodies;
-            else ++staticBodies;
+            else {
+                ++staticBodies;
+                expandBoundsBox(position - halfExtents, position + halfExtents);
+            }
         }
+    }
+
+    if (hasWorldBounds) {
+        const float wallThickness = 1.0f;
+        const float wallHeight = std::max(2.0f, (worldMax.y - worldMin.y) + 5.0f);
+        const float wallHalfHeight = wallHeight * 0.5f;
+        const float floorThickness = 0.2f;
+        float floorTopY = hasSafetyFloorTop ? (safetyFloorTopY - 0.2f) : worldMin.y;
+        if (hasPlayerStart) {
+            const float rayStartY = worldMax.y + 10.0f;
+            const float rayLength = (worldMax.y - worldMin.y) + 50.0f;
+            RaycastResult groundHit = raycast(
+                glm::vec3(playerStartPosition.x, rayStartY, playerStartPosition.z),
+                glm::vec3(0.0f, -1.0f, 0.0f),
+                rayLength
+            );
+            if (groundHit.hit) {
+                floorTopY = groundHit.position.y - 0.2f;
+            }
+        }
+        const float wallBottomY = std::min(worldMin.y, floorTopY) - 0.5f;
+        const float centerY = wallBottomY + wallHalfHeight;
+        const float centerX = 0.5f * (worldMin.x + worldMax.x);
+        const float centerZ = 0.5f * (worldMin.z + worldMax.z);
+        const float halfWidthX = 0.5f * (worldMax.x - worldMin.x);
+        const float halfWidthZ = 0.5f * (worldMax.z - worldMin.z);
+        // Left / Right walls (X min / max)
+        addStaticBox(nullptr,
+                     glm::vec3(wallThickness * 0.5f, wallHalfHeight, halfWidthZ + wallThickness),
+                     glm::vec3(worldMin.x - wallThickness * 0.5f, centerY, centerZ));
+        addStaticBox(nullptr,
+                     glm::vec3(wallThickness * 0.5f, wallHalfHeight, halfWidthZ + wallThickness),
+                     glm::vec3(worldMax.x + wallThickness * 0.5f, centerY, centerZ));
+
+        // Front / Back walls (Z min / max)
+        addStaticBox(nullptr,
+                     glm::vec3(halfWidthX + wallThickness, wallHalfHeight, wallThickness * 0.5f),
+                     glm::vec3(centerX, centerY, worldMin.z - wallThickness * 0.5f));
+        addStaticBox(nullptr,
+                     glm::vec3(halfWidthX + wallThickness, wallHalfHeight, wallThickness * 0.5f),
+                     glm::vec3(centerX, centerY, worldMax.z + wallThickness * 0.5f));
+
+        // Safety floor under the entire map bounds (thin and aligned to street)
+        addStaticBox(nullptr,
+                 glm::vec3(halfWidthX + wallThickness, floorThickness * 0.5f, halfWidthZ + wallThickness),
+                 glm::vec3(centerX, floorTopY - floorThickness * 0.5f, centerZ));
     }
 
     std::cout << "[JoltPhysicsSystem] Jolt initialized with "
@@ -866,7 +944,7 @@ JPH::BodyID JoltPhysicsSystem::createEnemySoldierBody(Entity* entity, MeshRender
         capsuleRadius = glm::max(0.01f, glm::min(scaledHalfExtents.x, scaledHalfExtents.z));
         capsuleHalfHeight = glm::max(0.01f, scaledHalfExtents.y - capsuleRadius);
         
-        // Use the centerOffset from JSON so you can nudge the hitbox up or down without code
+        // Use the centerOffset from JSON (no extra height)
         centerY = collider->centerOffset.y; 
     }
 
