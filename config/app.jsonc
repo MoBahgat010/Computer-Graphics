@@ -2,10 +2,7 @@
     "start-scene": "start-screen",
     "window": {
         "title": "Carrer Not Found 404",
-        "size": {
-            "width": 1920,
-            "height": 960
-        },
+        "size": { "width": 1920, "height": 960 },
         "fullscreen": false
     },
     "level1_scene": {
@@ -14,158 +11,93 @@
         },
         "assets": {
             "shaders": {
-                "tinted": {
-                    "vs": "assets/shaders/tinted.vert",
-                    "fs": "assets/shaders/tinted.frag"
-                },
-                "textured": {
-                    "vs": "assets/shaders/textured.vert",
-                    "fs": "assets/shaders/textured.frag"
-                },
-                "skinned": {
-                    "vs": "assets/shaders/skinned.vert",
-                    "fs": "assets/shaders/skinned.frag"
-                }
+                "tinted":      { "vs": "assets/shaders/tinted.vert",  "fs": "assets/shaders/tinted.frag" },
+                "textured":    { "vs": "assets/shaders/textured.vert", "fs": "assets/shaders/textured.frag" },
+                "skinned":     { "vs": "assets/shaders/skinned.vert",  "fs": "assets/shaders/skinned.frag" },
+                "ambient":     { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/ambient.frag" },
+                "directional": { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/directional.frag" },
+                "point":       { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/point.frag" },
+                "spot":        { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/spot.frag" }
             },
             "textures": {
                 "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
-                "cube": "assets/models/cube.obj",
-                "monkey": "assets/models/monkey.obj",
-                "plane": "assets/models/plane.obj",
-                "sphere": "assets/models/sphere.obj",
-                "city": "assets/models/city/Cyberpunk_City.fbx",
+                "cube":           "assets/models/cube.obj",
+                "monkey":         "assets/models/monkey.obj",
+                "plane":          "assets/models/plane.obj",
+                "sphere":         "assets/models/sphere.obj",
+                "city":           "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
-                "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/opus_gun.fbx",
-                "server": "assets/models/server/server_racking_system.glb"
+                "robot":          "assets/models/robot/robot_gun.fbx"
             },
             "animatedMeshes": {
-                "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/palyer_gun.fbx"
+                "robot_anim":  "assets/models/robot/robot_gun.fbx",
+                "player_anim": "assets/models/male_character/player_gun.fbx"
             },
             "samplers": {
                 "default": {}
             },
+            "lights": {
+                "sun": {
+                    "type": "directional",
+                    "enabled": true,
+                    "direction": [-1.0, -0.5, -1.0],
+                    "ambient":  [0.4, 0.4, 0.4],
+                    "diffuse":  [1.5, 1.5, 1.5],
+                    "specular": [1.0, 1.0, 1.0]
+                },
+                "street_lamp": {
+                    "type": "point",
+                    "enabled": true,
+                    "position": [0.0, 5.0, 0.0],
+                    "ambient":  [0.05, 0.05, 0.05],
+                    "diffuse":  [2.0, 1.8, 1.5],
+                    "specular": [2.0, 1.8, 1.5],
+                    "attenuation": {
+                        "constant": 1.0,
+                        "linear": 0.09,
+                        "quadratic": 0.032
+                    }
+                }
+            },
             "materials": {
-                "main-map": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "grass",
-                    "sampler": "default"
-                },
                 "city": {
-                    "type": "textured",
-                    "shader": "textured",
+                    "type": "lit",
+                    "ambientShader":     "ambient",
+                    "directionalShader": "directional",
+                    "pointShader":       "point",
+                    "spotShader":        "spot",
+                    "sampler": "default",
+                    "transparent": false,
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "server": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
+                    "lights": ["sun", "street_lamp"]
                 },
                 "male_character": {
-                    "type": "textured",
-                    "shader": "skinned",
+                    "type": "lit",
+                    "ambientShader":     "ambient",
+                    "directionalShader": "directional",
+                    "pointShader":       "point",
+                    "spotShader":        "spot",
+                    "sampler": "default",
+                    "transparent": false,
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "player",
-                    "sampler": "default"
+                    "lights": ["sun"]
                 },
                 "robot": {
                     "type": "textured",
                     "shader": "skinned",
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "opus": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
+                    "tint": [1, 1, 1, 1],
                     "texture": "moon",
                     "sampler": "default"
                 }
@@ -184,25 +116,13 @@
                     },
                     {
                         "type": "Collider",
-                        "halfExtents": [
-                            800.0,  
-                            3000.0, 
-                            800.0
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
+                        "halfExtents": [800.0, 3000.0, 800.0],
+                        "centerOffset": [0.0, 0.0, 0.0]
                     }
                 ],
                 "mesh": "robot",
                 "material": "robot",
-                "scale": [
-                    0.00007,
-                    0.00007,
-                    0.00007
-                ],
+                "scale": [0.00007, 0.00007, 0.00007],
                 "health": 100,
                 "attackDamage": 3,
                 "speed": 1.0,
@@ -214,47 +134,21 @@
         "world": [
             {
                 "name": "Player",
-                "position": [
-                    4.28409,
-                    0.287086,
-                    -0.395433
-                ],
-                "rotation": [
-                    0,
-                    180,
-                    0
-                ],
+                "position": [4.28409, 0.287086, -0.395433],
+                "rotation": [0, 180, 0],
                 "components": [
-                    {
-                        "type": "Player"
-                    },
+                    { "type": "Player" },
                     {
                         "type": "Collider",
-                        "halfExtents": [
-                            0.17,
-                            0.2,
-                            0.17
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
+                        "halfExtents": [0.17, 0.2, 0.17],
+                        "centerOffset": [0.0, 0.0, 0.0]
                     }
                 ],
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [
-                            0.01,
-                            0.18,
-                            -0.09
-                        ],
-                        "rotation": [
-                            0,
-                            0,
-                            0
-                        ],
+                        "position": [0.01, 0.18, -0.09],
+                        "rotation": [0, 0, 0],
                         "components": [
                             {
                                 "type": "Camera",
@@ -266,21 +160,9 @@
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [
-                            0.02,
-                            0.1,
-                            -0.05
-                        ],
-                        "rotation": [
-                            0,
-                            180,
-                            0
-                        ],
-                        "scale": [
-                            0.00006,
-                            0.00006,
-                            0.00006
-                        ],
+                        "position": [0.02, 0.1, -0.05],
+                        "rotation": [0, 180, 0],
+                        "scale": [0.00006, 0.00006, 0.00006],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
@@ -298,21 +180,9 @@
                 ]
             },
             {
-                "position": [
-                    0,
-                    0,
-                    0
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    15,
-                    15,
-                    15
-                ],
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [15, 15, 15],
                 "components": [
                     {
                         "type": "Mesh Renderer",
@@ -326,42 +196,18 @@
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [
-                    26.2637,
-                    0.4,
-                    -0.326302
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
+                "position": [26.2637, 0.4, -0.326302],
+                "rotation": [0.0, 0.0, 0.0]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [
-                    4.61593,
-                    0.4,
-                    -10.3189
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
+                "position": [4.61593, 0.4, -10.3189],
+                "rotation": [0.0, 0.0, 0.0]
             },
             {
                 "name": "EnemySpawnPoint",
-                "position": [
-                    -16.1855,
-                    0.4,
-                    -0.577851
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
+                "position": [-16.1855, 0.4, -0.577851],
+                "rotation": [0.0, 0.0, 0.0]
             }
         ]
     },
@@ -371,119 +217,104 @@
         },
         "assets": {
             "shaders": {
-                "tinted": {
-                    "vs": "assets/shaders/tinted.vert",
-                    "fs": "assets/shaders/tinted.frag"
-                },
-                "textured": {
-                    "vs": "assets/shaders/textured.vert",
-                    "fs": "assets/shaders/textured.frag"
-                },
-                "skinned": {
-                    "vs": "assets/shaders/skinned.vert",
-                    "fs": "assets/shaders/skinned.frag"
-                }
+                "tinted":      { "vs": "assets/shaders/tinted.vert",  "fs": "assets/shaders/tinted.frag" },
+                "textured":    { "vs": "assets/shaders/textured.vert", "fs": "assets/shaders/textured.frag" },
+                "skinned":     { "vs": "assets/shaders/skinned.vert",  "fs": "assets/shaders/skinned.frag" },
+                "ambient":     { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/ambient.frag" },
+                "directional": { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/directional.frag" },
+                "point":       { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/point.frag" },
+                "spot":        { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/spot.frag" }
             },
             "textures": {
                 "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
-                "cube": "assets/models/cube.obj",
-                "monkey": "assets/models/monkey.obj",
-                "plane": "assets/models/plane.obj",
-                "sphere": "assets/models/sphere.obj",
+                "cube":           "assets/models/cube.obj",
+                "monkey":         "assets/models/monkey.obj",
+                "plane":          "assets/models/plane.obj",
+                "sphere":         "assets/models/sphere.obj",
+                "room":           "assets/models/room/room.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
-                "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/opus_gun.fbx",
-                "room": "assets/models/room/room.fbx",
-                "server": "assets/models/server/server_racking_system.glb"
+                "robot":          "assets/models/robot/robot_gun.fbx",
+                "opus":           "assets/models/opus/opus_gun.fbx",
+                "server":         "assets/models/server/server_racking_system.glb"
             },
             "animatedMeshes": {
-                "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/palyer_gun.fbx",
-                "opus_anim": "assets/models/opus/opus_gun.fbx"
+                "robot_anim":  "assets/models/robot/robot_gun.fbx",
+                "player_anim": "assets/models/male_character/player_gun.fbx",
+                "opus_anim":   "assets/models/opus/opus_gun.fbx"
             },
             "samplers": {
                 "default": {}
             },
+            "lights": {
+                "sun": {
+                    "type": "directional",
+                    "enabled": true,
+                    "direction": [-1.0, -0.5, -1.0],
+                    "ambient":  [0.4, 0.4, 0.4],
+                    "diffuse":  [1.5, 1.5, 1.5],
+                    "specular": [1.0, 1.0, 1.0]
+                },
+                "street_lamp": {
+                    "type": "point",
+                    "enabled": true,
+                    "position": [0.0, 5.0, 0.0],
+                    "ambient":  [0.05, 0.05, 0.05],
+                    "diffuse":  [2.0, 1.8, 1.5],
+                    "specular": [2.0, 1.8, 1.5],
+                    "attenuation": {
+                        "constant": 1.0,
+                        "linear": 0.09,
+                        "quadratic": 0.032
+                    }
+                }
+            },
             "materials": {
-                "main-map": {
+                "room": {
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "grass",
-                    "sampler": "default"
-                },
-                "male_character": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "player",
+                    "tint": [1, 1, 1, 1],
+                    "texture": "moon",
                     "sampler": "default"
                 },
                 "server": {
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
+                    "tint": [1, 1, 1, 1],
                     "texture": "moon",
                     "sampler": "default"
+                },
+                "male_character": {
+                    "type": "lit",
+                    "ambientShader":     "ambient",
+                    "directionalShader": "directional",
+                    "pointShader":       "point",
+                    "spotShader":        "spot",
+                    "sampler": "default",
+                    "transparent": false,
+                    "pipelineState": {
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
+                    },
+                    "lights": ["sun"]
                 },
                 "robot": {
                     "type": "textured",
                     "shader": "skinned",
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
+                    "tint": [1, 1, 1, 1],
                     "texture": "moon",
                     "sampler": "default"
                 },
@@ -491,39 +322,10 @@
                     "type": "textured",
                     "shader": "skinned",
                     "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                        "faceCulling": { "enabled": false },
+                        "depthTesting": { "enabled": true }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "room": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
+                    "tint": [1, 1, 1, 1],
                     "texture": "moon",
                     "sampler": "default"
                 }
@@ -532,48 +334,21 @@
         "world": [
             {
                 "name": "Player",
-                "position": [
-                    2.18265,
-                    -4.0,
-                    -64.8008
-                ],
-                "rotation": [
-                    0,
-                    180,
-                    0
-                ],
+                "position": [2.18265, -4.0, -64.8008],
+                "rotation": [0, 180, 0],
                 "components": [
-                    {
-                        "type": "Player",
-                        "speed": 5.0
-                    },
+                    { "type": "Player", "speed": 5.0 },
                     {
                         "type": "Collider",
-                        "halfExtents": [
-                            0.7,
-                            0.8,
-                            0.7
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
+                        "halfExtents": [0.7, 0.8, 0.7],
+                        "centerOffset": [0.0, 0.0, 0.0]
                     }
                 ],
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [
-                            0.02,
-                            0.79,
-                            -0.09
-                        ],
-                        "rotation": [
-                            0,
-                            0,
-                            0
-                        ],
+                        "position": [0.02, 0.79, -0.09],
+                        "rotation": [0, 0, 0],
                         "components": [
                             {
                                 "type": "Camera",
@@ -585,21 +360,9 @@
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [
-                            0.01,
-                            0.65,
-                            -0.05
-                        ],
-                        "rotation": [
-                            0,
-                            180,
-                            0
-                        ],
-                        "scale": [
-                            0.0001,
-                            0.0001,
-                            0.0001
-                        ],
+                        "position": [0.01, 0.65, -0.05],
+                        "rotation": [0, 180, 0],
+                        "scale": [0.0001, 0.0001, 0.0001],
                         "components": [
                             {
                                 "type": "Mesh Renderer",
@@ -617,21 +380,9 @@
                 ]
             },
             {
-                "position": [
-                    0,
-                    0,
-                    0
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    1,
-                    1,
-                    1
-                ],
+                "position": [0, 0, 0],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
                 "components": [
                     {
                         "type": "Mesh Renderer",
@@ -644,146 +395,50 @@
                 ]
             },
             {
-                "position": [
-                    -8,
-                    -4.3,
-                    -74
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    1,
-                    1,
-                    1
-                ],
+                "position": [-8, -4.3, -74],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
                 "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "server",
-                        "material": "server"
-                    },
-                    {
-                        "type": "Collider"
-                    },
-                    {
-                        "type": "Server",
-                        "health": 100
-                    }
+                    { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
+                    { "type": "Collider" },
+                    { "type": "Server", "health": 100 }
                 ]
             },
             {
-                "position": [
-                    -16,
-                    -4.3,
-                    -44
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    1,
-                    1,
-                    1
-                ],
+                "position": [-16, -4.3, -44],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
                 "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "server",
-                        "material": "server"
-                    },
-                    {
-                        "type": "Collider"
-                    },
-                    {
-                        "type": "Server",
-                        "health": 100
-                    }
+                    { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
+                    { "type": "Collider" },
+                    { "type": "Server", "health": 100 }
                 ]
             },
             {
-                "position": [
-                    16,
-                    -4.3,
-                    -44
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    1,
-                    1,
-                    1
-                ],
+                "position": [16, -4.3, -44],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
                 "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "server",
-                        "material": "server"
-                    },
-                    {
-                        "type": "Collider"
-                    },
-                    {
-                        "type": "Server",
-                        "health": 100
-                    }
+                    { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
+                    { "type": "Collider" },
+                    { "type": "Server", "health": 100 }
                 ]
             },
             {
-                "position": [
-                    0,
-                    -4.3,
-                    -90
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    1,
-                    1,
-                    1
-                ],
+                "position": [0, -4.3, -90],
+                "rotation": [0, 0, 0],
+                "scale": [1, 1, 1],
                 "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "server",
-                        "material": "server"
-                    },
-                    {
-                        "type": "Collider"
-                    },
-                    {
-                        "type": "Server",
-                        "health": 100
-                    }
+                    { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
+                    { "type": "Collider" },
+                    { "type": "Server", "health": 100 }
                 ]
             },
             {
                 "name": "Opus",
-                "position": [
-                    0,
-                    4,
-                    -10
-                ],
-                "rotation": [
-                    0,
-                    180,
-                    0
-                ],
-                "scale": [
-                    0.05,
-                    0.05,
-                    0.05
-                ],
+                "position": [0, 4, -10],
+                "rotation": [0, 180, 0],
+                "scale": [0.05, 0.05, 0.05],
                 "components": [
                     {
                         "type": "Mesh Renderer",
@@ -793,27 +448,13 @@
                     {
                         "type": "Animation",
                         "animatedMesh": "opus_anim",
-                        "animationIndex": 1,
+                        "animationIndex": 0,
                         "inPlace": true
                     },
                     {
                         "type": "Collider",
-                        "halfExtents": [
-                            35.0,   
-                            80.0,  
-                            35.0
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            -1.8,
-                            0.0
-                        ]
-                    },
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "opus_anim",
-                        "animationIndex": 0,
-                        "inPlace": true
+                        "halfExtents": [35.0, 80.0, 35.0],
+                        "centerOffset": [0.0, -1.8, 0.0]
                     },
                     {
                         "type": "OpusBoss",
