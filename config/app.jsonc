@@ -77,18 +77,24 @@
                     "lights": ["sun", "street_lamp"]
                 },
                 "male_character": {
-                    "type": "lit",
-                    "ambientShader":     "ambient",
-                    "directionalShader": "directional",
-                    "pointShader":       "point",
-                    "spotShader":        "spot",
-                    "sampler": "default",
-                    "transparent": false,
+                    "type": "textured",
+                    "shader": "skinned",
                     "pipelineState": {
-                        "faceCulling": { "enabled": false },
-                        "depthTesting": { "enabled": true }
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
                     },
-                    "lights": ["sun"]
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "player",
+                    "sampler": "default"
                 },
                 "robot": {
                     "type": "textured",
