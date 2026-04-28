@@ -353,8 +353,12 @@ void appendAssimpMesh(
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     logMaterialLightInfo(material);
 
-    const our::Color materialColor = getMaterialColor(material);
     const GLuint texture = getMaterialTexture(material, scene, context.directory, context);
+    
+    const our::Color materialColor = (texture != context.whiteTexture)
+        ? our::Color(255, 255, 255, 255)
+        : getMaterialColor(material);
+        
 
     our::Mesh::DrawBatch batch;
 
@@ -381,9 +385,7 @@ void appendAssimpMesh(
         batch.diffuseTexture = context.whiteTexture;
     }
 
-    const our::Color materialColor = (texture != context.whiteTexture)
-        ? our::Color(255, 255, 255, 255)
-        : getMaterialColor(material);
+
 
     const GLuint vertexOffset = static_cast<GLuint>(vertices.size());
     const GLuint firstIndex = static_cast<GLuint>(elements.size());
