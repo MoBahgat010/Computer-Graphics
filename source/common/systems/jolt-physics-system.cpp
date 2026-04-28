@@ -777,6 +777,10 @@ void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
     capsuleRadius = glm::max(0.01f, capsuleRadius);
     capsuleHalfHeight = glm::max(0.01f, capsuleHalfHeight);
 
+    mPlayerCapsuleHalfHeight = capsuleHalfHeight;
+    mPlayerCapsuleRadius = capsuleRadius;
+    mPlayerCapsuleCenterY = capsuleCenterY;
+
     // Use the universal helper!
     JPH::BodyID id = addDynamicCapsule(mPlayerEntity, capsuleHalfHeight, capsuleRadius, capsuleCenterY, startPos, glm::vec3(0.0f), Layers::PLAYER);
 
@@ -788,6 +792,41 @@ void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
                   << ", centerY=" << capsuleCenterY
                   << std::endl;
     }
+}
+
+bool JoltPhysicsSystem::isPlayerGrounded(float tolerance) {
+    if (!mPhysicsSystem || !mPlayerEntity) return false;
+    auto it = mEntityToBody.find(mPlayerEntity);
+    if (it == mEntityToBody.end()) return false;
+
+    JPH::BodyID id(it->second);
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    if (!bodyInterface.IsAdded(id)) return false;
+
+    const JPH::RVec3 pos = bodyInterface.GetPosition(id);
+    const float bottomY = static_cast<float>(pos.GetY()) + mPlayerCapsuleCenterY - (mPlayerCapsuleHalfHeight + mPlayerCapsuleRadius);
+    const float rayLength = std::max(0.05f, tolerance * 2.0f);
+
+    const glm::vec3 origin(static_cast<float>(pos.GetX()), bottomY + rayLength * 0.5f, static_cast<float>(pos.GetZ()));
+    const glm::vec3 direction(0.0f, -1.0f, 0.0f);
+
+    RaycastResult hit = raycast(origin, direction, rayLength);
+    return hit.hit;
+}
+
+void JoltPhysicsSystem::applyPlayerJump(float jumpSpeed, float groundTolerance) {
+    if (!mPhysicsSystem || !mPlayerEntity) return;
+    if (!isPlayerGrounded(groundTolerance)) return;
+
+    auto it = mEntityToBody.find(mPlayerEntity);
+    if (it == mEntityToBody.end()) return;
+
+    JPH::BodyID id(it->second);
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    if (!bodyInterface.IsAdded(id)) return;
+
+    JPH::Vec3 currentVel = bodyInterface.GetLinearVelocity(id);
+    bodyInterface.SetLinearVelocity(id, JPH::Vec3(currentVel.GetX(), jumpSpeed, currentVel.GetZ()));
 }
 
 // Dedicated function to create the physics body for an EnemySoldier

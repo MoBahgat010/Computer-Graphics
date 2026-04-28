@@ -16,6 +16,7 @@ class PlayerComponent : public Component {
   bool isDead = false;
   float speed = 2.0f;
   float mouseSensitivity = 0.003f;
+  float jumpSpeed = 2.5f;
 
   
   public:
@@ -33,6 +34,7 @@ class PlayerComponent : public Component {
     bool getIsDead() const;
     float getSpeed() const;
     float getMouseSensitivity() const;
+    float getJumpSpeed() const;
 
 
     // setters 

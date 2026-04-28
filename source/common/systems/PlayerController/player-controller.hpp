@@ -25,6 +25,7 @@ namespace our {
     void handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime);
     void handleLook(PlayerComponent* player, Entity* playerEntity,Entity* cameraEntity);
     void handleCrouch(PlayerComponent* player,Entity* cameraEntity);
+    void handleJump(PlayerComponent* player, Entity* playerEntity);
     void handleFire(PlayerComponent* player,Entity* cameraEntity);
     void handleReload(PlayerComponent* player);
     void handleDeath();

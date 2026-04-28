@@ -40,6 +40,7 @@ namespace our {
       } 
 
       handleMovement(player,playerEntity,deltaTime);
+      handleJump(player, playerEntity);
       handleLook(player,playerEntity, cameraEntity);
       handleCrouch(player, cameraEntity);
       handleFire(player, cameraEntity);
@@ -61,28 +62,30 @@ namespace our {
     right = glm::normalize(right);
 
     glm::vec3 desiredVelocity(0.0f);
+    const bool isRunning = keyboard.isPressed(GLFW_KEY_LEFT_SHIFT) || keyboard.isPressed(GLFW_KEY_RIGHT_SHIFT);
+    const float moveSpeed = player->getSpeed() * (isRunning ? 1.5f : 1.0f);
 
     //  move forward
     if (keyboard.isPressed(GLFW_KEY_W) ){
-      desiredVelocity += front * player->getSpeed();
+      desiredVelocity += front * moveSpeed;
     }
 
     // move backward
     if (keyboard.isPressed(GLFW_KEY_S) ){
-      desiredVelocity -= front * player->getSpeed();
+      desiredVelocity -= front * moveSpeed;
     }
     //  move left
     if (keyboard.isPressed(GLFW_KEY_A) ){
-      desiredVelocity -= right * player->getSpeed();
+      desiredVelocity -= right * moveSpeed;
     }
     //  move right
     if (keyboard.isPressed(GLFW_KEY_D) ){
-      desiredVelocity += right * player->getSpeed();
+      desiredVelocity += right * moveSpeed;
     }
 
     float len = glm::length(desiredVelocity);
-    if(len > player->getSpeed() && len > 1e-6f) {
-      desiredVelocity = (desiredVelocity / len) * player->getSpeed();
+    if(len > moveSpeed && len > 1e-6f) {
+      desiredVelocity = (desiredVelocity / len) * moveSpeed;
     }
 
     if(joltPhysics && joltPhysics->isInitialized()) {
@@ -135,6 +138,16 @@ namespace our {
         player->setSpeed(speed/2);
       }
       player->setIsCrouch(!playerIsCrouch);
+    }
+  }
+
+  void PlayerControllerSystem::handleJump(PlayerComponent* player, Entity* playerEntity){
+    auto& keyboard = app->getKeyboard();
+    if (!keyboard.justPressed(GLFW_KEY_SPACE)) return;
+
+    if (joltPhysics && joltPhysics->isInitialized()) {
+      joltPhysics->setPlayerEntity(playerEntity);
+      joltPhysics->applyPlayerJump(player->getJumpSpeed());
     }
   }
 
