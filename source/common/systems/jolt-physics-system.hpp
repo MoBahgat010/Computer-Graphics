@@ -193,6 +193,8 @@ public:
                           float capsuleCenterY = 0.5f);
     void setPlayerEntity(Entity* entity) { mPlayerEntity = entity; }
     void setPlayerVelocity(const glm::vec3& velocity) { mPendingPlayerVelocity = velocity; }
+    bool isPlayerGrounded(float tolerance = 0.05f);
+    void applyPlayerJump(float jumpSpeed, float groundTolerance = 0.05f);
 
     void setLinearVelocity(Entity* entity, const glm::vec3& velocity);
 
@@ -224,6 +226,9 @@ private:
 
     Entity*                mPlayerEntity    = nullptr; ///< ECS entity represented by mPlayerBody
     glm::vec3              mPendingPlayerVelocity = glm::vec3(0.0f); ///< Velocity to apply each update
+    float                  mPlayerCapsuleHalfHeight = 0.4f;
+    float                  mPlayerCapsuleRadius = 0.1f;
+    float                  mPlayerCapsuleCenterY = 0.5f;
 };
 
 } // namespace our

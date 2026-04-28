@@ -8,6 +8,7 @@ namespace our {
     bulletDamage = data.value("damage", bulletDamage);
     speed = data.value("speed", speed);
     mouseSensitivity = data.value("mouseSensitivity", mouseSensitivity);
+    jumpSpeed = data.value("jumpSpeed", jumpSpeed);
   }
 
 
@@ -41,6 +42,10 @@ namespace our {
 
   float PlayerComponent::getMouseSensitivity() const {
     return mouseSensitivity;
+  }
+
+  float PlayerComponent::getJumpSpeed() const {
+    return jumpSpeed;
   }
 
 
