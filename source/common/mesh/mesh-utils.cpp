@@ -380,8 +380,6 @@ namespace {
 
         material->Get(AI_MATKEY_SHININESS, batch.shininess);
 
-        logMaterialLightInfo(material);
-
         aiString texturePath;
         if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
             batch.diffuseTexture = loadTexture2D(resolveTexturePath(texturePath, context.directory), context);
@@ -786,78 +784,113 @@ namespace {
         ? our::Color(255, 255, 255, 255)
         : getMaterialColor(material);
 
-        const unsigned int vertexOffset = static_cast<unsigned int>(vertices.size());
-        const GLuint firstIndex = static_cast<GLuint>(elements.size());
+    // BUILD FULL BATCH with lighting properties
+    our::Mesh::DrawBatch batch;
+
+    aiColor3D color;
+    if (material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) {
+        batch.ambient = { color.r, color.g, color.b };
+        if (batch.ambient == glm::vec3(0.0f))
+            batch.ambient = glm::vec3(0.3f);
+    }
+    if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+        batch.diffuse = { color.r, color.g, color.b };
+    if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS)
+        batch.specular = { color.r, color.g, color.b };
+    material->Get(AI_MATKEY_SHININESS, batch.shininess);
+
+    aiString texturePath;
+    if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
+        std::string path = resolveTexturePath(texturePath, context.directory);
+        if (!path.empty())
+            batch.diffuseTexture = loadTexture2D(path, context);
+    }
+    if (material->GetTexture(aiTextureType_SPECULAR, 0, &texturePath) == AI_SUCCESS) {
+        std::string path = resolveTexturePath(texturePath, context.directory);
+        if (!path.empty())
+            batch.specularTexture = loadTexture2D(path, context);
+    }
+    if (batch.diffuseTexture == 0)
+        batch.diffuseTexture = context.whiteTexture;
+    if (batch.specularTexture == 0)
+        batch.specularTexture = context.whiteTexture;
+
+    const unsigned int vertexOffset = static_cast<unsigned int>(vertices.size());
+    const GLuint firstIndex = static_cast<GLuint>(elements.size());
 
     bool hasBones = mesh->HasBones();
     int nodeBoneID = -1;
 
-        if (!hasBones && node != nullptr) {
-            std::string nodeName = node->mName.C_Str();
-            auto it = boneInfoMap.find(nodeName);
-            if (it == boneInfoMap.end()) {
-                boneInfoMap[nodeName] = { boneCounter, glm::inverse(nodeTransform) };
-                nodeBoneID = boneCounter++;
-            }
-            else {
-                nodeBoneID = it->second.id;
-            }
+    if (!hasBones && node != nullptr) {
+        std::string nodeName = node->mName.C_Str();
+        auto it = boneInfoMap.find(nodeName);
+        if (it == boneInfoMap.end()) {
+            boneInfoMap[nodeName] = { boneCounter, glm::inverse(nodeTransform) };
+            nodeBoneID = boneCounter++;
+        }
+        else {
+            nodeBoneID = it->second.id;
+        }
+    }
+
+    const glm::mat3 normalTransform = glm::transpose(glm::inverse(glm::mat3(nodeTransform)));
+
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        our::Vertex vertex{};
+
+        glm::vec3 position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+        vertex.position = hasBones ? position : glm::vec3(nodeTransform * glm::vec4(position, 1.0f));
+
+        vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        if (mesh->HasNormals()) {
+            glm::vec3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+            vertex.normal = hasBones ? normal : glm::normalize(normalTransform * normal);
         }
 
-        const glm::mat3 normalTransform = glm::transpose(glm::inverse(glm::mat3(nodeTransform)));
+        vertex.tex_coord = glm::vec2(0.0f, 0.0f);
+        if (mesh->mTextureCoords[0]) {
+            vertex.tex_coord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+        }
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-            our::Vertex vertex{};
-
-            glm::vec3 position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-            vertex.position = hasBones ? position : glm::vec3(nodeTransform * glm::vec4(position, 1.0f));
-
-            vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
-            if (mesh->HasNormals()) {
-                glm::vec3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-                vertex.normal = hasBones ? normal : glm::normalize(normalTransform * normal);
-            }
-
-            vertex.tex_coord = glm::vec2(0.0f, 0.0f);
-            if (mesh->mTextureCoords[0]) {
-                vertex.tex_coord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-            }
-
-            vertex.color = materialColor;
-            if (mesh->HasVertexColors(0) && mesh->mColors[0]) {
-                vertex.color = multiplyColor(materialColor, colorFromAssimp(mesh->mColors[0][i]));
-            }
+        vertex.color = materialColor;
+        if (mesh->HasVertexColors(0) && mesh->mColors[0]) {
+            vertex.color = multiplyColor(materialColor, colorFromAssimp(mesh->mColors[0][i]));
+        }
 
         for (int j = 0; j < MAX_BONE_INFLUENCE; j++) {
             vertex.boneIDs[j] = -1;
             vertex.boneWeights[j] = 0.0f;
         }
 
-            if (!hasBones && nodeBoneID != -1) {
-                vertex.boneIDs[0] = nodeBoneID;
-                vertex.boneWeights[0] = 1.0f;
-            }
-
-            vertices.push_back(vertex);
+        if (!hasBones && nodeBoneID != -1) {
+            vertex.boneIDs[0] = nodeBoneID;
+            vertex.boneWeights[0] = 1.0f;
         }
 
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-            const aiFace& face = mesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++) {
-                elements.push_back(vertexOffset + face.mIndices[j]);
-            }
+        vertices.push_back(vertex);
+    }
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        const aiFace& face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
+            elements.push_back(vertexOffset + face.mIndices[j]);
         }
+    }
 
     if (mesh->HasBones()) {
         extractBoneWeightForVertices(vertices, vertexOffset, mesh, boneInfoMap, boneCounter);
         normalizeVertexBoneWeights(vertices, vertexOffset, mesh->mNumVertices);
     }
 
-        const GLsizei indexCount = static_cast<GLsizei>(elements.size() - firstIndex);
-        if (indexCount > 0) {
-            drawBatches.push_back({ static_cast<GLuint>(firstIndex), indexCount, texture, true });
-        }
+    const GLsizei indexCount = static_cast<GLsizei>(elements.size() - firstIndex);
+    if (indexCount > 0) {
+        batch.firstIndex  = firstIndex;
+        batch.indexCount  = indexCount;
+        batch.texture     = texture;
+        batch.hasTexture  = (texture != context.whiteTexture);
+        drawBatches.push_back(batch);   // now has all lighting fields
     }
+}
 
     void processAssimpNodeAnimated(
         const aiNode* node,

@@ -540,6 +540,13 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
                 for (const auto& batch : command.mesh->getDrawBatches()) {
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D, batch.diffuseTexture);
+                    if (litMat->sampler) litMat->sampler->bind(0);
+                    ls->set("diffuseMap", 0);
+
+                    glActiveTexture(GL_TEXTURE1); // ADD: Bind specular texture
+                    glBindTexture(GL_TEXTURE_2D, batch.specularTexture);
+                    if (litMat->sampler) litMat->sampler->bind(1);
+                    ls->set("specularMap", 1);
 
                     ls->set("materialAmbient", batch.ambient);
                     ls->set("materialDiffuse", batch.diffuse);
