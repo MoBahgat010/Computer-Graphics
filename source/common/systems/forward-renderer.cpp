@@ -197,11 +197,14 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             RenderCommand shieldCommand;
             const glm::mat4 opusModel = entity->getLocalToWorldMatrix();
 
-            // Slightly larger sphere around Opus
-            const glm::mat4 shieldScale = glm::scale(glm::mat4(1.0f), glm::vec3(1.35f));
-            shieldCommand.localToWorld = opusModel * shieldScale;
+            const float shieldRadius = opusBoss->getShieldRadius();
+            const glm::vec3 opusPosition = glm::vec3(opusModel[3]);
+            const glm::mat4 shieldTransform =
+                glm::translate(glm::mat4(1.0f), opusPosition) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(shieldRadius));
+            shieldCommand.localToWorld = shieldTransform;
 
-            shieldCommand.center = glm::vec3(opusModel * glm::vec4(0, 0, 0, 1));
+            shieldCommand.center = opusPosition;
             shieldCommand.mesh = opusShieldMesh;
             shieldCommand.material = opusShieldMaterial;
             shieldCommand.animationComponent = nullptr;
