@@ -20,6 +20,7 @@ namespace our {
         glm::vec3 direction; // Used for Directional and Spot Lights only
         // This affects how the light will dim out as we go further from the light.
         // The formula is light_received = light_emitted / (a*d^2 + b*d + c) where a, b, c are the quadratic, linear and constant factors respectively.
+        bool enabled = true; 
         struct {
             float constant, linear, quadratic;
         } attenuation; // Used for Point and Spot Lights only

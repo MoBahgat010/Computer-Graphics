@@ -1,66 +1,68 @@
 #version 330 core
 
-
-in varyings{
+in varyings {
     vec3 position;
     vec3 normal;
     vec3 view_direction;
     vec4 color;
+    vec2 tex_coord;
 } frag_in;
 
 out vec4 frag_color;
-
 
 struct PointLight {
     vec3 diffuse;
     vec3 specular;
     vec3 ambient;
-
-    // spot light specific properties
     vec3 position;
-
-    // The attenuation is used to control how the light dims out as we go further from it.
     float attenuation_constant;
     float attenuation_linear;
     float attenuation_quadratic;
 };
 
-uniform vec3 materialAmbient;    // Reflectivity
-uniform vec3 materialDiffuse;    // Reflectivity
-uniform vec3 materialSpecular;   // Reflectivity
-uniform float materialShininess; 
+uniform vec3      materialAmbient;
+uniform vec3      materialDiffuse;
+uniform vec3      materialSpecular;
+uniform float     materialShininess;
+uniform sampler2D diffuseMap;
+uniform sampler2D specularMap;
 
 uniform PointLight light;
 
-float calculate_lambert(vec3 normal, vec3 light_direction){
-        return max(0.0f, dot(normal, -light_direction));
+float calculate_lambert(vec3 normal, vec3 light_direction) {
+    return max(0.0, dot(normal, -light_direction));
 }
 
-float calculate_phong(vec3 normal, vec3 light_direction, vec3 view, float shininess){
+float calculate_phong(vec3 normal, vec3 light_direction, vec3 view, float shininess) {
     vec3 reflected = reflect(light_direction, normal);
-    return pow(max(0.0f, dot(view, reflected)), shininess);
+    return pow(max(0.0, dot(view, reflected)), max(shininess, 1.0));
 }
 
-void main()
-{
-    vec3 normal = normalize(frag_in.normal);
-    vec3 view_direction = normalize(frag_in.view_direction);
+void main() {
+    vec3 n = normalize(frag_in.normal);
+    vec3 v = normalize(frag_in.view_direction);
 
-    vec3 light_direction = frag_in.position - light.position;
-    float distance = length(light_direction);
-    light_direction = normalize(light_direction);
+    // FIX 1: Vector from Fragment TO Light
+    vec3 light_dir_full = light.position - frag_in.position; 
+    float dist = length(light_dir_full);
+    vec3 l = normalize(light_dir_full);
 
-    // Get the attenuation factor based on the light distance from the pixel
-    float attenuation = 1.0f / (light.attenuation_constant +
-                                light.attenuation_linear * distance +
-                                light.attenuation_quadratic * distance * distance);
+    // FIX 2: Attenuation
+    float attenuation = 1.0 / (light.attenuation_constant +
+                                light.attenuation_linear * dist +
+                                light.attenuation_quadratic * (dist * dist));
+    
+    vec3 albedo = texture(diffuseMap, frag_in.tex_coord).rgb;
+    if(length(albedo) < 0.01) albedo = materialDiffuse;
 
-    vec3 ambient = light.ambient * materialAmbient;
-    float diffuse_factor = calculate_lambert(normal, light_direction);
-    vec3 diffuse = diffuse_factor * light.diffuse * materialDiffuse;
-    float specular_factor = calculate_phong(normal, light_direction, view_direction, materialShininess);
-    vec3 specular = specular_factor * light.specular * materialSpecular;
+    // FIX 3: dot(n, l) because l points TO light
+    float diff_factor = max(0.0, dot(n, l));
+    vec3 diffuse = diff_factor * light.diffuse * albedo;
 
-    vec3 lighting = (diffuse + specular) * attenuation + ambient;
-    frag_color = frag_in.color * vec4(lighting, 1.0);
+    // FIX 4: Specular
+    vec3 reflected = reflect(-l, n);
+    float spec_factor = pow(max(0.0, dot(v, reflected)), max(materialShininess, 1.0));
+    vec3 specular = spec_factor * light.specular * materialSpecular;
+
+    frag_color = vec4((diffuse + specular) * attenuation, 1.0) * frag_in.color;
 }

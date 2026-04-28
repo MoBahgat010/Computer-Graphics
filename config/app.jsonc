@@ -26,6 +26,22 @@
                 "skinned": {
                     "vs": "assets/shaders/skinned.vert",
                     "fs": "assets/shaders/skinned.frag"
+                },
+                "ambient": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/ambient.frag"
+                },
+                "directional": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/directional.frag"
+                },
+                "point": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/point.frag"
+                },
+                "spot": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/spot.frag"
                 }
             },
             "textures":{
@@ -45,6 +61,39 @@
             },
             "samplers":{
                 "default":{}
+            },
+            "lights": {
+                // "sun": {
+                //   "type": "directional",
+                //   "enabled": true,
+                //   //   "direction":[0.0, -1.0, 0.0],
+                //   "direction": [-0.7, -0.3, -0.5],
+                //   "ambient": [0.5, 0.5, 0.5],
+                //   "diffuse": [0.8, 0.8, 0.8],
+                //   "specular": [1.0, 1.0, 1.0]
+                // },
+                "sun": {
+                    "type": "directional",
+                    "enabled": true,
+                    "direction": [-1.0, -0.5, -1.0], 
+                    "ambient": [0.4, 0.4, 0.4],
+                    "diffuse": [1.5, 1.5, 1.5],
+                    "specular": [1.0, 1.0, 1.0]
+                },
+                "street_lamp": {
+                    "type": "point",
+                    "enabled": true,
+                    "position": [0.0, 5.0, 0.0],
+                    "ambient": [0.05, 0.05, 0.05],
+                
+                    "diffuse": [2.0, 1.8, 1.5],
+                    "specular": [2.0, 1.8, 1.5],
+                    "attenuation": {
+                        "constant":  1.0,
+                        "linear":    0.09,
+                        "quadratic": 0.032
+                    }
+                }
             },
             "materials":{
                 "main-map":{
@@ -108,8 +157,13 @@
                     "sampler": "default"
                 },
                 "city": {
-                    "type": "textured",
-                    "shader": "textured",
+                    "type": "lit",
+                    "ambientShader":     "ambient",
+                    "directionalShader": "directional",
+                    "pointShader":       "point",
+                    "spotShader":        "spot",
+                    "sampler": "default",
+                    "transparent": false,
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -118,18 +172,16 @@
                             "enabled": true
                         }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
+                    "lights": ["sun", "street_lamp"]
                 },
                 "male_character": {
-                    "type": "textured",
-                    "shader": "textured",
+                    "type": "lit",
+                    "ambientShader":     "ambient",
+                    "directionalShader": "directional",
+                    "pointShader":       "point",
+                    "spotShader":        "spot",
+                    "sampler": "default",
+                    "transparent": false,
                     "pipelineState": {
                         "faceCulling": {
                             "enabled": false
@@ -138,14 +190,7 @@
                             "enabled": true
                         }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
+                    "lights": ["sun"]
                 },
                 "robot": {
                     "type": "textured",

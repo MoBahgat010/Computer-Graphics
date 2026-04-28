@@ -74,6 +74,11 @@ namespace our {
             glUniform4fv(uniformLocation, 1, glm::value_ptr(value));
         }
 
+        void set(const std::string& uniform, glm::mat3 value) {
+            GLuint uniformLocation = getUniformLocation(uniform);
+            glUniformMatrix3fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(value));
+        }
+
         void set(const std::string &uniform, glm::mat4 matrix) {
             //TODO: (Req 1) Send the given matrix 4x4 value to the given uniform
             GLuint uniformLocation = getUniformLocation(uniform);
