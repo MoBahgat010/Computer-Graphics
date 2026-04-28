@@ -25,9 +25,25 @@
                 "skinned": {
                     "vs": "assets/shaders/skinned.vert",
                     "fs": "assets/shaders/skinned.frag"
+                },
+                "ambient": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/ambient.frag"
+                },
+                "directional": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/directional.frag"
+                },
+                "point": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/point.frag"
+                },
+                "spot": {
+                    "vs": "assets/shaders/light/light.vert",
+                    "fs": "assets/shaders/light/spot.frag"
                 }
             },
-            "textures": {
+            "textures":{
                 "fallback": "assets/textures/grass_ground_d.jpg"
             },
             "meshes": {
@@ -48,8 +64,41 @@
             "samplers": {
                 "default": {}
             },
-            "materials": {
-                "main-map": {
+            "lights": {
+                // "sun": {
+                //   "type": "directional",
+                //   "enabled": true,
+                //   //   "direction":[0.0, -1.0, 0.0],
+                //   "direction": [-0.7, -0.3, -0.5],
+                //   "ambient": [0.5, 0.5, 0.5],
+                //   "diffuse": [0.8, 0.8, 0.8],
+                //   "specular": [1.0, 1.0, 1.0]
+                // },
+                "sun": {
+                    "type": "directional",
+                    "enabled": true,
+                    "direction": [-1.0, -0.5, -1.0], 
+                    "ambient": [0.4, 0.4, 0.4],
+                    "diffuse": [1.5, 1.5, 1.5],
+                    "specular": [1.0, 1.0, 1.0]
+                },
+                "street_lamp": {
+                    "type": "point",
+                    "enabled": true,
+                    "position": [0.0, 5.0, 0.0],
+                    "ambient": [0.05, 0.05, 0.05],
+                
+                    "diffuse": [2.0, 1.8, 1.5],
+                    "specular": [2.0, 1.8, 1.5],
+                    "attenuation": {
+                        "constant":  1.0,
+                        "linear":    0.09,
+                        "quadratic": 0.032
+                    }
+                }
+            },
+            "materials":{
+                "main-map":{
                     "type": "textured",
                     "shader": "textured",
                     "pipelineState": {
@@ -67,47 +116,47 @@
                         1
                     ],
                     "texture": "grass",
+                    "sampler": "default"
+                },
+                "server": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
                     "sampler": "default"
                 },
                 "city": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
+                  "type": "lit",
+                  "ambientShader": "ambient",
+                  "directionalShader": "directional",
+                  "pointShader": "point",
+                  "spotShader": "spot",
+                  "sampler": "default",
+                  "transparent": false,
+                  "shader": "textured",
+                  "pipelineState": {
+                    "faceCulling": {
+                      "enabled": false
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "server": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
+                    "depthTesting": {
+                      "enabled": true
+                    }
+                  },
+                  "tint": [1, 1, 1, 1],
+                  "texture": "moon"
                 },
                 "male_character": {
                     "type": "textured",
@@ -140,372 +189,7 @@
                             "enabled": true
                         }
                     },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "opus": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                }
-            }
-        },
-        "enemySpawner": {
-            "enemiesPerPoint": 2,
-            "spawnOffset": 0.6,
-            "enemy": {
-                "components": [
-                    {
-                        "type": "Animation",
-                        "animatedMesh": "robot_anim",
-                        "animationIndex": 0,
-                        "inPlace": true
-                    },
-                    {
-                        "type": "Collider",
-                        "halfExtents": [
-                            800.0,  
-                            3000.0, 
-                            800.0
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    }
-                ],
-                "mesh": "robot",
-                "material": "robot",
-                "scale": [
-                    0.00007,
-                    0.00007,
-                    0.00007
-                ],
-                "health": 100,
-                "attackDamage": 3,
-                "speed": 1.0,
-                "attackRange": 1.5,
-                "detectionRange": 5.0,
-                "attackCooldown": 1.0
-            }
-        },
-        "world": [
-            {
-                "name": "Player",
-                "position": [
-                    4.28409,
-                    0.287086,
-                    -0.395433
-                ],
-                "rotation": [
-                    0,
-                    180,
-                    0
-                ],
-                "components": [
-                    {
-                        "type": "Player"
-                    },
-                    {
-                        "type": "Collider",
-                        "halfExtents": [
-                            0.17,
-                            0.2,
-                            0.17
-                        ],
-                        "centerOffset": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    }
-                ],
-                "children": [
-                    {
-                        "name": "Camera",
-                        "position": [
-                            0.01,
-                            0.18,
-                            -0.09
-                        ],
-                        "rotation": [
-                            0,
-                            0,
-                            0
-                        ],
-                        "components": [
-                            {
-                                "type": "Camera",
-                                "near": 0.01,
-                                "far": 3000,
-                                "fovY": 75
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Male Character Model",
-                        "position": [
-                            0.02,
-                            0.1,
-                            -0.05
-                        ],
-                        "rotation": [
-                            0,
-                            180,
-                            0
-                        ],
-                        "scale": [
-                            0.00006,
-                            0.00006,
-                            0.00006
-                        ],
-                        "components": [
-                            {
-                                "type": "Mesh Renderer",
-                                "mesh": "male_character",
-                                "material": "male_character"
-                            },
-                            {
-                                "type": "Animation",
-                                "animatedMesh": "player_anim",
-                                "animationIndex": 1,
-                                "inPlace": true
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "position": [
-                    0,
-                    0,
-                    0
-                ],
-                "rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "scale": [
-                    15,
-                    15,
-                    15
-                ],
-                "components": [
-                    {
-                        "type": "Mesh Renderer",
-                        "mesh": "city",
-                        "material": "city"
-                    },
-                    {
-                        "type": "Collider"
-                    }
-                ]
-            },
-            {
-                "name": "EnemySpawnPoint",
-                "position": [
-                    26.2637,
-                    0.4,
-                    -0.326302
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            {
-                "name": "EnemySpawnPoint",
-                "position": [
-                    4.61593,
-                    0.4,
-                    -10.3189
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            {
-                "name": "EnemySpawnPoint",
-                "position": [
-                    -16.1855,
-                    0.4,
-                    -0.577851
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        ]
-    },
-    "level2_scene": {
-        "renderer": {
-            "postprocess": "assets/shaders/postprocess/vignette.frag"
-        },
-        "assets": {
-            "shaders": {
-                "tinted": {
-                    "vs": "assets/shaders/tinted.vert",
-                    "fs": "assets/shaders/tinted.frag"
-                },
-                "textured": {
-                    "vs": "assets/shaders/textured.vert",
-                    "fs": "assets/shaders/textured.frag"
-                },
-                "skinned": {
-                    "vs": "assets/shaders/skinned.vert",
-                    "fs": "assets/shaders/skinned.frag"
-                }
-            },
-            "textures": {
-                "fallback": "assets/textures/grass_ground_d.jpg"
-            },
-            "meshes": {
-                "cube": "assets/models/cube.obj",
-                "monkey": "assets/models/monkey.obj",
-                "plane": "assets/models/plane.obj",
-                "sphere": "assets/models/sphere.obj",
-                "male_character": "assets/models/male_character/player_gun.fbx",
-                "robot": "assets/models/robot/robot_gun.fbx",
-                "opus": "assets/models/opus/opus_gun.fbx",
-                "room": "assets/models/room/room.fbx",
-                "server": "assets/models/server/server_racking_system.glb"
-            },
-            "animatedMeshes": {
-                "robot_anim": "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/palyer_gun.fbx",
-                "opus_anim": "assets/models/opus/opus_gun.fbx"
-            },
-            "samplers": {
-                "default": {}
-            },
-            "materials": {
-                "main-map": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "grass",
-                    "sampler": "default"
-                },
-                "male_character": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "player",
-                    "sampler": "default"
-                },
-                "server": {
-                    "type": "textured",
-                    "shader": "textured",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "robot": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
-                },
-                "opus": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "moon",
-                    "sampler": "default"
+                    "lights": ["sun", "street_lamp"]
                 },
                 "room": {
                     "type": "textured",

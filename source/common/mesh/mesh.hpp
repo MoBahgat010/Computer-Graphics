@@ -106,6 +106,8 @@ public:
             return cpuIndices;
         }
 
+    const std::vector<DrawBatch>& getDrawBatches() const { return drawBatches; }
+
     // this function should render the mesh
     void draw() {
         VAO1.Bind();
@@ -132,6 +134,17 @@ public:
         glBindTexture(GL_TEXTURE_2D, 0);
 
 
+        VAO1.UnBind();
+    }
+
+    void drawBatch(const DrawBatch& batch) {
+        VAO1.Bind();
+        glDrawElements(
+            GL_TRIANGLES,
+            batch.indexCount,
+            GL_UNSIGNED_INT,
+            reinterpret_cast<void*>(static_cast<uintptr_t>(batch.firstIndex) * sizeof(GLuint))
+        );
         VAO1.UnBind();
     }
 

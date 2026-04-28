@@ -13,10 +13,10 @@ namespace our {
     }
 
     // This function read the material data from a json object
-    void Material::deserialize(const nlohmann::json& data){
-        if(!data.is_object()) return;
+    void Material::deserialize(const nlohmann::json& data) {
+        if (!data.is_object()) return;
 
-        if(data.contains("pipelineState")){
+        if (data.contains("pipelineState")) {
             pipelineState.deserialize(data["pipelineState"]);
         }
         shader = AssetLoader<ShaderProgram>::get(data["shader"].get<std::string>());
@@ -32,9 +32,9 @@ namespace our {
     }
 
     // This function read the material data from a json object
-    void TintedMaterial::deserialize(const nlohmann::json& data){
+    void TintedMaterial::deserialize(const nlohmann::json& data) {
         Material::deserialize(data);
-        if(!data.is_object()) return;
+        if (!data.is_object()) return;
         tint = data.value("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
@@ -45,22 +45,42 @@ namespace our {
         //TODO: (Req 7) Write this function
         TintedMaterial::setup();
         this->shader->set("alphaThreshold", alphaThreshold);
-        if(texture != nullptr) {
+        if (texture != nullptr) {
             glActiveTexture(GL_TEXTURE0);
             texture->bind();
-            if(sampler != nullptr)
+            if (sampler != nullptr)
                 sampler->bind(0);
             this->shader->set("tex", 0);
         }
     }
 
     // This function read the material data from a json object
-    void TexturedMaterial::deserialize(const nlohmann::json& data){
+    void TexturedMaterial::deserialize(const nlohmann::json& data) {
         TintedMaterial::deserialize(data);
-        if(!data.is_object()) return;
+        if (!data.is_object()) return;
         alphaThreshold = data.value("alphaThreshold", 0.0f);
         texture = AssetLoader<Texture2D>::get(data.value("texture", ""));
         sampler = AssetLoader<Sampler>::get(data.value("sampler", ""));
+    }
+    void LitMaterial::setup() const {
+        pipelineState.setup();         // set pipeline state directly
+        if (ambientShader) ambientShader->use();  // use ambient shader for pass 0
+    }
+
+    void LitMaterial::deserialize(const nlohmann::json& data) {
+        if (data.contains("pipelineState")) pipelineState.deserialize(data["pipelineState"]);
+        transparent = data.value("transparent", false);
+        sampler = AssetLoader<Sampler>::get(data.value("sampler", ""));
+
+        ambientShader = AssetLoader<ShaderProgram>::get(data.value("ambientShader", ""));
+        directionalShader = AssetLoader<ShaderProgram>::get(data.value("directionalShader", ""));
+        pointShader = AssetLoader<ShaderProgram>::get(data.value("pointShader", ""));
+        spotShader = AssetLoader<ShaderProgram>::get(data.value("spotShader", ""));
+
+        shader = ambientShader; 
+        if (data.contains("lights") && data["lights"].is_array())
+            for (auto& name : data["lights"].get<std::vector<std::string>>())
+                if (auto* l = AssetLoader<Light>::get(name)) lights.push_back(l);
     }
 
 }
