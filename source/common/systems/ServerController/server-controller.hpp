@@ -3,6 +3,7 @@
 #include "../jolt-physics-system.hpp"
 #include "../../components/ServerComponents/server-component.hpp"
 #include "../../components/EnemyComponents/opus-boss-component.hpp"
+#include "../../audio/audio-player.hpp"
 
 namespace our {
 
@@ -25,6 +26,11 @@ namespace our {
                     // If the server health reaches zero, mark it as destroyed and remove it from the world
                     if(server->getHealth() <= 0.0f && !server->getIsDestroyed()) {
                         server->setIsDestroyed(true);
+
+                        // Play server destroyed sound
+                        static AudioPlayer serverCrashAudioPlayer;
+                        serverCrashAudioPlayer.play("assets/audio/game/server_crash_sound.mp3", 0.8f);
+
                         if(physics) physics->removeBody(entity);
                         world->markForRemoval(entity);
                     } else {
