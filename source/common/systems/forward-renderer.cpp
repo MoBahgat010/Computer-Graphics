@@ -2,6 +2,7 @@
 #include "../mesh/mesh-utils.hpp"
 #include "../texture/texture-utils.hpp"
 #include "../animation/animated-mesh.hpp"
+#include "../components/PlayerComponents/player-component.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -167,11 +168,13 @@ namespace our {
         if (deltaTime > 0.1f) deltaTime = 0.1f;
 
         CameraComponent* camera = nullptr;
+        PlayerComponent* player = nullptr;
         opaqueCommands.clear();
         transparentCommands.clear();
 
         for (auto entity : world->getEntities()) {
             if (!camera) camera = entity->getComponent<CameraComponent>();
+            if (!player) player = entity->getComponent<PlayerComponent>();
 
             if (auto meshRenderer = entity->getComponent<MeshRendererComponent>(); meshRenderer) {
                 std::string entityName = entity->name.empty() ? "<unnamed>" : entity->name;
@@ -556,6 +559,16 @@ namespace our {
         if (postprocessMaterial) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postprocessMaterial->setup();
+
+            // If player is hit, tint the screen red
+            if (player && player->damageIndicatorTimer > 0.0f) {
+                // tint heavily red when the timer is close to 0.5, fade back to white as it approaches 0
+                float factor = player->damageIndicatorTimer / 0.5f; // assume max 0.5f
+                postprocessMaterial->shader->set("tint", glm::vec4(1.0f, 1.0f - factor, 1.0f - factor, 1.0f));
+            } else {
+                postprocessMaterial->shader->set("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            }
+
             glBindVertexArray(postProcessVertexArray);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }

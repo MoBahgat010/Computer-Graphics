@@ -21,6 +21,9 @@ namespace our {
         float fovY; // The field of view angle of the camera if it is a perspective camera
         float orthoHeight; // The orthographic height of the camera if it is an orthographic camera
 
+        float shakeIntensity = 0.0f; // Current applied shake intensity
+        float shakeDurationLeft = 0.0f; // How long to continue shaking
+
         // The ID of this component type is "Camera"
         static std::string getID() { return "Camera"; }
 
@@ -33,6 +36,11 @@ namespace our {
         // Creates and returns the camera projection matrix
         // "viewportSize" is used to compute the aspect ratio
         glm::mat4 getProjectionMatrix(glm::ivec2 viewportSize) const;
+
+        void triggerShake(float intensity, float duration = 0.5f) {
+            shakeIntensity = intensity;
+            shakeDurationLeft = duration;
+        }
     };
 
 }

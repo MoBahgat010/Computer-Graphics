@@ -18,8 +18,10 @@ class PlayerComponent : public Component {
   float mouseSensitivity = 0.003f;
   float jumpSpeed = 2.5f;
 
-  
   public:
+  float damageIndicatorTimer = 0.0f;
+  float painSoundTimer = 0.0f; // Cooldown timer for the pain sound
+  
     static std::string getID() { return "Player"; }
     void deserialize(const nlohmann::json& data) override;
 
@@ -51,5 +53,7 @@ class PlayerComponent : public Component {
     void decreaseMagazineAmmo(int amount = 1);
     void increaseTotalAmmo(int amount);
     void reloadWeapon();
+
+    void receiveDamage(int amount); // Sets timer
 };
 }

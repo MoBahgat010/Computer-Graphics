@@ -1,6 +1,8 @@
 
 #include "./player-component.hpp"
 #include <algorithm>
+#include <random>
+#include "../../audio/audio-player.hpp"
 namespace our {
   void PlayerComponent::deserialize(const nlohmann::json& data) {
     if(!data.is_object()) return;
@@ -72,6 +74,20 @@ namespace our {
       health = 0;
       isDead=true;
     } 
+  }
+
+  void PlayerComponent::receiveDamage(int amount) {
+    if (amount <= 0) return;
+    
+    decreaseHealth(amount);
+    damageIndicatorTimer = 0.5f; // Set flash timer to 0.5 seconds
+    
+    // Grunt sound cooldown: Play pain sound only if the cooldown has elapsed to prevent spamming
+    if (painSoundTimer <= 0.0f) {
+        static AudioPlayer painAudioPlayer;
+        painAudioPlayer.play("assets/audio/game/male_grunt.wav", 0.7f);
+        painSoundTimer = 1.5f; // Add a 1.5 second cooldown interval between grunts
+    }
   }
 
   void PlayerComponent::decreaseMagazineAmmo(int amount) {

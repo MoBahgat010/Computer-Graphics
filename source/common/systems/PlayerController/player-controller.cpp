@@ -35,6 +35,16 @@ namespace our {
 
       if(!cameraEntity) return;
 
+      if(player->damageIndicatorTimer > 0.0f) {
+          player->damageIndicatorTimer -= deltaTime;
+          if(player->damageIndicatorTimer < 0.0f) player->damageIndicatorTimer = 0.0f;
+      }
+
+      if(player->painSoundTimer > 0.0f) {
+          player->painSoundTimer -= deltaTime;
+          if(player->painSoundTimer < 0.0f) player->painSoundTimer = 0.0f;
+      }
+
       if ( player->getIsDead()){
         handleDeath();
       } 

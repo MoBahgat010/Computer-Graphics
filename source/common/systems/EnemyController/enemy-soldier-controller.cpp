@@ -112,9 +112,9 @@ namespace our {
     }
     // can attack
     float damage = enemy->getDamage();
-    player->decreaseHealth(damage);
+    player->receiveDamage(damage);
     std::cout << "[COMBAT] Enemy hit player! Dealt " << damage << " damage. Player Health: " << player->getHealth() << std::endl;
-    
+
     // reset timer
     enemy->setAttackTimer(0.0f);
 
