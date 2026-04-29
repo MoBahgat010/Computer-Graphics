@@ -38,6 +38,78 @@
             "samplers": {
                 "default": {}
             },
+            "materials": {
+              "main-map": {
+                "type": "textured",
+                "shader": "textured",
+                "pipelineState": {
+                  "faceCulling": {
+                    "enabled": false
+                  },
+                  "depthTesting": {
+                    "enabled": true
+                  }
+                },
+                "tint": [1, 1, 1, 1],
+                "texture": "grass",
+                "sampler": "default"
+              },
+              "city": {
+                "type": "lit",
+                "ambientShader": "ambient",
+                "directionalShader": "directional",
+                "pointShader": "point",
+                "spotShader": "spot",
+                "sampler": "default",
+                "transparent": false,
+                "pipelineState": {
+                  "faceCulling": { "enabled": false },
+                  "depthTesting": { "enabled": true }
+                },
+                "lights": ["sun", "street_lamp"]
+              },
+              "server": {
+                "type": "textured",
+                "shader": "textured",
+                "pipelineState": {
+                  "faceCulling": {
+                    "enabled": false
+                  },
+                  "depthTesting": {
+                    "enabled": true
+                  }
+                },
+                "tint": [1, 1, 1, 1],
+                "texture": "moon",
+                "sampler": "default"
+              },
+              "male_character": {
+                "type": "textured",
+                "shader": "skinned",
+                "pipelineState": {
+                  "faceCulling": {
+                    "enabled": false
+                  },
+                  "depthTesting": {
+                    "enabled": true
+                  }
+                },
+                "tint": [1, 1, 1, 1],
+                "texture": "player",
+                "sampler": "default"
+              },
+              "robot": {
+                "type": "textured",
+                "shader": "skinned",
+                "pipelineState": {
+                  "faceCulling": { "enabled": false },
+                  "depthTesting": { "enabled": true }
+                },
+                "tint": [1, 1, 1, 1],
+                "texture": "moon",
+                "sampler": "default"
+              }
+            },
             "lights": {
                 "sun": {
                     "type": "directional",
@@ -59,53 +131,6 @@
                         "linear": 0.09,
                         "quadratic": 0.032
                     }
-                }
-            },
-            "materials": {
-                "city": {
-                    "type": "lit",
-                    "ambientShader":     "ambient",
-                    "directionalShader": "directional",
-                    "pointShader":       "point",
-                    "spotShader":        "spot",
-                    "sampler": "default",
-                    "transparent": false,
-                    "pipelineState": {
-                        "faceCulling": { "enabled": false },
-                        "depthTesting": { "enabled": true }
-                    },
-                    "lights": ["sun", "street_lamp"]
-                },
-                "male_character": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": {
-                            "enabled": false
-                        },
-                        "depthTesting": {
-                            "enabled": true
-                        }
-                    },
-                    "tint": [
-                        1,
-                        1,
-                        1,
-                        1
-                    ],
-                    "texture": "player",
-                    "sampler": "default"
-                },
-                "robot": {
-                    "type": "textured",
-                    "shader": "skinned",
-                    "pipelineState": {
-                        "faceCulling": { "enabled": false },
-                        "depthTesting": { "enabled": true }
-                    },
-                    "tint": [1, 1, 1, 1],
-                    "texture": "moon",
-                    "sampler": "default"
                 }
             }
         },
@@ -253,30 +278,22 @@
             "samplers": {
                 "default": {}
             },
-            "lights": {
-                "sun": {
-                    "type": "directional",
-                    "enabled": true,
-                    "direction": [-1.0, -0.5, -1.0],
-                    "ambient":  [0.4, 0.4, 0.4],
-                    "diffuse":  [1.5, 1.5, 1.5],
-                    "specular": [1.0, 1.0, 1.0]
-                },
-                "street_lamp": {
-                    "type": "point",
-                    "enabled": true,
-                    "position": [0.0, 5.0, 0.0],
-                    "ambient":  [0.05, 0.05, 0.05],
-                    "diffuse":  [2.0, 1.8, 1.5],
-                    "specular": [2.0, 1.8, 1.5],
-                    "attenuation": {
-                        "constant": 1.0,
-                        "linear": 0.09,
-                        "quadratic": 0.032
-                    }
-                }
-            },
             "materials": {
+                "main-map": {
+                    "type": "textured",
+                    "shader": "textured",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [1, 1, 1, 1],
+                    "texture": "grass",
+                    "sampler": "default"
+                },
                 "room": {
                     "type": "textured",
                     "shader": "textured",
@@ -300,18 +317,15 @@
                     "sampler": "default"
                 },
                 "male_character": {
-                    "type": "lit",
-                    "ambientShader":     "ambient",
-                    "directionalShader": "directional",
-                    "pointShader":       "point",
-                    "spotShader":        "spot",
-                    "sampler": "default",
-                    "transparent": false,
+                    "type": "textured",
+                    "shader": "skinned",
                     "pipelineState": {
                         "faceCulling": { "enabled": false },
                         "depthTesting": { "enabled": true }
                     },
-                    "lights": ["sun"]
+                    "tint": [1, 1, 1, 1],
+                    "texture": "player",
+                    "sampler": "default"
                 },
                 "robot": {
                     "type": "textured",
@@ -334,6 +348,29 @@
                     "tint": [1, 1, 1, 1],
                     "texture": "moon",
                     "sampler": "default"
+                }
+            },
+            "lights": {
+                "sun": {
+                    "type": "directional",
+                    "enabled": true,
+                    "direction": [-1.0, -0.5, -1.0],
+                    "ambient":  [0.4, 0.4, 0.4],
+                    "diffuse":  [1.5, 1.5, 1.5],
+                    "specular": [1.0, 1.0, 1.0]
+                },
+                "street_lamp": {
+                    "type": "point",
+                    "enabled": true,
+                    "position": [0.0, 5.0, 0.0],
+                    "ambient":  [0.05, 0.05, 0.05],
+                    "diffuse":  [2.0, 1.8, 1.5],
+                    "specular": [2.0, 1.8, 1.5],
+                    "attenuation": {
+                        "constant": 1.0,
+                        "linear": 0.09,
+                        "quadratic": 0.032
+                    }
                 }
             }
         },
