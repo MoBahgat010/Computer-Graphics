@@ -61,36 +61,36 @@ namespace our {
             this->skyMaterial->alphaThreshold = 1.0f;
             this->skyMaterial->transparent = false;
         }
-        
+
         // Opus shield resources
-opusShieldMesh = mesh_utils::sphere(glm::ivec2(24, 24));
+        opusShieldMesh = mesh_utils::sphere(glm::ivec2(24, 24));
 
-ShaderProgram* shieldShader = new ShaderProgram();
-shieldShader->attach("assets/shaders/tinted.vert", GL_VERTEX_SHADER);
-shieldShader->attach("assets/shaders/tinted.frag", GL_FRAGMENT_SHADER);
-shieldShader->link();
+        ShaderProgram* shieldShader = new ShaderProgram();
+        shieldShader->attach("assets/shaders/tinted.vert", GL_VERTEX_SHADER);
+        shieldShader->attach("assets/shaders/tinted.frag", GL_FRAGMENT_SHADER);
+        shieldShader->link();
 
-PipelineState shieldPipelineState{};
-shieldPipelineState.depthTesting.enabled = true;
-shieldPipelineState.depthTesting.function = GL_LEQUAL;
-shieldPipelineState.depthMask = false; // transparent pass should not write depth
+        PipelineState shieldPipelineState{};
+        shieldPipelineState.depthTesting.enabled = true;
+        shieldPipelineState.depthTesting.function = GL_LEQUAL;
+        shieldPipelineState.depthMask = false; // transparent pass should not write depth
 
-shieldPipelineState.faceCulling.enabled = false; // view from all angles
+        shieldPipelineState.faceCulling.enabled = false; // view from all angles
 
-shieldPipelineState.blending.enabled = true;
-shieldPipelineState.blending.equation = GL_FUNC_ADD;
-shieldPipelineState.blending.sourceFactor = GL_SRC_ALPHA;
-shieldPipelineState.blending.destinationFactor = GL_ONE_MINUS_SRC_ALPHA;
+        shieldPipelineState.blending.enabled = true;
+        shieldPipelineState.blending.equation = GL_FUNC_ADD;
+        shieldPipelineState.blending.sourceFactor = GL_SRC_ALPHA;
+        shieldPipelineState.blending.destinationFactor = GL_ONE_MINUS_SRC_ALPHA;
 
-opusShieldMaterial = new TintedMaterial();
-opusShieldMaterial->shader = shieldShader;
-opusShieldMaterial->pipelineState = shieldPipelineState;
-opusShieldMaterial->transparent = true;
+        opusShieldMaterial = new TintedMaterial();
+        opusShieldMaterial->shader = shieldShader;
+        opusShieldMaterial->pipelineState = shieldPipelineState;
+        opusShieldMaterial->transparent = true;
 
-// Stronger blue, semi-transparent
-opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
+        // Stronger blue, semi-transparent
+        opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
         // Then we check if there is a postprocessing shader in the configuration
-        if(config.contains("postprocess")){
+        if (config.contains("postprocess")) {
             //TODO: (Req 11) Create a framebuffer
             glGenFramebuffers(1, &postprocessFrameBuffer);
             glBindFramebuffer(GL_FRAMEBUFFER, postprocessFrameBuffer);
@@ -133,15 +133,15 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             delete skyMaterial->sampler;
             delete skyMaterial;
         }
-        if(opusShieldMaterial) {
-    delete opusShieldMesh;
-    delete opusShieldMaterial->shader;
-    delete opusShieldMaterial;
-    opusShieldMesh = nullptr;
-    opusShieldMaterial = nullptr;
-}
+        if (opusShieldMaterial) {
+            delete opusShieldMesh;
+            delete opusShieldMaterial->shader;
+            delete opusShieldMaterial;
+            opusShieldMesh = nullptr;
+            opusShieldMaterial = nullptr;
+        }
         // Delete all objects related to post processing
-        if(postprocessMaterial){
+        if (postprocessMaterial) {
             glDeleteFramebuffers(1, &postprocessFrameBuffer);
             glDeleteVertexArrays(1, &postProcessVertexArray);
             delete colorTarget;
@@ -175,32 +175,32 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
 
             if (auto meshRenderer = entity->getComponent<MeshRendererComponent>(); meshRenderer) {
                 std::string entityName = entity->name.empty() ? "<unnamed>" : entity->name;
-                if(opusShieldMesh && opusShieldMaterial) {
-    if(auto* opusBoss = entity->getComponent<OpusBossComponent>()) {
-        if(opusBoss->getIsSheildActive()) { // keep existing project spelling
-            RenderCommand shieldCommand;
-            const glm::mat4 opusModel = entity->getLocalToWorldMatrix();
+                if (opusShieldMesh && opusShieldMaterial) {
+                    if (auto* opusBoss = entity->getComponent<OpusBossComponent>()) {
+                        if (opusBoss->getIsSheildActive()) { // keep existing project spelling
+                            RenderCommand shieldCommand;
+                            const glm::mat4 opusModel = entity->getLocalToWorldMatrix();
 
-            const float shieldRadius = opusBoss->getShieldRadius();
-            const glm::vec3 opusPosition = glm::vec3(opusModel[3]);
-            const glm::mat4 shieldTransform =
-                glm::translate(glm::mat4(1.0f), opusPosition) *
-                glm::scale(glm::mat4(1.0f), glm::vec3(shieldRadius));
-            shieldCommand.localToWorld = shieldTransform;
+                            const float shieldRadius = opusBoss->getShieldRadius();
+                            const glm::vec3 opusPosition = glm::vec3(opusModel[3]);
+                            const glm::mat4 shieldTransform =
+                                glm::translate(glm::mat4(1.0f), opusPosition) *
+                                glm::scale(glm::mat4(1.0f), glm::vec3(shieldRadius));
+                            shieldCommand.localToWorld = shieldTransform;
 
-            shieldCommand.center = opusPosition;
-            shieldCommand.mesh = opusShieldMesh;
-            shieldCommand.material = opusShieldMaterial;
-            shieldCommand.animationComponent = nullptr;
+                            shieldCommand.center = opusPosition;
+                            shieldCommand.mesh = opusShieldMesh;
+                            shieldCommand.material = opusShieldMaterial;
+                            shieldCommand.animationComponent = nullptr;
 
-            transparentCommands.push_back(shieldCommand);
-        }
-    }
-}
-                if(meshRenderer->material == nullptr){
-                    if(loggedMissingMaterial.insert(entity).second){
+                            transparentCommands.push_back(shieldCommand);
+                        }
+                    }
+                }
+                if (meshRenderer->material == nullptr) {
+                    if (loggedMissingMaterial.insert(entity).second) {
                         std::cerr << "[ANIM] Skipping entity \"" << entityName
-                                  << "\": missing material on Mesh Renderer component." << std::endl;
+                            << "\": missing material on Mesh Renderer component." << std::endl;
                     }
                     continue;
                 }
@@ -274,9 +274,7 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
         glDepthFunc(GL_LESS);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        // =====================================================================
         // OPAQUE PASS
-        // =====================================================================
         for (const auto& command : opaqueCommands) {
 
             auto* litMat = dynamic_cast<LitMaterial*>(command.material);
@@ -328,10 +326,10 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             litMat->pipelineState.setup();
 
             glEnable(GL_DEPTH_TEST);
-            glDepthMask(GL_TRUE);   // CRITICAL: First pass MUST write to depth buffer
-            glDepthFunc(GL_LESS);   // Standard depth test
-            glDisable(GL_BLEND);    // No blending for the first pass
-     
+            glDepthMask(GL_TRUE);   // first path must write to depth buffer
+            glDepthFunc(GL_LESS);   
+            glDisable(GL_BLEND);   
+
             // PASS 0: AMBIENT ONLY
             ShaderProgram* as = litMat->ambientShader;
             as->use();
@@ -365,7 +363,8 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
                 if (dirLight) {
                     as->set("directional_light.ambient", dirLight->ambient);
                     as->set("directional_light.direction", glm::normalize(dirLight->direction));
-                } else {
+                }
+                else {
                     as->set("directional_light.ambient", glm::vec3(0.3f)); // Default fallback
                     as->set("directional_light.direction", glm::vec3(0, -1, 0));
                 }
@@ -459,11 +458,9 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             glDepthMask(GL_TRUE);
             glDepthFunc(GL_LESS);
 
-        } // end opaque loop
+        } 
 
-        // =====================================================================
         // SKY
-        // =====================================================================
         if (this->skyMaterial) {
             skyMaterial->setup();
             glm::vec3 cameraPosition = glm::vec3(M * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -478,9 +475,7 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             skySphere->draw();
         }
 
-        // =====================================================================
         // TRANSPARENT PASS
-        // =====================================================================
         for (const auto& command : transparentCommands) {
             auto* litMat = dynamic_cast<LitMaterial*>(command.material);
 
@@ -557,16 +552,12 @@ opusShieldMaterial->tint = glm::vec4(0.2f, 0.55f, 1.0f, 0.55f);
             }
         }
 
-        // =====================================================================
         // POST PROCESS
-        // =====================================================================
         if (postprocessMaterial) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postprocessMaterial->setup();
             glBindVertexArray(postProcessVertexArray);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
-
-    } // end render()
-
-} // end namespace our
+    } 
+}
