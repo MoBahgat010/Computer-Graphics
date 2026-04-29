@@ -24,6 +24,7 @@ namespace our{
     void handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime);
     void handleDead(EnemySoldierComponent* enemy);
+    void facePlayer(Entity* enemyEntity, Entity* playerEntity);
     
     public:
     void enter(Application* app, JoltPhysicsSystem* physics = nullptr);

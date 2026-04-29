@@ -90,11 +90,17 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
+    Entity* enemyEntity = enemy->getOwner();
+    Entity* playerEntity = player->getOwner();
+
+    // Look at the player
+    facePlayer(enemyEntity, playerEntity);
+
     if (physics) {
-        physics->setLinearVelocity(enemy->getOwner(), glm::vec3(0.0f));
+        physics->setLinearVelocity(enemyEntity, glm::vec3(0.0f));
     }
     enemy->setCurrentState(EnemyState::ATTACKING);
-    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
+    if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = false;
     
     // std::cout << "Enemy is attacking" << std::endl;   
     
@@ -127,6 +133,8 @@ namespace our {
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
 
+    facePlayer(enemyEntity, playerEntity);
+
     // 1. get direction 
     glm::vec3 directionToPlayer = (playerEntity->localTransform.position - enemyEntity->localTransform.position);
     // 2. remove y axis
@@ -143,9 +151,6 @@ namespace our {
     } else {
         enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
     }
-    
-    // 5. look at the player
-    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
     
 
 
@@ -183,5 +188,14 @@ namespace our {
       }
   }
 
+  void EnemySoldierControllerSystem::facePlayer(Entity* enemyEntity, Entity* playerEntity) {
+      glm::vec3 directionToPlayer = playerEntity->localTransform.position - enemyEntity->localTransform.position;
+      directionToPlayer.y = 0.0f;
+
+      if(glm::length(directionToPlayer) > 0.01f ) {
+          directionToPlayer = glm::normalize(directionToPlayer);
+          enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
+      }
+  }
 
 }
