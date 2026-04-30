@@ -20,7 +20,8 @@
                 "spot":        { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/spot.frag" }
             },
             "textures": {
-                "fallback": "assets/textures/grass_ground_d.jpg"
+                "fallback": "assets/textures/grass_ground_d.jpg",
+                "moon":    "assets/textures/moon.jpg"
             },
             "meshes": {
                 "cube":           "assets/models/cube.obj",
@@ -257,7 +258,8 @@
                 "spot":        { "vs": "assets/shaders/light/light.vert", "fs": "assets/shaders/light/spot.frag" }
             },
             "textures": {
-                "fallback": "assets/textures/grass_ground_d.jpg"
+              "fallback": "assets/textures/grass_ground_d.jpg",
+              "moon": "assets/textures/moon.jpg"
             },
             "meshes": {
                 "cube":           "assets/models/cube.obj",
