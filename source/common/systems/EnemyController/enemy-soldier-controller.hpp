@@ -18,6 +18,7 @@ namespace our{
     Application* app = nullptr;
     JoltPhysicsSystem* physics = nullptr;
     AudioPlayer enemyDeathAudioPlayer;
+    AudioPlayer enemyFireAudioPlayer;
 
     void handleEnemySoldierBehavior(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);

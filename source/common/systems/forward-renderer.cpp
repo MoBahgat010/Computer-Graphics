@@ -565,14 +565,14 @@ namespace our {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postprocessMaterial->setup();
 
-            // If player is hit, tint the screen red
+            // Keep postprocess tint neutral (no red flash on damage)
+            postprocessMaterial->shader->set("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            // Drive blood effect strength if shader uses it
+            float damageStrength = 0.0f;
             if (player && player->damageIndicatorTimer > 0.0f) {
-                // tint heavily red when the timer is close to 0.5, fade back to white as it approaches 0
-                float factor = player->damageIndicatorTimer / 0.5f; // assume max 0.5f
-                postprocessMaterial->shader->set("tint", glm::vec4(1.0f, 1.0f - factor, 1.0f - factor, 1.0f));
-            } else {
-                postprocessMaterial->shader->set("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                damageStrength = glm::clamp(player->damageIndicatorTimer / 0.5f, 0.0f, 1.0f);
             }
+            postprocessMaterial->shader->set("damageStrength", damageStrength);
 
             glBindVertexArray(postProcessVertexArray);
             glDrawArrays(GL_TRIANGLES, 0, 3);

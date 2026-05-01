@@ -7,7 +7,7 @@
     },
     "level1_scene": {
         "renderer": {
-            "postprocess": "assets/shaders/postprocess/vignette.frag"
+            "postprocess": "assets/shaders/postprocess/blood-vignette.frag"
         },
         "assets": {
             "shaders": {
@@ -95,7 +95,7 @@
             }
         },
         "enemySpawner": {
-            "enemiesPerPoint": 2,
+            "enemiesPerPoint": 3,
             "spawnOffset": 0.6,
             "enemy": {
                 "components": [
@@ -109,7 +109,7 @@
                 "attackDamage": 3,
                 "speed": 1.0,
                 "attackRange": 1.5,
-                "detectionRange": 5.0,
+                "detectionRange": 7.0,
                 "attackCooldown": 1.0
             }
         },
@@ -152,12 +152,18 @@
             },
             { "name": "EnemySpawnPoint", "position": [26.2637, 0.4, -0.326302],  "rotation": [0.0, 0.0, 0.0] },
             { "name": "EnemySpawnPoint", "position": [4.61593, 0.4, -10.3189],   "rotation": [0.0, 0.0, 0.0] },
-            { "name": "EnemySpawnPoint", "position": [-16.1855, 0.4, -0.577851], "rotation": [0.0, 0.0, 0.0] }
+            { "name": "EnemySpawnPoint", "position": [-16.1855, 0.4, -0.577851], "rotation": [0.0, 0.0, 0.0] },
+            { "name": "EnemySpawnPoint", "position": [4.5, 0.4, 8.307],         "rotation": [0.0, 0.0, 0.0] },
+            { "name": "EnemySpawnPoint", "position": [-5.75249, 0.4, -0.701807], "rotation": [0.0, 0.0, 0.0] },
+            { "name": "EnemySpawnPoint", "position": [14.4504, 0.4, 0.0276765], "rotation": [0.0, 0.0, 0.0] },
+            { "name": "EnemySpawnPoint", "position": [15.1942, 0.179991, -10.5775], "rotation": [0.0, 0.0, 0.0] },
+            { "name": "EnemySpawnPoint", "position": [14.6031, 0.179991, 7.74393], "rotation": [0.0, 0.0, 0.0] }
+
         ]
     },
     "level2_scene": {
         "renderer": {
-            "postprocess": "assets/shaders/postprocess/vignette.frag"
+            "postprocess": "assets/shaders/postprocess/blood-vignette.frag"
         },
         "assets": {
             "shaders": {
@@ -463,7 +469,7 @@
                 ]
             },
             {
-                "position": [-8, -4.3, -74],
+                "position": [-18, -4.3, -90],
                 "rotation": [0, 0, 0], "scale": [1, 1, 1],
                 "components": [
                     { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
@@ -490,7 +496,7 @@
                 ]
             },
             {
-                "position": [0, -4.3, -90],
+                "position": [18, -4.3, -90],
                 "rotation": [0, 0, 0], "scale": [1, 1, 1],
                 "components": [
                     { "type": "Mesh Renderer", "mesh": "server", "material": "server" },
