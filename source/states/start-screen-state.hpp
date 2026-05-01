@@ -40,7 +40,7 @@ class StartScreenState: public our::State {
 
     void onImmediateGui() override {
         auto size = getApp()->getFrameBufferSize();
-        const ImVec2 panelSize(330.0f, 380.0f);
+        const ImVec2 panelSize(330.0f, 450.0f);
         const float margin = 160.0f;
         const ImVec2 panelPos((float)size.x - panelSize.x - margin, ((float)size.y - panelSize.y) * 0.60f);
 
@@ -110,6 +110,10 @@ class StartScreenState: public our::State {
             if(drawStyledButton("Settings", ImVec4(0.85f, 0.70f, 0.15f, 0.95f), ImVec4(0.95f, 0.80f, 0.20f, 1.00f), ImVec4(0.70f, 0.55f, 0.10f, 1.00f))) {
                    getApp()->changeState("settings");
             }
+
+                 if(drawStyledButton("Controller Test", ImVec4(0.22f, 0.22f, 0.22f, 0.95f), ImVec4(0.32f, 0.32f, 0.32f, 1.00f), ImVec4(0.16f, 0.16f, 0.16f, 1.00f))) {
+                     getApp()->changeState("controller-test");
+                 }
 
             if(drawStyledButton("Exit", ImVec4(0.20f, 0.08f, 0.10f, 0.92f), ImVec4(0.28f, 0.10f, 0.13f, 1.00f), ImVec4(0.14f, 0.06f, 0.08f, 1.00f))) {
                 getApp()->close();
