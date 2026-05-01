@@ -90,8 +90,17 @@ namespace our {
 
   void EnemySoldierControllerSystem::handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime){
 
+    Entity* enemyEntity = enemy->getOwner();
+    Entity* playerEntity = player->getOwner();
+
+    // Look at the player
+    facePlayer(enemyEntity, playerEntity);
+
+    if (physics) {
+        physics->setLinearVelocity(enemyEntity, glm::vec3(0.0f));
+    }
     enemy->setCurrentState(EnemyState::ATTACKING);
-    if(auto animation = enemy->getOwner()->getComponent<AnimationComponent>()) animation->paused = false;
+    if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = false;
     
     // std::cout << "Enemy is attacking" << std::endl;   
     
@@ -102,10 +111,15 @@ namespace our {
       return;
     }
     // can attack
-    player->decreaseHealth(enemy->getDamage());
+    float damage = enemy->getDamage();
+    player->receiveDamage(damage);
+    std::cout << "[COMBAT] Enemy hit player! Dealt " << damage << " damage. Player Health: " << player->getHealth() << std::endl;
+
+    // Play enemy fire sound at a lower volume than the player's shot
+    enemyFireAudioPlayer.play("assets/audio/game/ak47_fire.wav", 0.2f);
+
     // reset timer
     enemy->setAttackTimer(0.0f);
-    // std::cout << "Enemy attacked" << std::endl;   
 
 
 
@@ -122,6 +136,8 @@ namespace our {
     Entity* enemyEntity = enemy->getOwner();
     Entity* playerEntity = player->getOwner();
 
+    facePlayer(enemyEntity, playerEntity);
+
     // 1. get direction 
     glm::vec3 directionToPlayer = (playerEntity->localTransform.position - enemyEntity->localTransform.position);
     // 2. remove y axis
@@ -132,11 +148,12 @@ namespace our {
 
     // 3. normalize
     directionToPlayer = glm::normalize(directionToPlayer);
-    // 4. move
-    enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
-    
-    // 5. look at the player
-    enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
+    // 4. move using physics
+    if (physics) {
+        physics->setLinearVelocity(enemyEntity, directionToPlayer * enemy->getSpeed());
+    } else {
+        enemyEntity->localTransform.position += directionToPlayer * enemy->getSpeed() * deltaTime;
+    }
     
 
 
@@ -144,6 +161,9 @@ namespace our {
   }
 
   void EnemySoldierControllerSystem::handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime){
+    if (physics) {
+        physics->setLinearVelocity(enemyEntity, glm::vec3(0.0f));
+    }
     enemy->setCurrentState(EnemyState::IDLE);
     if(auto animation = enemyEntity->getComponent<AnimationComponent>()) animation->paused = true;
   }
@@ -171,5 +191,14 @@ namespace our {
       }
   }
 
+  void EnemySoldierControllerSystem::facePlayer(Entity* enemyEntity, Entity* playerEntity) {
+      glm::vec3 directionToPlayer = playerEntity->localTransform.position - enemyEntity->localTransform.position;
+      directionToPlayer.y = 0.0f;
+
+      if(glm::length(directionToPlayer) > 0.01f ) {
+          directionToPlayer = glm::normalize(directionToPlayer);
+          enemyEntity->localTransform.rotation.y = glm::atan(directionToPlayer.x, directionToPlayer.z);
+      }
+  }
 
 }

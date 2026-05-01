@@ -186,7 +186,7 @@ class Menustate: public our::State {
         ImGui::SetNextWindowBgAlpha(0.0f);
         ImGui::SetCursorPos(ImVec2(centerX, 750.0f));
         ImGui::SetNextWindowPos(ImVec2(centerX, 750.0f));
-        ImGui::SetNextWindowSize(ImVec2(btnWidth + 20.0f, 130.0f));
+        ImGui::SetNextWindowSize(ImVec2(btnWidth + 20.0f, 200.0f));
         if(ImGui::Begin("##MenuButtons", nullptr,
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoScrollbar |

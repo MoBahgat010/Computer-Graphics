@@ -9,7 +9,7 @@
 #include "material/material.hpp"
 #include "animation/animated-mesh.hpp"
 #include "deserialize-utils.hpp"
-
+#include "ecs/lighting.hpp"
 namespace our {
 
     // This will load all the shaders defined in "data"
@@ -17,8 +17,8 @@ namespace our {
     //    { shader_name : { "vs" : "path/to/vertex-shader", "fs" : "path/to/fragment-shader" }, ... }
     template<>
     void AssetLoader<ShaderProgram>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 std::string vsPath = desc.value("vs", "");
                 std::string fsPath = desc.value("fs", "");
                 auto shader = new ShaderProgram();
@@ -35,8 +35,8 @@ namespace our {
     //    { texture_name : "path/to/image", ... }
     template<>
     void AssetLoader<Texture2D>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 std::string path = desc.get<std::string>();
                 assets[name] = texture_utils::loadImage(path);
             }
@@ -52,8 +52,8 @@ namespace our {
     //  For "MAX_ANISOTROPY", the value must be a float with a value >= 1.0f
     template<>
     void AssetLoader<Sampler>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 auto sampler = new Sampler();
                 sampler->deserialize(desc);
                 assets[name] = sampler;
@@ -66,8 +66,8 @@ namespace our {
     //    { mesh_name : "path/to/3d-model-file", ... }
     template<>
     void AssetLoader<Mesh>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 std::string path = desc.get<std::string>();
                 assets[name] = mesh_utils::loadMesh(path);
             }
@@ -79,8 +79,8 @@ namespace our {
     //    { mesh_name : "path/to/animated-model-file", ... }
     template<>
     void AssetLoader<AnimatedMesh>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 std::string path = desc.get<std::string>();
                 assets[name] = mesh_utils::loadAnimatedMesh(path);
             }
@@ -101,8 +101,8 @@ namespace our {
     //      ... more keys/values can be added depending on the material type (e.g. "texture", "sampler", "tint")
     template<>
     void AssetLoader<Material>::deserialize(const nlohmann::json& data) {
-        if(data.is_object()){
-            for(auto& [name, desc] : data.items()){
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
                 std::string type = desc.value("type", "");
                 auto material = createMaterialFromType(type);
                 material->deserialize(desc);
@@ -111,29 +111,43 @@ namespace our {
         }
     };
 
-    void deserializeAllAssets(const nlohmann::json& assetData){
-        if(!assetData.is_object()) return;
-        if(assetData.contains("shaders"))
+    template<>
+    void AssetLoader<Light>::deserialize(const nlohmann::json& data) {
+        if (data.is_object()) {
+            for (auto& [name, desc] : data.items()) {
+                auto light = new Light();
+                light->deserialize(desc);
+                assets[name] = light;
+            }
+        }
+    };
+
+    void deserializeAllAssets(const nlohmann::json& assetData) {
+        if (!assetData.is_object()) return;
+        if (assetData.contains("shaders"))
             AssetLoader<ShaderProgram>::deserialize(assetData["shaders"]);
-        if(assetData.contains("textures"))
+        if (assetData.contains("textures"))
             AssetLoader<Texture2D>::deserialize(assetData["textures"]);
-        if(assetData.contains("samplers"))
+        if (assetData.contains("samplers"))
             AssetLoader<Sampler>::deserialize(assetData["samplers"]);
-        if(assetData.contains("meshes"))
+        if (assetData.contains("lights"))                            
+            AssetLoader<Light>::deserialize(assetData["lights"]);
+        if (assetData.contains("meshes"))
             AssetLoader<Mesh>::deserialize(assetData["meshes"]);
-        if(assetData.contains("animatedMeshes"))
+        if (assetData.contains("animatedMeshes"))
             AssetLoader<AnimatedMesh>::deserialize(assetData["animatedMeshes"]);
-        if(assetData.contains("materials"))
+        if (assetData.contains("materials"))                        
             AssetLoader<Material>::deserialize(assetData["materials"]);
     }
 
-    void clearAllAssets(){
+    void clearAllAssets() {
         AssetLoader<ShaderProgram>::clear();
         AssetLoader<Texture2D>::clear();
         AssetLoader<Sampler>::clear();
         AssetLoader<Mesh>::clear();
         AssetLoader<AnimatedMesh>::clear();
         AssetLoader<Material>::clear();
+        AssetLoader<Light>::clear();
     }
 
 }

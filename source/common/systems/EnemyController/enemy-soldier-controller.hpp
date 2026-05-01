@@ -18,12 +18,14 @@ namespace our{
     Application* app = nullptr;
     JoltPhysicsSystem* physics = nullptr;
     AudioPlayer enemyDeathAudioPlayer;
+    AudioPlayer enemyFireAudioPlayer;
 
     void handleEnemySoldierBehavior(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleAttack(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleChase(EnemySoldierComponent* enemy,PlayerComponent* player,float deltaTime);
     void handleIdle(EnemySoldierComponent* enemy, Entity* enemyEntity, float deltaTime);
     void handleDead(EnemySoldierComponent* enemy);
+    void facePlayer(Entity* enemyEntity, Entity* playerEntity);
     
     public:
     void enter(Application* app, JoltPhysicsSystem* physics = nullptr);

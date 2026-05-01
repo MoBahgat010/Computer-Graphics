@@ -1,8 +1,60 @@
 #include "player-controller.hpp"
 #include "../jolt-physics-system.hpp"
 #include <iostream>
+#include <cmath>
+#include <algorithm>
 
 namespace our {
+
+  void PlayerControllerSystem::updateGamepadState() {
+    gamepadActive = false;
+    if(!glfwJoystickPresent(GLFW_JOYSTICK_1) || !glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
+      hasPreviousGamepad = false;
+      return;
+    }
+
+    GLFWgamepadstate state{};
+    if(!glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
+      hasPreviousGamepad = false;
+      return;
+    }
+
+    currentGamepad = state;
+    gamepadActive = true;
+    if(!hasPreviousGamepad) {
+      previousGamepad = currentGamepad;
+      hasPreviousGamepad = true;
+    }
+  }
+
+  bool PlayerControllerSystem::isGamepadButtonPressed(int button) const {
+    return gamepadActive && currentGamepad.buttons[button] == GLFW_PRESS;
+  }
+
+  bool PlayerControllerSystem::isGamepadButtonJustPressed(int button) const {
+    if(!gamepadActive || !hasPreviousGamepad) return false;
+    return currentGamepad.buttons[button] == GLFW_PRESS && previousGamepad.buttons[button] == GLFW_RELEASE;
+  }
+
+  float PlayerControllerSystem::getGamepadAxis(int axis, float deadzone) const {
+    if(!gamepadActive) return 0.0f;
+    float value = currentGamepad.axes[axis];
+    if(std::fabs(value) < deadzone) return 0.0f;
+    return value;
+  }
+
+  float PlayerControllerSystem::getGamepadTrigger(int axis) const {
+    if(!gamepadActive) return 0.0f;
+    float value = currentGamepad.axes[axis];
+    return std::max(0.0f, value);
+  }
+
+  bool PlayerControllerSystem::isGamepadTriggerJustPressed(int axis, float threshold) const {
+    if(!gamepadActive || !hasPreviousGamepad) return false;
+    float currentValue = std::max(0.0f, currentGamepad.axes[axis]);
+    float previousValue = std::max(0.0f, previousGamepad.axes[axis]);
+    return currentValue >= threshold && previousValue < threshold;
+  }
 
 
   void PlayerControllerSystem::enter(Application* app, JoltPhysicsSystem* physics){
@@ -35,15 +87,54 @@ namespace our {
 
       if(!cameraEntity) return;
 
+      updateGamepadState();
+
+      if(player->damageIndicatorTimer > 0.0f) {
+          player->damageIndicatorTimer -= deltaTime;
+          if(player->damageIndicatorTimer < 0.0f) player->damageIndicatorTimer = 0.0f;
+      }
+
+      if(player->painSoundTimer > 0.0f) {
+          player->painSoundTimer -= deltaTime;
+          if(player->painSoundTimer < 0.0f) player->painSoundTimer = 0.0f;
+      }
+
       if ( player->getIsDead()){
         handleDeath();
       } 
 
       handleMovement(player,playerEntity,deltaTime);
-      handleLook(player,playerEntity, cameraEntity);
+      handleJump(player, playerEntity);
+      handleLook(player,playerEntity, cameraEntity, deltaTime);
+
+      AnimationComponent* animComp = nullptr;
+      for (auto entity : world->getEntities()) {
+          if (entity->parent == playerEntity) {
+              animComp = entity->getComponent<AnimationComponent>();
+              if (animComp) break;
+          }
+      }
+      if (animComp) {
+          auto& keyboard = app->getKeyboard();
+          bool isMoving = false;
+          if(gamepadActive) {
+            isMoving = getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X) != 0.0f ||
+                       getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y) != 0.0f;
+          } else {
+            isMoving = keyboard.isPressed(GLFW_KEY_W) || keyboard.isPressed(GLFW_KEY_S) ||
+                        keyboard.isPressed(GLFW_KEY_A) || keyboard.isPressed(GLFW_KEY_D);
+          }
+          animComp->setIsMoving(isMoving);
+      }
+
       handleCrouch(player, cameraEntity);
       handleFire(player, cameraEntity);
       handleReload(player);
+
+      if(gamepadActive) {
+        previousGamepad = currentGamepad;
+        hasPreviousGamepad = true;
+      }
   }
 
   void PlayerControllerSystem::handleMovement(PlayerComponent* player, Entity* playerEntity, float deltaTime){
@@ -61,28 +152,39 @@ namespace our {
     right = glm::normalize(right);
 
     glm::vec3 desiredVelocity(0.0f);
+    const bool isRunning = gamepadActive
+      ? isGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)
+      : (keyboard.isPressed(GLFW_KEY_LEFT_SHIFT) || keyboard.isPressed(GLFW_KEY_RIGHT_SHIFT));
+    const float moveSpeed = player->getSpeed() * (isRunning ? 1.5f : 1.0f);
 
-    //  move forward
-    if (keyboard.isPressed(GLFW_KEY_W) ){
-      desiredVelocity += front * player->getSpeed();
-    }
+    if(gamepadActive) {
+      float lx = getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X);
+      float ly = getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y);
+      desiredVelocity += right * (lx * moveSpeed);
+      desiredVelocity += front * (-ly * moveSpeed);
+    } else {
+      //  move forward
+      if (keyboard.isPressed(GLFW_KEY_W) ){
+        desiredVelocity += front * moveSpeed;
+      }
 
-    // move backward
-    if (keyboard.isPressed(GLFW_KEY_S) ){
-      desiredVelocity -= front * player->getSpeed();
-    }
-    //  move left
-    if (keyboard.isPressed(GLFW_KEY_A) ){
-      desiredVelocity -= right * player->getSpeed();
-    }
-    //  move right
-    if (keyboard.isPressed(GLFW_KEY_D) ){
-      desiredVelocity += right * player->getSpeed();
+      // move backward
+      if (keyboard.isPressed(GLFW_KEY_S) ){
+        desiredVelocity -= front * moveSpeed;
+      }
+      //  move left
+      if (keyboard.isPressed(GLFW_KEY_A) ){
+        desiredVelocity -= right * moveSpeed;
+      }
+      //  move right
+      if (keyboard.isPressed(GLFW_KEY_D) ){
+        desiredVelocity += right * moveSpeed;
+      }
     }
 
     float len = glm::length(desiredVelocity);
-    if(len > player->getSpeed() && len > 1e-6f) {
-      desiredVelocity = (desiredVelocity / len) * player->getSpeed();
+    if(len > moveSpeed && len > 1e-6f) {
+      desiredVelocity = (desiredVelocity / len) * moveSpeed;
     }
 
     if(joltPhysics && joltPhysics->isInitialized()) {
@@ -95,19 +197,26 @@ namespace our {
     }
   }
 
-  void PlayerControllerSystem::handleLook(PlayerComponent* player, Entity* playerEntity, Entity* cameraEntity){
+  void PlayerControllerSystem::handleLook(PlayerComponent* player, Entity* playerEntity, Entity* cameraEntity, float deltaTime){
     auto& mouse=app->getMouse();
-
-    glm::vec2 delta = mouse.getMouseDelta();
 
     glm::vec3& rotation = playerEntity->localTransform.rotation;
     glm::vec3& cameraRotation = cameraEntity->localTransform.rotation;
-    
-    // Yaw: Rotate the player horizontally
-    rotation.y -= delta.x * player->getMouseSensitivity();
-    
-    // Pitch: Rotate the camera vertically
-    cameraRotation.x -= delta.y * player->getMouseSensitivity();
+
+    if(gamepadActive) {
+      float rx = getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X);
+      float ry = getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+      float lookSpeed = player->getMouseSensitivity() * 800.0f;
+      rotation.y -= rx * lookSpeed * deltaTime;
+      cameraRotation.x -= ry * lookSpeed * deltaTime;
+    } else {
+      glm::vec2 delta = mouse.getMouseDelta();
+      // Yaw: Rotate the player horizontally
+      rotation.y -= delta.x * player->getMouseSensitivity();
+
+      // Pitch: Rotate the camera vertically
+      cameraRotation.x -= delta.y * player->getMouseSensitivity();
+    }
 
     // Clamp pitch: don't go beyond straight up or down
     if(cameraRotation.x < -glm::half_pi<float>() * 0.99f) cameraRotation.x = -glm::half_pi<float>() * 0.99f;
@@ -119,30 +228,57 @@ namespace our {
 
   void PlayerControllerSystem::handleCrouch(PlayerComponent* player, Entity* cameraEntity){
     auto& keyboard = app->getKeyboard();
-    
-    if (keyboard.justPressed(GLFW_KEY_C) ){
-      bool playerIsCrouch = player->getIsCrouch();
-      glm::vec3& cameraPosition = cameraEntity->localTransform.position;
-      if(playerIsCrouch){
-        // stand up → restore head height
-        cameraPosition.y *=2;
-        float speed = player->getSpeed();
-        player->setSpeed(speed*2);
-      } else {
-        // crouch → lower head height
-        cameraPosition.y /=2;
-        float speed = player->getSpeed();
-        player->setSpeed(speed/2);
-      }
-      player->setIsCrouch(!playerIsCrouch);
+
+    if (gamepadActive) {
+      if(!isGamepadButtonJustPressed(GLFW_GAMEPAD_BUTTON_B)) return;
+    } else {
+      if(!keyboard.justPressed(GLFW_KEY_C)) return;
+    }
+    bool playerIsCrouch = player->getIsCrouch();
+    glm::vec3& cameraPosition = cameraEntity->localTransform.position;
+    if(playerIsCrouch){
+      // stand up -> restore head height
+      cameraPosition.y *=2;
+      float speed = player->getSpeed();
+      player->setSpeed(speed*2);
+    } else {
+      // crouch -> lower head height
+      cameraPosition.y /=2;
+      float speed = player->getSpeed();
+      player->setSpeed(speed/2);
+    }
+    player->setIsCrouch(!playerIsCrouch);
+  }
+
+  void PlayerControllerSystem::handleJump(PlayerComponent* player, Entity* playerEntity){
+    auto& keyboard = app->getKeyboard();
+    if (gamepadActive) {
+      if(!isGamepadButtonJustPressed(GLFW_GAMEPAD_BUTTON_A)) return;
+    } else {
+      if(!keyboard.justPressed(GLFW_KEY_SPACE)) return;
+    }
+
+    if (joltPhysics && joltPhysics->isInitialized()) {
+      joltPhysics->setPlayerEntity(playerEntity);
+      joltPhysics->applyPlayerJump(player->getJumpSpeed());
     }
   }
 
   void PlayerControllerSystem::handleFire(PlayerComponent* player,Entity* cameraEntity){
     auto& mouse=app->getMouse();
-    if(mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT))  {
+    bool firePressed = false;
+    if(gamepadActive) {
+      firePressed = isGamepadTriggerJustPressed(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER, 0.35f);
+    } else {
+      firePressed = mouse.justPressed(GLFW_MOUSE_BUTTON_LEFT);
+    }
+
+    if(firePressed)  {
       std::cout << "fire" << std::endl;  
-      if (player->getMagazineAmmo()<=0) return;
+      if (player->getMagazineAmmo()<=0) {
+        emptyAmmoAudioPlayer.play("assets/audio/game/empty-ammo-sound.mp3", 0.7f);
+        return;
+      }
       glm::mat4 cameraToWorld = cameraEntity->getLocalToWorldMatrix();
       
       //  (camera position in world space)
@@ -154,16 +290,21 @@ namespace our {
       if (joltPhysics && joltPhysics->isInitialized()) {
         JoltPhysicsSystem::RaycastResult result = joltPhysics->raycast(origin, direction, 50.0f);
 
-        std::cout << "raycast hit: " << result.hit << std::endl;
-        std::cout << "raycast hit entity: " << result.entity << std::endl;
+
         
         if (result.hit && result.entity) {
           std::cout << "hit entity!" << std::endl;
-          auto* enemy = result.entity->getComponent<EnemySoldierComponent>();
-          std::cout << "enemy: " << enemy << std::endl;
-          if (enemy) {
-            enemy->decreaseHealth(player->getBulletDamage());
-            std::cout << "Dealt " << player->getBulletDamage() << " damage to enemy!" << std::endl;
+          float playerDamage = player->getBulletDamage();
+          
+          if (auto* opusBoss = result.entity->getComponent<OpusBossComponent>()) {
+            opusBoss->damage(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to Opus Boss!" << std::endl;
+          } else if (auto* enemySoldier = result.entity->getComponent<EnemySoldierComponent>()) {
+            enemySoldier->damage(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to enemy!" << std::endl;
+          } else if (auto* server = result.entity->getComponent<ServerComponent>()) {
+            server->decreaseHealth(playerDamage);
+            std::cout << "Dealt " << playerDamage << " damage to Server!" << std::endl;
           }
         }
       }
@@ -175,11 +316,14 @@ namespace our {
 
   void PlayerControllerSystem::handleReload(PlayerComponent*player){
     auto& keyboard = app->getKeyboard();
-    if(keyboard.justPressed(GLFW_KEY_R))  {
-      std::cout << "reload" << std::endl;  
-      player->reloadWeapon();
-      reloadAudioPlayer.play("assets/audio/game/ak47_reload.wav", 0.7f);
+    if (gamepadActive) {
+      if(!isGamepadButtonJustPressed(GLFW_GAMEPAD_BUTTON_X)) return;
+    } else {
+      if(!keyboard.justPressed(GLFW_KEY_R)) return;
     }
+    std::cout << "reload" << std::endl;  
+    player->reloadWeapon();
+    reloadAudioPlayer.play("assets/audio/game/ak47_reload.wav", 0.7f);
   }
 
   void PlayerControllerSystem::handleDeath(){

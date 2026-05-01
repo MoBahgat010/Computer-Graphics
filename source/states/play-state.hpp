@@ -4,69 +4,37 @@
 
 #include <ecs/world.hpp>
 #include <systems/forward-renderer.hpp>
-#include <systems/free-camera-controller.hpp>
 #include <systems/movement.hpp>
 #include <systems/jolt-physics-system.hpp>
 #include <systems/PlayerController/player-controller.hpp>
 #include <systems/EnemyController/enemy-soldier-controller.hpp>
 #include <systems/EnemySpawner/enemy-spawner-system.hpp>
+#include <systems/ServerController/server-controller.hpp>
+#include <components/EnemyComponents/opus-boss-component.hpp>
+#include <components/ServerComponents/server-component.hpp>
 #include <asset-loader.hpp>
 #include <audio/audio-player.hpp>
-
-#include <iostream>
 
 // This state shows how to use the ECS framework and deserialization.
 class Playstate: public our::State {
 
     our::World world;
     our::ForwardRenderer renderer;
-    our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
     our::JoltPhysicsSystem joltPhysics;
     our::PlayerControllerSystem playerController;
     our::EnemySoldierControllerSystem enemySoldierController;
     our::EnemySpawnerSystem enemySpawner;
+    our::ServerControllerSystem serverController;
     our::AudioPlayer startGameAudioPlayer;
-    bool freeCameraDebugMode = false;
-    bool hasSavedFreeCameraTransform = false;
-    our::Transform savedFreeCameraTransform;
-    our::Entity* freeCameraEntity = nullptr;
+    bool sawOpusAlive = false;
+    bool level2EndingTriggered = false;
 
-    void setFreeCameraDebugMode(bool enabled) {
-        if(enabled == freeCameraDebugMode) return;
-
-        joltPhysics.setPlayerVelocity(glm::vec3(0.0f));
-        if(enabled) {
-            freeCameraEntity = getCameraEntity();
-            if(freeCameraEntity) {
-                savedFreeCameraTransform = freeCameraEntity->localTransform;
-                hasSavedFreeCameraTransform = true;
-            }
-            freeCameraDebugMode = true;
-            getApp()->getMouse().unlockMouse(getApp()->getWindow());
-        } else {
-            if(hasSavedFreeCameraTransform && freeCameraEntity) {
-                freeCameraEntity->localTransform = savedFreeCameraTransform;
-            }
-            hasSavedFreeCameraTransform = false;
-            freeCameraEntity = nullptr;
-            freeCameraDebugMode = false;
-            getApp()->getMouse().lockMouse(getApp()->getWindow());
-        }
-    }
-
-    our::Entity* getCameraEntity() {
-        for(auto entity : world.getEntities()) {
-            if(entity->getComponent<our::CameraComponent>()) {
-                return entity;
-            }
-        }
-        return nullptr;
-    }
+    virtual std::string getSceneName() const { return "level1_scene"; }
 
     void onInitialize() override {
         // First of all, we get the scene configuration from the app config
-        auto& config = getApp()->getConfig()["scene"];
+        auto& config = getApp()->getConfig()[getSceneName()];
         // If we have assets in the scene config, we deserialize them
         if(config.contains("assets")){
             our::deserializeAllAssets(config["assets"]);
@@ -75,8 +43,6 @@ class Playstate: public our::State {
         if(config.contains("world")){
             world.deserialize(config["world"]);
         }
-        // We initialize the camera controller system since it needs a pointer to the app
-        cameraController.enter(getApp(), &joltPhysics);
         // Initialize Jolt physics (Part 1 integration milestone)
         joltPhysics.init();
 
@@ -95,9 +61,15 @@ class Playstate: public our::State {
 
         // Initialize the enemy soldier controller system
         enemySoldierController.enter(getApp(), &joltPhysics);
+        
+        // Initialize the server controller system
+        serverController.enter(&joltPhysics);
 
         // Play start game sound
         startGameAudioPlayer.play("assets/audio/game/ak47_start_game.wav", 1.0f);
+
+        sawOpusAlive = false;
+        level2EndingTriggered = false;
 
     }
 
@@ -106,17 +78,11 @@ class Playstate: public our::State {
         movementSystem.update(&world, (float)deltaTime);
 
         auto& keyboard = getApp()->getKeyboard();
-        if(keyboard.justPressed(GLFW_KEY_M)) {
-            setFreeCameraDebugMode(!freeCameraDebugMode);
-        }
 
-        if(freeCameraDebugMode) {
-            cameraController.update(&world, (float)deltaTime);
-        } else {
-            playerController.update(&world, (float)deltaTime);
-        }
+        playerController.update(&world, (float)deltaTime);
 
         enemySoldierController.update(&world, (float)deltaTime);
+        serverController.update(&world, (float)deltaTime);
         joltPhysics.update((float)deltaTime);
         // And finally we use the renderer system to draw the scene
         renderer.render(&world);
@@ -126,6 +92,36 @@ class Playstate: public our::State {
         if(keyboard.justPressed(GLFW_KEY_ESCAPE)){
             // If the escape  key is pressed in this frame, go to the play state
             getApp()->changeState("menu");
+        }
+
+        // Check level 1 victory condition
+        if (getSceneName() == "level1_scene") { //  "level1_scene" is Level 1
+            int enemyCount = 0;
+            for(auto entity : world.getEntities()){
+                if(entity->getComponent<our::EnemySoldierComponent>()) {enemyCount++;
+                break;
+                }
+            }
+            if (enemyCount == 0) {
+                // Enemies cleared! Go to Level 1 Victory screen
+                getApp()->changeState("level1-victory");
+            }
+        } else if (getSceneName() == "level2_scene" && !level2EndingTriggered) {
+            bool opusAlive = false;
+            for(auto entity : world.getEntities()) {
+                if(auto* opusBoss = entity->getComponent<our::OpusBossComponent>()) {
+                    if(!opusBoss->getIsDead()) {
+                        sawOpusAlive = true;
+                        opusAlive = true;
+                        break;
+                    }
+                }
+            }
+
+            if(sawOpusAlive && !opusAlive) {
+                level2EndingTriggered = true;
+                getApp()->changeState("level2-ending-cutscene");
+            }
         }
     }
 
@@ -168,58 +164,33 @@ class Playstate: public our::State {
         float mapScale = 3.0f; // 1 meter in 3D = 3 pixels on map
         glm::vec3 pPos = playerEntity->localTransform.position;
 
-        // Enemy Dots (Red)
+        // Minimap markers: servers in green, enemies (including Opus) in red.
         for (auto entity : world.getEntities()) {
-            if (entity->getComponent<our::EnemySoldierComponent>()) {
-                glm::vec3 ePos = entity->localTransform.position;
-                float dx = ePos.x - pPos.x;
-                float dz = ePos.z - pPos.z; // Z is forward/backward in the world
+            const bool isServer = entity->getComponent<our::ServerComponent>() != nullptr;
+            const bool isEnemy = entity->getComponent<our::EnemySoldierComponent>() != nullptr ||
+                                 entity->getComponent<our::OpusBossComponent>() != nullptr;
 
-                float mapDx = dx * mapScale;
-                float mapDz = dz * mapScale;
+            if(!isServer && !isEnemy) continue;
 
-                // Check if within minimap bounds to avoid drawing outside the box
-                if (mapDx > -minimapSize.x*0.45f && mapDx < minimapSize.x*0.45f &&
-                    mapDz > -minimapSize.y*0.45f && mapDz < minimapSize.y*0.45f) {
-                    ImVec2 enemyMapPos(minimapCenter.x + mapDx, minimapCenter.y + mapDz);
-                    ImGui::GetBackgroundDrawList()->AddCircleFilled(enemyMapPos, 4.0f, IM_COL32(255, 50, 50, 255));
-                }
+            glm::vec3 ePos = entity->localTransform.position;
+            float dx = ePos.x - pPos.x;
+            float dz = ePos.z - pPos.z; // Z is forward/backward in the world
+
+            float mapDx = dx * mapScale;
+            float mapDz = dz * mapScale;
+
+            // Check if within minimap bounds to avoid drawing outside the box
+            if (mapDx > -minimapSize.x*0.45f && mapDx < minimapSize.x*0.45f &&
+                mapDz > -minimapSize.y*0.45f && mapDz < minimapSize.y*0.45f) {
+                ImVec2 markerPos(minimapCenter.x + mapDx, minimapCenter.y + mapDz);
+                ImU32 markerColor = isServer ? IM_COL32(50, 220, 80, 255) : IM_COL32(255, 50, 50, 255);
+                float markerRadius = isServer ? 3.5f : 4.0f;
+                ImGui::GetBackgroundDrawList()->AddCircleFilled(markerPos, markerRadius, markerColor);
             }
         }
     }
 
     void onImmediateGui() override {
-        ImGui::SetNextWindowPos(ImVec2(20.0f, 20.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(420.0f, 180.0f), ImGuiCond_FirstUseEver);
-
-        if(ImGui::Begin("Camera Debug")) {
-            ImGui::Text("Free Tool: %s", freeCameraDebugMode ? "ON" : "OFF");
-            if(ImGui::Button(freeCameraDebugMode ? "Disable Free Tool" : "Enable Free Tool")) {
-                setFreeCameraDebugMode(!freeCameraDebugMode);
-            }
-            ImGui::SameLine();
-            ImGui::Text("(M)");
-
-            ImGui::TextUnformatted("Move: Arrows only");
-
-            if(auto* cameraEntity = getCameraEntity()) {
-                const glm::mat4 localToWorld = cameraEntity->getLocalToWorldMatrix();
-                const glm::vec3 worldPosition = glm::vec3(localToWorld[3]);
-
-                ImGui::Text("Position: x %.3f  y %.3f  z %.3f", worldPosition.x, worldPosition.y, worldPosition.z);
-
-                if(ImGui::Button("Print to Console")) {
-                    std::cout << "Camera Position (x,y,z): "
-                              << worldPosition.x << ", "
-                              << worldPosition.y << ", "
-                              << worldPosition.z << std::endl;
-                }
-            } else {
-                ImGui::TextUnformatted("No camera entity found.");
-            }
-        }
-        ImGui::End();
-
         // ── Player HUD ───────────────────────────────────────────────────────
         our::PlayerComponent* player = nullptr;
         our::Entity* playerEntity = nullptr;
@@ -343,12 +314,15 @@ class Playstate: public our::State {
         renderer.destroy();
         // Shutdown Jolt physics and release all related resources
         joltPhysics.shutdown();
-        // On exit, we call exit for the camera controller system to make sure that the mouse is unlocked
-        cameraController.exit();
         playerController.exit();
         // Clear the world
         world.clear();
         // and we delete all the loaded assets to free memory on the RAM and the VRAM
         our::clearAllAssets();
     }
+};
+
+class PlaystateLevel2 : public Playstate {
+protected:
+    std::string getSceneName() const override { return "level2_scene"; }
 };

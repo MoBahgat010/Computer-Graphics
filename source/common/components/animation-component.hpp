@@ -14,24 +14,22 @@ namespace our {
     public:
         std::vector<std::unique_ptr<Animation>> animations;
         std::unique_ptr<Animator> animator;
-        AnimatedMesh* animatedMesh = nullptr; // Not owned, managed by AssetLoader
+        AnimatedMesh* animatedMesh = nullptr; 
         int currentAnimationIndex = 0;
         bool inPlace = false;
         bool paused = false;
 
+        bool isMoving = true; 
+
         static std::string getID() { return "Animation"; }
 
         void deserialize(const nlohmann::json& data) override;
-
-        // Called each frame by the renderer
         void update(float deltaTime);
 
-        // Switch to a different animation by index
         bool playAnimation(int index);
+        void setIsMoving(bool moving);
 
-        // Get the final bone matrices for shader upload
         const std::vector<glm::mat4>& getBoneMatrices() const;
-
         bool hasActiveAnimation() const;
     };
 
