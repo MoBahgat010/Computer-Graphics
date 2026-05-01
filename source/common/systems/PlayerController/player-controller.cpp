@@ -52,6 +52,21 @@ namespace our {
       handleMovement(player,playerEntity,deltaTime);
       handleJump(player, playerEntity);
       handleLook(player,playerEntity, cameraEntity);
+
+      AnimationComponent* animComp = nullptr;
+      for (auto entity : world->getEntities()) {
+          if (entity->parent == playerEntity) {
+              animComp = entity->getComponent<AnimationComponent>();
+              if (animComp) break;
+          }
+      }
+      if (animComp) {
+          auto& keyboard = app->getKeyboard();
+          bool isMoving = keyboard.isPressed(GLFW_KEY_W) || keyboard.isPressed(GLFW_KEY_S) || 
+                          keyboard.isPressed(GLFW_KEY_A) || keyboard.isPressed(GLFW_KEY_D);
+          animComp->setIsMoving(isMoving);
+      }
+
       handleCrouch(player, cameraEntity);
       handleFire(player, cameraEntity);
       handleReload(player);

@@ -4,6 +4,7 @@
 #include "../../components/EnemyComponents/enemy-soldier-component.hpp"
 #include "../../components/EnemyComponents/opus-boss-component.hpp"
 #include "../../components/ServerComponents/server-component.hpp"
+#include "../../components/animation-component.hpp"
 #include "../../application.hpp"
 #include "../../audio/audio-player.hpp"
 #include <glm/glm.hpp>
