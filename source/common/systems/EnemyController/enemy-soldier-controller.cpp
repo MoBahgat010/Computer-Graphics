@@ -115,6 +115,9 @@ namespace our {
     player->receiveDamage(damage);
     std::cout << "[COMBAT] Enemy hit player! Dealt " << damage << " damage. Player Health: " << player->getHealth() << std::endl;
 
+    // Play enemy fire sound at a lower volume than the player's shot
+    enemyFireAudioPlayer.play("assets/audio/game/ak47_fire.wav", 0.2f);
+
     // reset timer
     enemy->setAttackTimer(0.0f);
 
