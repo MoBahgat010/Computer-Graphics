@@ -31,7 +31,7 @@ class GameOverState : public our::State {
         static std::mt19937 rng(std::random_device{}());
         std::uniform_int_distribution<int> pick(0, (int)quotes.size() - 1);
         selectedQuote = pick(rng);
-        gameOverAudioPlayer.play("assets/audio/game/game_over_sound.mp3", 0.1f);
+        gameOverAudioPlayer.playLoop"assets/audio/game/game_over_sound.mp3", 0.1f);
     }
 
     void onDestroy() override {
