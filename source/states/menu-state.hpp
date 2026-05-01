@@ -198,12 +198,6 @@ class Menustate: public our::State {
 
             ImGui::Spacing();
 
-            if(ImGui::Button("START LEVEL 2 DEV", ImVec2(btnWidth, btnHeight))) {
-                getApp()->changeState("play-level2");
-            }
-
-            ImGui::Spacing();
-
             if(ImGui::Button("EXIT", ImVec2(btnWidth, btnHeight))) {
                 getApp()->close();
             }

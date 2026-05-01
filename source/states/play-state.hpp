@@ -4,7 +4,6 @@
 
 #include <ecs/world.hpp>
 #include <systems/forward-renderer.hpp>
-#include <systems/free-camera-controller.hpp>
 #include <systems/movement.hpp>
 #include <systems/jolt-physics-system.hpp>
 #include <systems/PlayerController/player-controller.hpp>
@@ -16,14 +15,11 @@
 #include <asset-loader.hpp>
 #include <audio/audio-player.hpp>
 
-#include <iostream>
-
 // This state shows how to use the ECS framework and deserialization.
 class Playstate: public our::State {
 
     our::World world;
     our::ForwardRenderer renderer;
-    our::FreeCameraControllerSystem cameraController;
     our::MovementSystem movementSystem;
     our::JoltPhysicsSystem joltPhysics;
     our::PlayerControllerSystem playerController;
@@ -31,44 +27,8 @@ class Playstate: public our::State {
     our::EnemySpawnerSystem enemySpawner;
     our::ServerControllerSystem serverController;
     our::AudioPlayer startGameAudioPlayer;
-    bool freeCameraDebugMode = false;
-    bool hasSavedFreeCameraTransform = false;
-    our::Transform savedFreeCameraTransform;
-    our::Entity* freeCameraEntity = nullptr;
     bool sawOpusAlive = false;
     bool level2EndingTriggered = false;
-
-    void setFreeCameraDebugMode(bool enabled) {
-        if(enabled == freeCameraDebugMode) return;
-
-        joltPhysics.setPlayerVelocity(glm::vec3(0.0f));
-        if(enabled) {
-            freeCameraEntity = getCameraEntity();
-            if(freeCameraEntity) {
-                savedFreeCameraTransform = freeCameraEntity->localTransform;
-                hasSavedFreeCameraTransform = true;
-            }
-            freeCameraDebugMode = true;
-            getApp()->getMouse().unlockMouse(getApp()->getWindow());
-        } else {
-            if(hasSavedFreeCameraTransform && freeCameraEntity) {
-                freeCameraEntity->localTransform = savedFreeCameraTransform;
-            }
-            hasSavedFreeCameraTransform = false;
-            freeCameraEntity = nullptr;
-            freeCameraDebugMode = false;
-            getApp()->getMouse().lockMouse(getApp()->getWindow());
-        }
-    }
-
-    our::Entity* getCameraEntity() {
-        for(auto entity : world.getEntities()) {
-            if(entity->getComponent<our::CameraComponent>()) {
-                return entity;
-            }
-        }
-        return nullptr;
-    }
 
     virtual std::string getSceneName() const { return "level1_scene"; }
 
@@ -83,8 +43,6 @@ class Playstate: public our::State {
         if(config.contains("world")){
             world.deserialize(config["world"]);
         }
-        // We initialize the camera controller system since it needs a pointer to the app
-        cameraController.enter(getApp(), &joltPhysics);
         // Initialize Jolt physics (Part 1 integration milestone)
         joltPhysics.init();
 
@@ -120,15 +78,8 @@ class Playstate: public our::State {
         movementSystem.update(&world, (float)deltaTime);
 
         auto& keyboard = getApp()->getKeyboard();
-        if(keyboard.justPressed(GLFW_KEY_M)) {
-            setFreeCameraDebugMode(!freeCameraDebugMode);
-        }
 
-        if(freeCameraDebugMode) {
-            cameraController.update(&world, (float)deltaTime);
-        } else {
-            playerController.update(&world, (float)deltaTime);
-        }
+        playerController.update(&world, (float)deltaTime);
 
         enemySoldierController.update(&world, (float)deltaTime);
         serverController.update(&world, (float)deltaTime);
@@ -240,37 +191,6 @@ class Playstate: public our::State {
     }
 
     void onImmediateGui() override {
-        ImGui::SetNextWindowPos(ImVec2(20.0f, 20.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(420.0f, 180.0f), ImGuiCond_FirstUseEver);
-
-        if(ImGui::Begin("Camera Debug")) {
-            ImGui::Text("Free Tool: %s", freeCameraDebugMode ? "ON" : "OFF");
-            if(ImGui::Button(freeCameraDebugMode ? "Disable Free Tool" : "Enable Free Tool")) {
-                setFreeCameraDebugMode(!freeCameraDebugMode);
-            }
-            ImGui::SameLine();
-            ImGui::Text("(M)");
-
-            ImGui::TextUnformatted("Move: Arrows only");
-
-            if(auto* cameraEntity = getCameraEntity()) {
-                const glm::mat4 localToWorld = cameraEntity->getLocalToWorldMatrix();
-                const glm::vec3 worldPosition = glm::vec3(localToWorld[3]);
-
-                ImGui::Text("Position: x %.3f  y %.3f  z %.3f", worldPosition.x, worldPosition.y, worldPosition.z);
-
-                if(ImGui::Button("Print to Console")) {
-                    std::cout << "Camera Position (x,y,z): "
-                              << worldPosition.x << ", "
-                              << worldPosition.y << ", "
-                              << worldPosition.z << std::endl;
-                }
-            } else {
-                ImGui::TextUnformatted("No camera entity found.");
-            }
-        }
-        ImGui::End();
-
         // ── Player HUD ───────────────────────────────────────────────────────
         our::PlayerComponent* player = nullptr;
         our::Entity* playerEntity = nullptr;
@@ -394,8 +314,6 @@ class Playstate: public our::State {
         renderer.destroy();
         // Shutdown Jolt physics and release all related resources
         joltPhysics.shutdown();
-        // On exit, we call exit for the camera controller system to make sure that the mouse is unlocked
-        cameraController.exit();
         playerController.exit();
         // Clear the world
         world.clear();

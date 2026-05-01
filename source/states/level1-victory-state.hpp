@@ -69,14 +69,8 @@ class Level1VictoryState : public our::State {
             getApp()->changeState("level2-cutscene");
         }
 
-        // 2. Continue DEV (Gameplay Direct)
+        // 2. Return to Main Menu
         ImGui::SetCursorPos(ImVec2(buttonX, startY + 90.0f));
-        if (ImGui::Button("Continue DEV (Skip Cutscene)", buttonSize)) {
-            getApp()->changeState("play-level2");
-        }
-
-        // 3. Return to Main Menu
-        ImGui::SetCursorPos(ImVec2(buttonX, startY + 180.0f));
         if (ImGui::Button("Return to Main Menu", buttonSize)) {
             getApp()->changeState("menu");
         }
