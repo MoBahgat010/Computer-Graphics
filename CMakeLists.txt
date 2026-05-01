@@ -123,6 +123,8 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/ecs/entity.cpp
         source/common/ecs/world.hpp
         source/common/ecs/world.cpp
+        source/common/ecs/lighting.hpp
+        source/common/ecs/lighting.cpp
 
         source/common/components/camera.hpp
         source/common/components/camera.cpp
@@ -140,6 +142,8 @@ source/common/components/PlayerComponents/player-component.cpp
         source/common/components/PlayerComponents/player-component.cpp
         source/common/components/EnemyComponents/enemy-soldier-component.hpp
         source/common/components/EnemyComponents/enemy-soldier-component.cpp
+        source/common/components/EnemyComponents/opus-boss-component.cpp
+        source/common/components/ServerComponents/server-component.cpp
         source/common/components/component-deserializer.hpp
 
         source/common/animation/animated-mesh.hpp

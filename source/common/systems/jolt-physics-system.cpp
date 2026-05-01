@@ -26,12 +26,14 @@
 #include "components/movement.hpp"
 #include "components/PlayerComponents/player-component.hpp"
 #include "components/EnemyComponents/enemy-soldier-component.hpp"
+#include "components/EnemyComponents/opus-boss-component.hpp"
 
 #include <iostream>
 #include <cstdarg>
 #include <thread>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -69,6 +71,26 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
     mPlayerEntity = nullptr;
     mPendingPlayerVelocity = glm::vec3(0.0f);
+
+    bool hasWorldBounds = false;
+    glm::vec3 worldMin(std::numeric_limits<float>::max());
+    glm::vec3 worldMax(std::numeric_limits<float>::lowest());
+    float safetyFloorTopY = std::numeric_limits<float>::lowest();
+    bool hasSafetyFloorTop = false;
+    glm::vec3 playerStartPosition(0.0f);
+    bool hasPlayerStart = false;
+
+    auto expandBounds = [&](const glm::vec3& p) {
+        worldMin = glm::min(worldMin, p);
+        worldMax = glm::max(worldMax, p);
+        hasWorldBounds = true;
+    };
+
+    auto expandBoundsBox = [&](const glm::vec3& minP, const glm::vec3& maxP) {
+        worldMin = glm::min(worldMin, minP);
+        worldMax = glm::max(worldMax, maxP);
+        hasWorldBounds = true;
+    };
 
     // Pass 1: detect player entity.
     // Prefer explicit PlayerComponent, fallback to first camera.
@@ -113,11 +135,16 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
             );
 
             capsuleRadius = glm::max(0.01f, glm::min(scaledHalfExtents.x, scaledHalfExtents.z));
-            capsuleHalfHeight = glm::max(0.0f, scaledHalfExtents.y - capsuleRadius);
+            capsuleHalfHeight = glm::max(0.01f, scaledHalfExtents.y - capsuleRadius);
             capsuleCenterY = playerCollider->centerOffset.y + scaledHalfExtents.y;
         }
 
         createPlayerBody(worldTranslation, capsuleHalfHeight, capsuleRadius, capsuleCenterY);
+
+        playerStartPosition = worldTranslation;
+        hasPlayerStart = true;
+        safetyFloorTopY = worldTranslation.y + capsuleCenterY - (capsuleHalfHeight + capsuleRadius);
+        hasSafetyFloorTop = true;
     }
 
     auto isDescendantOfPlayer = [&](Entity* entity) {
@@ -141,10 +168,11 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
         auto* collider = entity->getComponent<ColliderComponent>();
         auto* enemySoldier = entity->getComponent<EnemySoldierComponent>();
+        auto* opus = entity->getComponent<OpusBossComponent>();
         auto* meshRenderer = entity->getComponent<MeshRendererComponent>();
 
         // Enemy soldiers get a Kinematic Convex Hull (or Capsule) handled by a dedicated function.
-        if (enemySoldier) {
+        if (enemySoldier || opus) {
             JPH::BodyID id = createEnemySoldierBody(entity, meshRenderer);
             if (!id.IsInvalid()) {
                 ++dynamicBodies; // count as dynamic for logging
@@ -198,7 +226,10 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
             std::vector<glm::vec3> triangleVertices;
             triangleVertices.reserve(meshVertices.size());
             for (const auto& v : meshVertices) {
-                triangleVertices.push_back(v.position * worldScale);
+                const glm::vec3 localVertex = v.position * worldScale;
+                const glm::vec3 worldVertex = localVertex + worldTranslation;
+                triangleVertices.push_back(localVertex);
+                expandBounds(worldVertex);
             }
 
             JPH::BodyID id = addStaticTriangleMesh(entity, triangleVertices, meshIndices, worldTranslation, eulerRotation);
@@ -224,8 +255,57 @@ void JoltPhysicsSystem::buildFromWorld(World* world) {
 
         if (!id.IsInvalid()) {
             if (isMoving) ++dynamicBodies;
-            else ++staticBodies;
+            else {
+                ++staticBodies;
+                expandBoundsBox(position - halfExtents, position + halfExtents);
+            }
         }
+    }
+
+    if (hasWorldBounds) {
+        const float wallThickness = 1.0f;
+        const float wallHeight = std::max(2.0f, (worldMax.y - worldMin.y) + 5.0f);
+        const float wallHalfHeight = wallHeight * 0.5f;
+        const float floorThickness = 0.2f;
+        float floorTopY = hasSafetyFloorTop ? (safetyFloorTopY - 0.2f) : worldMin.y;
+        if (hasPlayerStart) {
+            const float rayStartY = worldMax.y + 10.0f;
+            const float rayLength = (worldMax.y - worldMin.y) + 50.0f;
+            RaycastResult groundHit = raycast(
+                glm::vec3(playerStartPosition.x, rayStartY, playerStartPosition.z),
+                glm::vec3(0.0f, -1.0f, 0.0f),
+                rayLength
+            );
+            if (groundHit.hit) {
+                floorTopY = groundHit.position.y - 0.2f;
+            }
+        }
+        const float wallBottomY = std::min(worldMin.y, floorTopY) - 0.5f;
+        const float centerY = wallBottomY + wallHalfHeight;
+        const float centerX = 0.5f * (worldMin.x + worldMax.x);
+        const float centerZ = 0.5f * (worldMin.z + worldMax.z);
+        const float halfWidthX = 0.5f * (worldMax.x - worldMin.x);
+        const float halfWidthZ = 0.5f * (worldMax.z - worldMin.z);
+        // Left / Right walls (X min / max)
+        addStaticBox(nullptr,
+                     glm::vec3(wallThickness * 0.5f, wallHalfHeight, halfWidthZ + wallThickness),
+                     glm::vec3(worldMin.x - wallThickness * 0.5f, centerY, centerZ));
+        addStaticBox(nullptr,
+                     glm::vec3(wallThickness * 0.5f, wallHalfHeight, halfWidthZ + wallThickness),
+                     glm::vec3(worldMax.x + wallThickness * 0.5f, centerY, centerZ));
+
+        // Front / Back walls (Z min / max)
+        addStaticBox(nullptr,
+                     glm::vec3(halfWidthX + wallThickness, wallHalfHeight, wallThickness * 0.5f),
+                     glm::vec3(centerX, centerY, worldMin.z - wallThickness * 0.5f));
+        addStaticBox(nullptr,
+                     glm::vec3(halfWidthX + wallThickness, wallHalfHeight, wallThickness * 0.5f),
+                     glm::vec3(centerX, centerY, worldMax.z + wallThickness * 0.5f));
+
+        // Safety floor under the entire map bounds (thin and aligned to street)
+        addStaticBox(nullptr,
+                 glm::vec3(halfWidthX + wallThickness, floorThickness * 0.5f, halfWidthZ + wallThickness),
+                 glm::vec3(centerX, floorTopY - floorThickness * 0.5f, centerZ));
     }
 
     std::cout << "[JoltPhysicsSystem] Jolt initialized with "
@@ -276,6 +356,10 @@ void JoltPhysicsSystem::update(float deltaTime) {
         Entity* entity = pair.first;
         if (!entity || entity == mPlayerEntity) continue;
 
+        // Enemies are moved by physics velocity, skip syncing ECS -> Jolt
+        if (entity->getComponent<EnemySoldierComponent>()) continue;
+        if (entity->getComponent<OpusBossComponent>()) continue;
+
         JPH::BodyID id(pair.second);
         if (!bodyInterface.IsAdded(id)) continue;
 
@@ -309,12 +393,6 @@ void JoltPhysicsSystem::update(float deltaTime) {
     for (auto& pair : mEntityToBody) {
         Entity* entity = pair.first;
         if (!entity || entity == mPlayerEntity) continue;
-
-        // Enemy soldiers are currently driven by gameplay logic (controller updates
-        // local transform directly). For dynamic convex hulls, Jolt body position is
-        // COM-based and writing it back can visually offset the mesh upward.
-        // Keep enemies ECS-driven for now and only mirror non-enemy dynamic bodies.
-        if (entity->getComponent<EnemySoldierComponent>()) continue;
 
         JPH::BodyID id(pair.second);
         if (!bodyInterface.IsAdded(id)) continue;
@@ -545,7 +623,7 @@ JPH::BodyID JoltPhysicsSystem::addStaticConvexHull(Entity* entity, const std::ve
 
 // Creates and registers a dynamic convex hull body and maps it to an ECS entity.
 JPH::BodyID JoltPhysicsSystem::addDynamicConvexHull(Entity* entity, const std::vector<glm::vec3>& localVertices,
-                                                    glm::vec3 position, glm::vec3 eulerRotation) {
+                                                    glm::vec3 position, glm::vec3 eulerRotation, bool lockRotation) {
     if (!mPhysicsSystem || localVertices.size() < 4) return JPH::BodyID();
 
     JPH::Array<JPH::Vec3> points;
@@ -567,8 +645,15 @@ JPH::BodyID JoltPhysicsSystem::addDynamicConvexHull(Entity* entity, const std::v
         JPH::RVec3(toJPH(position)),
         eulerToJPH(eulerRotation),
         JPH::EMotionType::Dynamic,
-        Layers::ENEMY
+        Layers::ENEMY // Or maybe dynamic
     );
+    
+    if (lockRotation) {
+        bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
+                                    JPH::EAllowedDOFs::TranslationY | 
+                                    JPH::EAllowedDOFs::TranslationZ;
+        bodySettings.mAllowSleeping = false;
+    }
 
     JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
     JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
@@ -720,6 +805,111 @@ void JoltPhysicsSystem::removeBody(Entity* entity) {
     mEntityToBody.erase(it);
 }
 
+// Creates and registers a dynamic capsule body and maps it to an ECS entity.
+JPH::BodyID JoltPhysicsSystem::addDynamicCapsule(Entity* entity, float halfHeight, float radius, float centerY,
+                                                 glm::vec3 position, glm::vec3 eulerRotation, JPH::ObjectLayer layer) {
+    if (!mPhysicsSystem) return JPH::BodyID();
+
+    JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
+        JPH::Vec3(0.0f, centerY, 0.0f),
+        JPH::Quat::sIdentity(),
+        new JPH::CapsuleShape(halfHeight, radius)
+    ).Create().Get();
+
+    JPH::BodyCreationSettings bodySettings(
+        capsuleShape,
+        JPH::RVec3(toJPH(position)),
+        eulerToJPH(eulerRotation),
+        JPH::EMotionType::Dynamic,
+        layer // <--- Now uses the passed-in layer
+    );
+
+    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
+                                JPH::EAllowedDOFs::TranslationY | 
+                                JPH::EAllowedDOFs::TranslationZ;
+    bodySettings.mAllowSleeping = false;
+    bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
+    bodySettings.mMassPropertiesOverride.mMass = 70.0f;
+    bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+    bodySettings.mFriction = 0.0f;
+    bodySettings.mRestitution = 0.0f;
+
+    bodySettings.mFriction = 0.0f;     
+    bodySettings.mRestitution = 0.0f;  
+
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+
+    if (!id.IsInvalid() && entity) {
+        uint32_t raw = id.GetIndexAndSequenceNumber();
+        mEntityToBody[entity] = raw;
+        mBodyToEntity[raw] = entity;
+    }
+
+    return id;
+}
+
+void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
+                                         float capsuleHalfHeight,
+                                         float capsuleRadius,
+                                         float capsuleCenterY) {
+    if (!mPhysicsSystem) return;
+
+    capsuleRadius = glm::max(0.01f, capsuleRadius);
+    capsuleHalfHeight = glm::max(0.01f, capsuleHalfHeight);
+
+    mPlayerCapsuleHalfHeight = capsuleHalfHeight;
+    mPlayerCapsuleRadius = capsuleRadius;
+    mPlayerCapsuleCenterY = capsuleCenterY;
+
+    // Use the universal helper!
+    JPH::BodyID id = addDynamicCapsule(mPlayerEntity, capsuleHalfHeight, capsuleRadius, capsuleCenterY, startPos, glm::vec3(0.0f), Layers::PLAYER);
+
+    if (!id.IsInvalid() && mPlayerEntity) {
+        const float totalHeight = (2.0f * capsuleHalfHeight) + (2.0f * capsuleRadius);
+        std::cout << "[JoltPhysicsSystem] Player capsule: radius=" << capsuleRadius
+                  << ", halfHeight=" << capsuleHalfHeight
+                  << ", totalHeight=" << totalHeight
+                  << ", centerY=" << capsuleCenterY
+                  << std::endl;
+    }
+}
+
+bool JoltPhysicsSystem::isPlayerGrounded(float tolerance) {
+    if (!mPhysicsSystem || !mPlayerEntity) return false;
+    auto it = mEntityToBody.find(mPlayerEntity);
+    if (it == mEntityToBody.end()) return false;
+
+    JPH::BodyID id(it->second);
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    if (!bodyInterface.IsAdded(id)) return false;
+
+    const JPH::RVec3 pos = bodyInterface.GetPosition(id);
+    const float bottomY = static_cast<float>(pos.GetY()) + mPlayerCapsuleCenterY - (mPlayerCapsuleHalfHeight + mPlayerCapsuleRadius);
+    const float rayLength = std::max(0.05f, tolerance * 2.0f);
+
+    const glm::vec3 origin(static_cast<float>(pos.GetX()), bottomY + rayLength * 0.5f, static_cast<float>(pos.GetZ()));
+    const glm::vec3 direction(0.0f, -1.0f, 0.0f);
+
+    RaycastResult hit = raycast(origin, direction, rayLength);
+    return hit.hit;
+}
+
+void JoltPhysicsSystem::applyPlayerJump(float jumpSpeed, float groundTolerance) {
+    if (!mPhysicsSystem || !mPlayerEntity) return;
+    if (!isPlayerGrounded(groundTolerance)) return;
+
+    auto it = mEntityToBody.find(mPlayerEntity);
+    if (it == mEntityToBody.end()) return;
+
+    JPH::BodyID id(it->second);
+    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+    if (!bodyInterface.IsAdded(id)) return;
+
+    JPH::Vec3 currentVel = bodyInterface.GetLinearVelocity(id);
+    bodyInterface.SetLinearVelocity(id, JPH::Vec3(currentVel.GetX(), jumpSpeed, currentVel.GetZ()));
+}
+
 // Dedicated function to create the physics body for an EnemySoldier
 JPH::BodyID JoltPhysicsSystem::createEnemySoldierBody(Entity* entity, MeshRendererComponent* meshRenderer) {
     glm::mat4 m = entity->getLocalToWorldMatrix();
@@ -740,77 +930,37 @@ JPH::BodyID JoltPhysicsSystem::createEnemySoldierBody(Entity* entity, MeshRender
     glm::quat worldOrientation = glm::quat_cast(rotMat);
     
     const glm::vec3 eulerRotation = glm::eulerAngles(worldOrientation);
-    
-    std::vector<glm::vec3> localVertices;
-    
-    if (meshRenderer && meshRenderer->mesh) {
-        const auto& meshVertices = meshRenderer->mesh->getVertices();
-        localVertices.reserve(meshVertices.size());
-        for (const auto& v : meshVertices) {
-            localVertices.push_back(v.position * worldScale);
-        }
+    // Fallback defaults just in case a robot is spawned without a collider in the JSON
+    float capsuleHalfHeight = 0.2f;
+    float capsuleRadius = 0.15f;
+    float centerY = 0.0f; // Still defaults to the chest
+
+    // Read directly from the JSON ColliderComponent!
+    if (auto* collider = entity->getComponent<ColliderComponent>()) {
+        
+        // Multiply the JSON halfExtents by the visual scale of the robot
+        glm::vec3 scaledHalfExtents = glm::max(
+            glm::abs(collider->halfExtents * worldScale),
+            glm::vec3(0.01f)
+        );
+
+        capsuleRadius = glm::max(0.01f, glm::min(scaledHalfExtents.x, scaledHalfExtents.z));
+        capsuleHalfHeight = glm::max(0.01f, scaledHalfExtents.y - capsuleRadius);
+        
+        // Use the centerOffset from JSON (no extra height)
+        centerY = collider->centerOffset.y; 
     }
 
-    return addKinematicConvexHull(entity, localVertices, worldTranslation, eulerRotation);
-}
-
-// Creates and registers a dynamic player capsule body and maps it to an ECS entity.
-void JoltPhysicsSystem::createPlayerBody(glm::vec3 startPos,
-                                         float capsuleHalfHeight,
-                                         float capsuleRadius,
-                                         float capsuleCenterY) {
-    if (!mPhysicsSystem) return;
-
-    // Capsule dimensions can be overridden from Player's ColliderComponent.
-    capsuleRadius = glm::max(0.01f, capsuleRadius);
-    capsuleHalfHeight = glm::max(0.0f, capsuleHalfHeight);
-
-    // Keep the feet at (approximately) entity origin by default via centerY,
-    // while allowing custom center offsets through config.
-    JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
-        JPH::Vec3(0.0f, capsuleCenterY, 0.0f),
-        JPH::Quat::sIdentity(),
-        new JPH::CapsuleShape(capsuleHalfHeight, capsuleRadius)
-    ).Create().Get();
-
-    JPH::BodyCreationSettings bodySettings(
-        capsuleShape,
-        JPH::RVec3(toJPH(startPos)),
-        JPH::Quat::sIdentity(),
-        JPH::EMotionType::Dynamic,
-        Layers::PLAYER
+    // Use the universal helper, explicitly assigning the robot to the ENEMY collision layer
+    return addDynamicCapsule(
+        entity, 
+        capsuleHalfHeight, 
+        capsuleRadius, 
+        centerY, 
+        worldTranslation, 
+        eulerRotation, 
+        Layers::ENEMY
     );
-
-    // Lock rotation so the player stays upright
-    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | 
-                                JPH::EAllowedDOFs::TranslationY | 
-                                JPH::EAllowedDOFs::TranslationZ;
-
-    // Prevent going to sleep
-    bodySettings.mAllowSleeping = false;
-    
-    // Continuous collision detection to prevent tunnelling through thin walls.
-    bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
-    
-    // Set mass
-    bodySettings.mMassPropertiesOverride.mMass = 70.0f;
-    bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-
-    JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
-    JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
-
-    if (!id.IsInvalid() && mPlayerEntity) {
-        uint32_t raw = id.GetIndexAndSequenceNumber();
-        mEntityToBody[mPlayerEntity] = raw;
-        mBodyToEntity[raw] = mPlayerEntity;
-
-        const float totalHeight = (2.0f * capsuleHalfHeight) + (2.0f * capsuleRadius);
-        std::cout << "[JoltPhysicsSystem] Player capsule: radius=" << capsuleRadius
-                  << ", halfHeight=" << capsuleHalfHeight
-                  << ", totalHeight=" << totalHeight
-                  << ", centerY=" << capsuleCenterY
-                  << std::endl;
-    }
 }
 
 // Casts a ray in the physics world and returns closest hit info (if any).
@@ -856,6 +1006,23 @@ JoltPhysicsSystem::RaycastResult JoltPhysicsSystem::raycast(glm::vec3 origin,
     }
 
     return result;
+}
+
+void JoltPhysicsSystem::setLinearVelocity(Entity* entity, const glm::vec3& velocity) {
+    if (!mPhysicsSystem || !entity) return;
+    auto it = mEntityToBody.find(entity);
+    if (it != mEntityToBody.end()) {
+        JPH::BodyID id(it->second);
+        JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
+        if (bodyInterface.IsAdded(id)) {
+            JPH::Vec3 currentVel = bodyInterface.GetLinearVelocity(id);
+            bodyInterface.SetLinearVelocity(id, JPH::Vec3(
+                velocity.x,
+                currentVel.GetY(),
+                velocity.z
+            ));
+        }
+    }
 }
 
 }

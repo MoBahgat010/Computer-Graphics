@@ -4,6 +4,7 @@
 #include "../texture/texture2d.hpp"
 #include "../texture/sampler.hpp"
 #include "../shader/shader.hpp"
+#include "ecs/lighting.hpp"
 
 #include <glm/vec4.hpp>
 #include <json/json.hpp>
@@ -53,12 +54,28 @@ namespace our {
         void deserialize(const nlohmann::json& data) override;
     };
 
+    class LitMaterial : public Material {
+    public:
+        ShaderProgram* ambientShader = nullptr; // for pass zero in multipass
+        ShaderProgram* directionalShader = nullptr;
+        ShaderProgram* pointShader = nullptr;
+        ShaderProgram* spotShader = nullptr;
+
+        Sampler* sampler = nullptr;
+        std::vector<Light*> lights; 
+
+        void setup() const override ;
+        void deserialize(const nlohmann::json& data) override;
+    };
+
     // This function returns a new material instance based on the given type
     inline Material* createMaterialFromType(const std::string& type){
         if(type == "tinted"){
             return new TintedMaterial();
         } else if(type == "textured"){
             return new TexturedMaterial();
+        } else if(type == "lit"){
+            return new LitMaterial();
         } else {
             return new Material();
         }

@@ -38,6 +38,12 @@ namespace our
         // Objects used for rendering a skybox
         Mesh* skySphere;
         TexturedMaterial* skyMaterial;
+
+        // Objects used for rendering Opus shield
+        Mesh* opusShieldMesh = nullptr;
+        TintedMaterial* opusShieldMaterial = nullptr;
+
+
         // Objects used for Postprocessing
         GLuint postprocessFrameBuffer, postProcessVertexArray;
         Texture2D *colorTarget, *depthTarget;

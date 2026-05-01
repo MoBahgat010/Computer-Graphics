@@ -11,6 +11,10 @@
 #include "states/game-over-state.hpp"
 #include "states/story-beginning-state.hpp"
 #include "states/play-state.hpp"
+#include "states/level1-victory-state.hpp"
+#include "states/level2-cutscene-state.hpp"
+#include "states/level2-ending-cutscene-state.hpp"
+#include "states/credits-state.hpp"
 #include "states/shader-test-state.hpp"
 #include "states/mesh-test-state.hpp"
 #include "states/transform-test-state.hpp"
@@ -52,6 +56,11 @@ int main(int argc, char** argv) {
     app.registerState<GameOverState>("game-over");
     app.registerState<StoryBeginningState>("story-beginning");
     app.registerState<Playstate>("play");
+    app.registerState<PlaystateLevel2>("play-level2");
+    app.registerState<Level1VictoryState>("level1-victory");
+    app.registerState<Level2CutsceneState>("level2-cutscene");
+    app.registerState<Level2EndingCutsceneState>("level2-ending-cutscene");
+    app.registerState<CreditsState>("credits");
     app.registerState<ShaderTestState>("shader-test");
     app.registerState<MeshTestState>("mesh-test");
     app.registerState<TransformTestState>("transform-test");

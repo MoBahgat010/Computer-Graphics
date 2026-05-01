@@ -11,9 +11,9 @@ enum class EnemyState {
 
 
 class EnemySoldierComponent : public Component {
-    private:
+    protected:
       double health=100.0;
-      float damage=3.0;
+      float attackDamage=3.0;
       float attackRange=10.0;
       float detectionRange=20.0;
       float speed=1.0;
@@ -58,6 +58,7 @@ class EnemySoldierComponent : public Component {
     void setIsResting(bool resting);
 
     void decreaseHealth(float amount);
+    virtual void damage(float amount);
     
     
     

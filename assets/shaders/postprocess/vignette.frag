@@ -8,6 +8,8 @@ in vec2 tex_coord;
 
 out vec4 frag_color;
 
+uniform vec4 tint = vec4(1.0, 1.0, 1.0, 1.0);
+
 // Vignette is a postprocessing effect that darkens the corners of the screen
 // to grab the attention of the viewer towards the center of the screen
 
@@ -29,5 +31,5 @@ void main(){
     vec4 scene_color = texture(tex, tex_coord);
 
     // Darken by dividing by (1 + squared distance): center stays bright, corners get dark
-    frag_color = scene_color / (1.0 + dist2);
+    frag_color = (scene_color / (1.0 + dist2)) * tint;
 }

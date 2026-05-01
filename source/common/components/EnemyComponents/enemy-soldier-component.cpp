@@ -3,7 +3,7 @@
 namespace our {
 
     float EnemySoldierComponent::getHealth() { return health; }
-    float EnemySoldierComponent::getDamage() { return damage; }
+    float EnemySoldierComponent::getDamage() { return attackDamage; }
     float EnemySoldierComponent::getAttackRange() { return attackRange; }
     float EnemySoldierComponent::getDetectionRange() { return detectionRange; }
     float EnemySoldierComponent::getSpeed() { return speed; }
@@ -32,11 +32,15 @@ namespace our {
         }
     }
 
+    void EnemySoldierComponent::damage(float amount) {
+        decreaseHealth(amount);
+    }
+
     void EnemySoldierComponent::deserialize(const nlohmann::json& data) {
         if(!data.is_object()) return;
         
         health = data.value("health", health);
-        damage = data.value("damage", damage);
+        attackDamage = data.value("attackDamage", attackDamage);
         attackRange = data.value("attackRange", attackRange);
         detectionRange = data.value("detectionRange", detectionRange);
         speed = data.value("speed", speed);

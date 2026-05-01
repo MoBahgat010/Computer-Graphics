@@ -4,14 +4,14 @@
 #include <iostream>
 
 namespace {
-std::string StripAssimpFbxSuffix(const std::string& name) {
-    const size_t pos = name.find("_$AssimpFbx$");
-    if (pos == std::string::npos) {
-        return name;
+    std::string StripAssimpFbxSuffix(const std::string& name) {
+        const size_t pos = name.find("_$AssimpFbx$");
+        if (pos == std::string::npos) {
+            return name;
+        }
+        return name.substr(0, pos);
     }
-    return name.substr(0, pos);
 }
-} // namespace
 
 namespace our {
 
@@ -85,7 +85,6 @@ void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat
         nodeTransform = bone->GetLocalTransform();
 
         if (m_IgnoreRootTranslation && !hasBoneParent) {
-            // Neutralize the translation part of the root bone matrix
             nodeTransform[3][0] = 0;
             nodeTransform[3][1] = 0;
             nodeTransform[3][2] = 0;
@@ -111,4 +110,4 @@ void Animator::CalculateBoneTransform(const AssimpNodeData* node, const glm::mat
     }
 }
 
-} // namespace our
+}
