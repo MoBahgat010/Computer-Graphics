@@ -30,11 +30,14 @@
                 "sphere":         "assets/models/sphere.obj",
                 "city":           "assets/models/city/Cyberpunk_City.fbx",
                 "male_character": "assets/models/male_character/player_gun.fbx",
-                "robot":          "assets/models/robot/robot_gun.fbx"
+                "robot": "assets/models/robot/robot_gun.fbx",
+                "opus": "assets/models/opus/opus_gun.fbx"
+                // "room": "assets/models/room/room.fbx"
             },
             "animatedMeshes": {
-                "robot_anim":  "assets/models/robot/robot_gun.fbx",
-                "player_anim": "assets/models/male_character/player_gun.fbx"
+                "robot_anim": "assets/models/robot/robot_gun.fbx",
+                "player_anim": "assets/models/male_character/player_gun.fbx",
+                "opus_anim": "assets/models/opus/opus_gun.fbx"
             },
             "samplers": { "default": {} },
             "lights": {
@@ -87,8 +90,40 @@
                 "robot": {
                     "type": "textured",
                     "shader": "skinned",
-                    "pipelineState": { "faceCulling": {"enabled": false}, "depthTesting": {"enabled": true} },
-                    "tint": [1, 1, 1, 1],
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "texture": "moon",
+                    "sampler": "default"
+                },
+                "opus": {
+                    "type": "textured",
+                    "shader": "skinned",
+                    "pipelineState": {
+                        "faceCulling": {
+                            "enabled": false
+                        },
+                        "depthTesting": {
+                            "enabled": true
+                        }
+                    },
+                    "tint": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
                     "texture": "moon",
                     "sampler": "default"
                 }
@@ -119,21 +154,54 @@
                 "position": [4.28409, 0.287086, -0.395433],
                 "rotation": [0, 180, 0],
                 "components": [
-                    { "type": "Player" },
-                    { "type": "Collider", "halfExtents": [0.17, 0.2, 0.17], "centerOffset": [0.0, 0.0, 0.0] }
+                    {
+                        "type": "Player"
+                    },
+                    {
+                        "type": "Collider",
+                        "halfExtents": [0.11, 0.30, 0.11],
+                        "centerOffset": [0.0, 0.20, 0.0]
+                    }
                 ],
                 "children": [
                     {
                         "name": "Camera",
-                        "position": [0.01, 0.18, -0.09],
-                        "rotation": [0, 0, 0],
-                        "components": [{ "type": "Camera", "near": 0.01, "far": 3000, "fovY": 75 }]
+                        "position": [
+                            0,
+                            0.3,
+                            -0.1
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "components": [
+                            {
+                                "type": "Camera",
+                                "near": 0.05,
+                                "far": 3000,
+                                "fovY": 75
+                            }
+                        ]
                     },
                     {
                         "name": "Male Character Model",
-                        "position": [0.02, 0.1, -0.05],
-                        "rotation": [0, 180, 0],
-                        "scale": [0.00006, 0.00006, 0.00006],
+                        "position": [
+                            0,
+                            0.2,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ],
+                        "scale": [
+                            0.0001,
+                            0.0001,
+                            0.0001
+                        ],
                         "components": [
                             { "type": "Mesh Renderer", "mesh": "male_character", "material": "male_character" },
                             { "type": "Animation", "animatedMesh": "player_anim", "animationIndex": 1, "inPlace": true }
@@ -522,6 +590,50 @@
                         "detectionRange": 100.0,
                         "phaseThreshold": 0.4,
                         "shieldRadius": 6.2
+                    }
+                ]
+            },
+            {
+                "name": "opus",
+                "position": [
+                    4.28409,
+                    0.6,
+                    -5.395433
+                ],
+                "rotation": [
+                    0,
+                    180,
+                    0
+                ],
+                "scale": [
+                    0.01,
+                    0.01,
+                    0.01
+                ],
+                "components": [
+                    {
+                        "type": "Mesh Renderer",
+                        "mesh": "opus",
+                        "material": "opus"
+                    },
+                    {
+                        "type": "Animation",
+                        "animatedMesh": "opus_anim",
+                        "animationIndex": 1,
+                        "inPlace": true,
+                        "paused": false
+                    },
+                    {
+                        "type": "Movement",
+                        "linearVelocity": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "type": "Collider",
+                        "isKinematic": true
                     }
                 ]
             }

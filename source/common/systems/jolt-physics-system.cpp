@@ -834,6 +834,9 @@ JPH::BodyID JoltPhysicsSystem::addDynamicCapsule(Entity* entity, float halfHeigh
     bodySettings.mFriction = 0.0f;
     bodySettings.mRestitution = 0.0f;
 
+    bodySettings.mFriction = 0.0f;     
+    bodySettings.mRestitution = 0.0f;  
+
     JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
     JPH::BodyID id = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
 
