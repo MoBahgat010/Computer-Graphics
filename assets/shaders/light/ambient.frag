@@ -16,8 +16,7 @@ uniform sampler2D diffuseMap;
 void main() {
     vec3 texColor = texture(diffuseMap, frag_in.tex_coord).rgb;
 
-    // ALWAYS use texture as base
-    vec3 ambient = texColor * 0.2;
+    vec3 ambient = texColor * materialAmbient;
 
     frag_color = vec4(ambient, 1.0) * frag_in.color;
 }

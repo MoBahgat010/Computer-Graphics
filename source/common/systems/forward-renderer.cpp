@@ -503,11 +503,16 @@ namespace our {
             for (const auto* light : litMat->lights) {
                 if (light->enabled) { anyLightEnabled = true; break; }
             }
+
             if (!anyLightEnabled) {
-                // If no lights are enabled, skip multipass and draw as unlit
                 command.material->setup();
                 command.material->shader->set("transform", VP * command.localToWorld);
-                command.mesh->draw();
+                
+                for (const auto& batch : command.mesh->getDrawBatches()) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, batch.diffuseTexture);
+                    command.mesh->drawBatch(batch);
+                }
                 continue;
             }
 
