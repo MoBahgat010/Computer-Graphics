@@ -4,7 +4,7 @@ project(GFX-LAB VERSION 0.1.0)          # Here we select the project name and ve
 # Linux compatibility
 if(UNIX AND NOT APPLE)
         find_package(OpenGL REQUIRED)
-        find_package(GLEW REQUIRED)
+        # find_package(GLEW REQUIRED)
 endif()
 
 # Required for loading non-OBJ meshes (e.g., FBX)
@@ -224,5 +224,5 @@ target_compile_definitions(GAME_APPLICATION PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLA
 
 if(UNIX AND NOT APPLE)
         target_link_libraries(GAME_APPLICATION OpenGL::GL)
-        target_link_libraries(GAME_APPLICATION GLEW::GLEW)
+        # target_link_libraries(GAME_APPLICATION GLEW::GLEW)
 endif()
