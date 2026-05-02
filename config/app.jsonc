@@ -3,7 +3,7 @@
     "window": {
         "title": "Carrer Not Found 404",
         "size": { "width": 1920, "height": 960 },
-        "fullscreen": false
+        "fullscreen": true
     },
     "level1_scene": {
         "renderer": {
@@ -517,10 +517,10 @@
                     {
                         "type": "OpusBoss",
                         "health": 500,
-                        "attackDamage": 10,
+                        "attackDamage": 5,
                         "speed": 2.0,
-                        "attackRange": 20.0,
-                        "detectionRange": 100.0,
+                        "attackRange": 50.0,
+                        "detectionRange": 200.0,
                         "phaseThreshold": 0.4,
                         "shieldRadius": 6.2
                     }
